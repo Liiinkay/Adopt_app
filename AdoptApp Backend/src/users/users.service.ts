@@ -16,12 +16,12 @@ export class UsersService {
     private readonly userRepository: Repository<User>
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
     try{
       const newUser = this.userRepository.create(createUserDto);
-      return this.userRepository.save(newUser)
+      return await this.userRepository.save(newUser);
     } catch(error){
-      this.hadleDBExceptions(error)
+      this.hadleDBExceptions(error);
     }
   }
 
