@@ -1,5 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { Url } from "url";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -46,12 +45,28 @@ export class User {
     @Column('text')
     facebook: string;
 
-    //post: string[];
+    @Column('text',{
+        array: true,
+        default: []
+    })
+    post?: string[];
 
-    //saved_post: string[];
+    @Column('text',{
+        array: true,
+        default: []
+    })
+    saved_post?: string[];
 
-    //followers: string[];
+    @Column('text',{
+        array: true,
+        default: []
+    })
+    followers: string[];
 
-    //follows: string[];
+    @Column('text',{
+        default: [],
+        array: true
+    })
+    follows: string[];
 }   
 
