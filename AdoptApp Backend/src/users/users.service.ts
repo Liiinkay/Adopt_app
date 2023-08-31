@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {validate as isUUID} from 'uuid';
@@ -26,11 +26,20 @@ export class UsersService {
   }
 
   findAll() {
-    return `This action returns all users`;
+    return this.userRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(term: string) {
+    let user: User;
+
+    if (isUUID(term) ){
+      user = await this.userRepository.findOneBy({ id: term });
+    }
+
+    if ( !user )
+    throw new NotFoundException(`Product with id ${ term } not found`);
+
+    return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
