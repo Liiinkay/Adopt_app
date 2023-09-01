@@ -42,17 +42,26 @@ export class UsersService {
     return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    return this.userRepository.update({id}, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+ async remove(id: string) {
+    let user: User;
+
+    if (isUUID(id) ){
+      user = await this.userRepository.findOneBy({ id: id });
+    }
+
+    if ( !user )
+    throw new NotFoundException(`Product with id ${ id } not found`);
+
+    return this.userRepository.delete(id);
   }
 
   private hadleDBExceptions( error: any ){
     if ( error.code === '23505' )
-      throw new BadRequestException(error.detail);    
+      throw new BadRequestException(error.detail);
 
     this.logger.error(error)
     throw new InternalServerErrorException('Unexpected error, check server logs');
