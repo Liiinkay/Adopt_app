@@ -49,7 +49,7 @@ export class CreateUserDto {
     @IsString({ each:true })
     @IsArray()
     @IsOptional()
-    post: string[];
+    posts: string[];
 
     @IsString({ each:true })
     @IsArray()

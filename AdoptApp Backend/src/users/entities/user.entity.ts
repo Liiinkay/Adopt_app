@@ -1,3 +1,4 @@
+import { Post } from "src/posts/entities/post.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -45,11 +46,11 @@ export class User {
     @Column('text')
     facebook: string;
 
-    @Column('text',{
-        array: true,
-        default: []
-    })
-    post?: string[];
+    @OneToMany(
+        () => Post,
+        post => post.author
+    )
+    post: Post[];
 
     @Column('text',{
         array: true,
