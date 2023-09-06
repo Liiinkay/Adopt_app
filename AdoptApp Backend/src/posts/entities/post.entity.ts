@@ -15,6 +15,15 @@ export class Post {
 
     @Column()
     authorID: string
+
+    @Column()
+    type: string
+
+    @Column('text',{
+        array: true,
+        default: []
+    })
+    multimedia: string[]
     
     @ManyToMany(
         () => User,
