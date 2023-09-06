@@ -7,12 +7,13 @@ import { User } from 'src/users/entities/user.entity';
 import { Adopt } from './entities/adopt-post.entity';
 import { Lost } from './entities/lost-post.entity';
 import { Informative } from './entities/informative-post.entity';
+import { PostMultimedia } from './entities/multimedia-post.entity';
 
 @Module({
   controllers: [PostsController],
   providers: [PostsService],
   imports: [
-    TypeOrmModule.forFeature([ User, Adopt, Informative, Lost ])
+    TypeOrmModule.forFeature([ User, Adopt, Informative, Lost, PostMultimedia ])
   ]
 })
 export class PostsModule {}
