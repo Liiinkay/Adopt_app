@@ -1,4 +1,5 @@
 import { IsArray, IsNumber, IsOptional, IsPositive, IsString, MinLength } from "class-validator";
+import { SavedPost } from '../entities/saved-post.entity';
 
 
 export class CreateUserDto {
@@ -49,7 +50,7 @@ export class CreateUserDto {
     @IsString({ each:true })
     @IsArray()
     @IsOptional()
-    posts: string[];
+    post?: string[];
 
     @IsString({ each:true })
     @IsArray()

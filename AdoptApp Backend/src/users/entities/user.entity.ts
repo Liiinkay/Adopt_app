@@ -1,5 +1,6 @@
 import { Post } from "src/posts/entities/post.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { SavedPost } from "./saved-post.entity";
 
 @Entity()
 export class User {
@@ -48,21 +49,23 @@ export class User {
 
     @OneToMany(
         () => Post,
-        post => post.author
+        post => post.author,
+        { cascade: true }
     )
-    post: Post[];
+    post?: Post[];
+
+    @OneToMany(
+        () => SavedPost,
+        savedpost => savedpost.author,
+        { cascade: true }
+    )
+    saved_post?: SavedPost[];
 
     @Column('text',{
         array: true,
         default: []
     })
-    saved_post?: string[];
-
-    @Column('text',{
-        array: true,
-        default: []
-    })
-    followers: string[];
+    followers?: string[];
 
     @Column('text',{
         default: [],

@@ -5,6 +5,7 @@ import {validate as isUUID} from 'uuid';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { SavedPost } from './entities/saved-post.entity';
 
 @Injectable()
 export class UsersService {
@@ -12,15 +13,40 @@ export class UsersService {
   private readonly logger = new Logger('ProductService');
 
   constructor(
+
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+
+    @InjectRepository(SavedPost)
+    private readonly savedPostRepository: Repository<SavedPost>
+
   ) {}
 
   async create(createUserDto: CreateUserDto) {
     try{
-      const newUser = this.userRepository.create(createUserDto);
+      const newUser = new User();
+      newUser.nickname = createUserDto.nickname;
+      newUser.name = createUserDto.name;
+      newUser.password = createUserDto.password;
+      newUser.banner_multimedia = createUserDto.banner_multimedia || '';
+      newUser.profile_img = createUserDto.profile_img || '';
+      newUser.last_name = createUserDto.last_name || '';
+      newUser.rut = createUserDto.rut || '';
+      newUser.phone_number = createUserDto.phone_number || 0;
+      newUser.contact_email = createUserDto.contact_email || '';
+      newUser.instagram = createUserDto.instagram || '';
+      newUser.facebook = createUserDto.facebook || '';
+  
+      // Las propiedades saved_post, posts, followers y follows se inicializan vacías.
+      newUser.saved_post = [];
+      newUser.post = [];
+      newUser.followers = [];
+      newUser.follows = [];
+  
+      // Guardar el nuevo usuario en la base de datos.
       return await this.userRepository.save(newUser);
-    } catch(error){
+
+    }catch (error){
       this.hadleDBExceptions(error);
     }
   }
@@ -43,7 +69,11 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    return this.userRepository.update({id}, updateUserDto);
+    const product = await this.userRepository.preload({
+      id: id,
+      ...UpdateUserDto,
+      saved_post: []
+    })
   }
 
  async remove(id: string) {
