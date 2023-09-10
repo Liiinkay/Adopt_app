@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SavedPost } from './entities/saved-post.entity';
+import { Followers } from './entities/followers.entity';
+import { Follows } from './entities/follows.entity';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +20,13 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
 
     @InjectRepository(SavedPost)
-    private readonly savedPostRepository: Repository<SavedPost>
+    private readonly savedPostRepository: Repository<SavedPost>,
+
+    @InjectRepository(Followers)
+    private readonly FollowersRepository: Repository<Followers>,
+
+    @InjectRepository(Follows)
+    private readonly FollowsRepository: Repository<Follows>
 
   ) {}
 
