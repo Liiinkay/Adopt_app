@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 
 @Entity()
-export class SavedPost {
+export class Followers {
 
     @PrimaryGeneratedColumn()
     id: string
@@ -11,11 +11,11 @@ export class SavedPost {
     authorId: string;
 
     @Column('text')
-    idPost: string;
+    followerId: string;
 
     @ManyToOne(
         () => User,
-        user => user.saved_post
+        user => user.followers
     )
     author: User
 

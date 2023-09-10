@@ -1,5 +1,7 @@
 import { Post } from "src/posts/entities/post.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Followers } from "./followers.entity";
+import { Follows } from "./follows.entity";
 import { SavedPost } from "./saved-post.entity";
 
 @Entity()
@@ -61,16 +63,19 @@ export class User {
     )
     saved_post?: SavedPost[];
 
-    @Column('text',{
-        array: true,
-        default: []
-    })
-    followers?: string[];
+    @OneToMany(
+        () => Followers,
+        followers => followers.author,
+        { cascade: true }
+    )
+    followers?: Followers[];
 
-    @Column('text',{
-        default: [],
-        array: true
-    })
-    follows: string[];
+
+    @OneToMany(
+        () => Follows,
+        follows => follows.author,
+        { cascade: true }
+    )
+    follows?: Follows[];
 }   
 
