@@ -1,4 +1,8 @@
+import { Post } from "src/posts/entities/post.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Followers } from "./followers.entity";
+import { Follows } from "./follows.entity";
+import { SavedPost } from "./saved-post.entity";
 
 @Entity()
 export class User {
@@ -45,28 +49,33 @@ export class User {
     @Column('text')
     facebook: string;
 
-    @Column('text',{
-        array: true,
-        default: []
-    })
-    post?: string[];
+    @OneToMany(
+        () => Post,
+        post => post.author,
+        { cascade: true }
+    )
+    post?: Post[];
 
-    @Column('text',{
-        array: true,
-        default: []
-    })
-    saved_post?: string[];
+    @OneToMany(
+        () => SavedPost,
+        savedpost => savedpost.author,
+        { cascade: true }
+    )
+    saved_post?: SavedPost[];
 
-    @Column('text',{
-        array: true,
-        default: []
-    })
-    followers: string[];
+    @OneToMany(
+        () => Followers,
+        followers => followers.author,
+        { cascade: true }
+    )
+    followers?: Followers[];
 
-    @Column('text',{
-        default: [],
-        array: true
-    })
-    follows: string[];
+
+    @OneToMany(
+        () => Follows,
+        follows => follows.author,
+        { cascade: true }
+    )
+    follows?: Follows[];
 }   
 
