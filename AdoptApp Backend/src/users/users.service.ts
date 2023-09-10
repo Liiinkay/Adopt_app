@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { SavedPost } from './entities/saved-post.entity';
 import { Followers } from './entities/followers.entity';
 import { Follows } from './entities/follows.entity';
+import { SavePostDto } from './dto/save-post.dto';
 
 @Injectable()
 export class UsersService {
@@ -104,4 +105,26 @@ export class UsersService {
     this.logger.error(error)
     throw new InternalServerErrorException('Unexpected error, check server logs');
   }
-}
+
+  async addPostToUser(id: string, postData: SavePostDto) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.saved_post', 'savedPost')
+      .where('user.id = :id', { id })
+      .getOne();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const savedPost = new SavedPost();
+    savedPost.authorId = postData.authorId;
+    savedPost.idPost = postData.idPost;
+
+    user.saved_post.push(savedPost);
+    await this.userRepository.save(user);
+
+    return user;
+  }
+ }
+
