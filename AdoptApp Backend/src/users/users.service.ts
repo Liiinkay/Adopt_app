@@ -77,12 +77,21 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const product = await this.userRepository.preload({
-      id: id,
-      ...UpdateUserDto,
-      saved_post: []
-    })
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    // Busca al usuario correspondiente por su ID
+    const user = await this.userRepository.findOneBy({id: id});
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Actualiza los campos del usuario con los valores de updateUserDto
+    Object.assign(user, updateUserDto);
+
+    // Guarda la actualización en la base de datos
+    const updatedUser = await this.userRepository.save(user);
+
+    return updatedUser;
   }
 
  async remove(id: string) {
@@ -106,7 +115,7 @@ export class UsersService {
     throw new InternalServerErrorException('Unexpected error, check server logs');
   }
 
-  async addPostToUser(id: string, postData: SavePostDto) {
+  async savePostToUser(id: string, postData: SavePostDto) {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.saved_post', 'savedPost')

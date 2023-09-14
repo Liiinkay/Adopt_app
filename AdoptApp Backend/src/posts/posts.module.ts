@@ -13,7 +13,7 @@ import { PostMultimedia } from './entities/multimedia-post.entity';
   controllers: [PostsController],
   providers: [PostsService],
   imports: [
-    TypeOrmModule.forFeature([ User, Adopt, Informative, Lost, PostMultimedia ])
+    TypeOrmModule.forFeature([ User, Adopt, Informative, Lost, Post, PostMultimedia ])
   ]
 })
 export class PostsModule {}

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, ParseUUIDPipe } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreateAdoptDto } from './dto/adopt-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -7,11 +7,25 @@ import { UpdatePostDto } from './dto/update-post.dto';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  @Post()
-  create(@Body() createPostDto: CreateAdoptDto) {
-    return this.postsService.create(createPostDto);
+  //agrear un nuevo posteo de tipo Adopcion 
+  @Post('adopt/:id')
+  async createAdoptPost(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() createAdoptDto: CreateAdoptDto,
+  ) {
+    const post = await this.postsService.createAdoptPost(id, createAdoptDto);
+    return post;
   }
 
+  //obtener informacion de todos los post por id de usuario
+  @Get(':id/posts')
+  async getUserPosts(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const posts = await this.postsService.getUserPosts(id);
+    return posts;
+  }
+  
   @Get()
   findAll() {
     return this.postsService.findAll();
@@ -31,4 +45,6 @@ export class PostsController {
   remove(@Param('id') id: string) {
     return this.postsService.remove(+id);
   }
+
+
 }

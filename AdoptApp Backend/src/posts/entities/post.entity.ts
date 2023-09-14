@@ -6,10 +6,10 @@ import { PostMultimedia } from './multimedia-post.entity';
 @Entity()
 export class Post {
     @PrimaryGeneratedColumn('uuid')
-    id: number
+    id: string
 
     @Column()
-    tittle: string
+    title: string
 
     @Column()
     description: string
