@@ -1,11 +1,13 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateAdoptDto } from './dto/adopt-post.dto';
+import { CreateLostDto } from './dto/lost-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { User } from '../users/entities/user.entity';
 import { Post } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Adopt } from './entities/adopt-post.entity';
+import { Lost } from './entities/lost-post.entity';
 
 @Injectable()
 export class PostsService {
@@ -19,6 +21,8 @@ export class PostsService {
     private readonly postRepository: Repository<Post>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Lost)
+    private readonly lostRepository: Repository<Lost>
   ) {}
 
   create(createPostDto: CreateAdoptDto) {
@@ -78,6 +82,42 @@ export class PostsService {
     await this.userRepository.save(user);
 
     return createdAdopt;
+  }
+
+  async createLostPost(id: string, createLostDto: CreateLostDto): Promise<Lost> {
+    // Find the corresponding user by their ID
+    const user = await this.userRepository.findOneBy({ id: id });
+  
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+  
+    // Create a new post of type Lost and assign the properties
+    const lost = new Lost();
+    lost.title = createLostDto.title;
+    lost.description = createLostDto.description;
+    lost.authorID = id; // Assign the user's ID as the author
+    lost.type = createLostDto.type;
+    lost.state = createLostDto.state;
+    lost.track_detail = createLostDto.track_detail;
+    lost.last_change = createLostDto.last_change;
+    lost.coordinates = createLostDto.coordinates;
+    lost.comment = createLostDto.comment || [];
+  
+    // Guarda el nuevo post en la base de datos
+    const createdLost = await this.lostRepository.save(lost);
+  
+    // Agrega el nuevo post a la lista de posts del usuario
+    if (!user.post) {
+      user.post = [createdLost];
+    } else {
+      user.post.push(createdLost);
+    }
+  
+    // Guarda el usuario con el nuevo post en la base de datos
+    await this.userRepository.save(user);
+  
+    return createdLost;
   }
 
   async getUserPosts(id: string): Promise<Post[]> {

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, ParseUUIDPipe } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreateAdoptDto } from './dto/adopt-post.dto';
+import { CreateLostDto } from './dto/lost-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
 @Controller('posts')
@@ -14,6 +15,16 @@ export class PostsController {
     @Body() createAdoptDto: CreateAdoptDto,
   ) {
     const post = await this.postsService.createAdoptPost(id, createAdoptDto);
+    return post;
+  }
+
+  //agrear un nuevo posteo de tipo perdido 
+  @Post('lost/:id')
+  async createLostPost(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() createLostDto: CreateLostDto,
+  ) {
+    const post = await this.postsService.createLostPost(id, createLostDto);
     return post;
   }
 

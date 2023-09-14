@@ -15,6 +15,9 @@ export class Lost extends Post {
   @Column()
   coordinates: string;
 
-  @Column()
-  coment: string;
+  @Column('text',{
+    array: true,
+    default: []
+  })
+  comment: string[];
 }

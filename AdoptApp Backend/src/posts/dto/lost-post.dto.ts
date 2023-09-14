@@ -1,11 +1,11 @@
 import { IsArray, IsDate, IsOptional, IsString, MinLength } from "class-validator"
 
 
-export class createLostDto{
+export class CreateLostDto{
     
     @IsString()
     @MinLength(1)
-    tittle: string
+    title: string
 
     @IsString()
     description: string
@@ -25,7 +25,7 @@ export class createLostDto{
     state: string;
 
     @IsString()
-    track_detal: string
+    track_detail: string
 
     @IsDate()
     last_change: string
@@ -36,5 +36,5 @@ export class createLostDto{
     @IsString({ each:true })
     @IsArray()
     @IsOptional()
-    coment: string[]
+    comment: string[]
 }
