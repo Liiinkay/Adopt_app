@@ -3,6 +3,7 @@ import { PostsService } from './posts.service';
 import { CreateAdoptDto } from './dto/adopt-post.dto';
 import { CreateLostDto } from './dto/lost-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { Form } from './entities/form.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -36,7 +37,17 @@ export class PostsController {
     const posts = await this.postsService.getUserPosts(id);
     return posts;
   }
-  
+
+  //agregar formulario 
+  @Post('adopt/:idPost/form/:idApplicant')
+  async createFormAdopt(  
+    @Param('idPost', ParseUUIDPipe) idPost: string,
+    @Param('idApplicant', ParseUUIDPipe) idApplicant: string,
+    @Body() formData: Partial<Form>,
+  ): Promise<Form> {
+    return this.postsService.createFormAdoption(idPost, idApplicant, formData);
+  }
+
   @Get()
   findAll() {
     return this.postsService.findAll();
@@ -56,6 +67,4 @@ export class PostsController {
   remove(@Param('id') id: string) {
     return this.postsService.remove(+id);
   }
-
-
 }

@@ -6,8 +6,9 @@ import { User } from '../users/entities/user.entity';
 import { Post } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Adopt } from './entities/adopt-post.entity';
-import { Lost } from './entities/lost-post.entity';
+import { Adopt } from './entities/typepost-entitys/adopt-post.entity';
+import { Lost } from './entities/typepost-entitys/lost-post.entity';
+import { Form } from './entities/form.entity';
 
 @Injectable()
 export class PostsService {
@@ -22,7 +23,9 @@ export class PostsService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Lost)
-    private readonly lostRepository: Repository<Lost>
+    private readonly lostRepository: Repository<Lost>,
+    @InjectRepository(Form)
+    private readonly formRepository: Repository<Form>,
   ) {}
 
   create(createPostDto: CreateAdoptDto) {
@@ -65,7 +68,7 @@ export class PostsService {
     adopt.age = createAdoptDto.age;
     adopt.personality = createAdoptDto.personality;
     adopt.medical_information = createAdoptDto.medical_information;
-    adopt.form = createAdoptDto.form || [];
+    adopt.form = [];
     adopt.coment = createAdoptDto.coment || [];
 
     // Guarda el nuevo post en la base de datos
@@ -85,22 +88,25 @@ export class PostsService {
   }
 
   async createLostPost(id: string, createLostDto: CreateLostDto): Promise<Lost> {
-    // Find the corresponding user by their ID
+    // Busca al usuario correspondiente por su ID
     const user = await this.userRepository.findOneBy({ id: id });
   
     if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
   
-    // Create a new post of type Lost and assign the properties
+    // Crea un nuevo post de tipo "Lost" y asigna las propiedades
     const lost = new Lost();
     lost.title = createLostDto.title;
     lost.description = createLostDto.description;
-    lost.authorID = id; // Assign the user's ID as the author
+    lost.authorID = id; // Asigna el ID del usuario como autor
     lost.type = createLostDto.type;
     lost.state = createLostDto.state;
     lost.track_detail = createLostDto.track_detail;
-    lost.last_change = createLostDto.last_change;
+  
+    // Establece la fecha y hora inicial en last_change
+    lost.last_change = new Date();
+  
     lost.coordinates = createLostDto.coordinates;
     lost.comment = createLostDto.comment || [];
   
@@ -126,6 +132,18 @@ export class PostsService {
       where: { authorID: id },
     });
     return posts;
+  }
+
+  async createFormAdoption(idPost: string, idApplicant: string,formData: Partial<Form>): Promise<Form> {
+    const adopt = await this.adoptRepository.findOneBy(({ id: idPost }));
+
+    const form = this.formRepository.create({
+      ...formData,
+      idApplicant: idApplicant,
+      author: adopt,
+    });
+
+    return this.formRepository.save(form);
   }
 
   //funcion de errores

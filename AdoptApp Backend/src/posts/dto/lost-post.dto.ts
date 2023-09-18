@@ -5,36 +5,33 @@ export class CreateLostDto{
     
     @IsString()
     @MinLength(1)
-    title: string
-
+    title: string;
+  
     @IsString()
-    description: string
-
+    description: string;
+  
     @IsString()
-    authorID: string
-
+    authorID: string;
+  
     @IsString()
-    type: string
-
-    @IsString({ each:true })
+    type: string;
+  
+    @IsString({ each: true })
     @IsArray()
     @IsOptional()
-    multimedia: string[]
-
+    multimedia: string[];
+  
     @IsString()
     state: string;
-
+  
     @IsString()
-    track_detail: string
-
-    @IsDate()
-    last_change: string
-
+    track_detail: string;
+  
     @IsOptional()
-    coordinates: string
-
-    @IsString({ each:true })
+    coordinates: string;
+  
+    @IsString({ each: true })
     @IsArray()
     @IsOptional()
-    comment: string[]
+    comment: string[];
 }

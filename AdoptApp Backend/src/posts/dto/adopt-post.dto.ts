@@ -45,5 +45,4 @@ export class CreateAdoptDto {
     @IsArray()
     @IsOptional()
     coment: string[]
-
 }
