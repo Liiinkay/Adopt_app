@@ -59,9 +59,8 @@ export class PostsService {
     const adopt = new Adopt();
     adopt.title = createAdoptDto.title;
     adopt.description = createAdoptDto.description;
-    console.log('1');
-    adopt.authorID = id; // Asigna la ID del usuario como autor
-    console.log('1');
+    adopt.author = user;
+    adopt.authorID = user.id; // Asigna la ID del usuario como autor
     adopt.type = createAdoptDto.type;
     adopt.state = createAdoptDto.state;
     adopt.gender = createAdoptDto.gender;
@@ -73,16 +72,6 @@ export class PostsService {
 
     // Guarda el nuevo post en la base de datos
     const createdAdopt = await this.adoptRepository.save(adopt);
-
-    // Agrega el nuevo post a la lista de posts del usuario
-    if (!user.post) {
-      user.post = [createdAdopt];
-    } else {
-      user.post.push(createdAdopt);
-    }
-
-    // Guarda el usuario con el nuevo post en la base de datos
-    await this.userRepository.save(user);
 
     return createdAdopt;
   }
@@ -99,7 +88,8 @@ export class PostsService {
     const lost = new Lost();
     lost.title = createLostDto.title;
     lost.description = createLostDto.description;
-    lost.authorID = id; // Asigna el ID del usuario como autor
+    lost.author = user;
+    lost.authorID = user.id; // 
     lost.type = createLostDto.type;
     lost.state = createLostDto.state;
     lost.track_detail = createLostDto.track_detail;
@@ -112,23 +102,13 @@ export class PostsService {
   
     // Guarda el nuevo post en la base de datos
     const createdLost = await this.lostRepository.save(lost);
-  
-    // Agrega el nuevo post a la lista de posts del usuario
-    if (!user.post) {
-      user.post = [createdLost];
-    } else {
-      user.post.push(createdLost);
-    }
-  
-    // Guarda el usuario con el nuevo post en la base de datos
-    await this.userRepository.save(user);
-  
+
     return createdLost;
   }
 
-  async getUserPosts(id: string): Promise<Post[]> {
+  async getUserPosts(id: string): Promise<Adopt[]> {
     // Lógica para obtener todos los posteos del usuario, sin importar el tipo
-    const posts = await this.postRepository.find({
+    const posts = await this.adoptRepository.find({
       where: { authorID: id },
     });
     return posts;
@@ -144,6 +124,51 @@ export class PostsService {
     });
 
     return this.formRepository.save(form);
+  }
+
+  async getUserPostsJson(userId: string): Promise<any[]> {
+    // Busca todos los posteos creados por el usuario con el ID proporcionado
+    const userPosts = await this.adoptRepository.find({
+      where: { authorID: userId },
+    });
+  
+    // También busca los posteos "Lost" creados por el usuario
+    const lostUserPosts = await this.lostRepository.find({
+      where: { authorID: userId },
+    });
+  
+    // Combina los resultados de ambos tipos de posteos en una sola lista
+    const allUserPosts = [...userPosts, ...lostUserPosts];
+  
+    // Transforma los objetos en un formato JSON adecuado para el frontend
+    const userPostsJson = allUserPosts.map(post => {
+      return {
+        id: post.id,
+        title: post.title,
+        description: post.description,
+        // Agrega aquí más campos si es necesario
+      };
+    });
+  
+    return userPostsJson;
+  }
+
+  async updatePost(id: string, updatePostDto: UpdatePostDto): Promise<Post> {
+    // Busca la publicación con el ID proporcionado
+    const post = await this.postRepository.findOneBy({id: id});
+  
+    // Verifica si la publicación existe
+    if (!post) {
+      throw new NotFoundException(`Publicación con ID ${id} no encontrada`);
+    }
+  
+    // Actualiza las propiedades de la publicación con los valores proporcionados en updatePostDto
+    Object.assign(post, updatePostDto);
+  
+    // Guarda la publicación actualizada en la base de datos
+    const updatedPost = await this.postRepository.save(post);
+  
+    return updatedPost;
   }
 
   //funcion de errores

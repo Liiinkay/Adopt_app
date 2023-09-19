@@ -32,6 +32,7 @@ export class Form{
     question2: boolean;
 
     @Column({ type: 'boolean', default: false })
+    question3: boolean;
 
     @Column({ type: 'boolean', default: false })
     question4: boolean;

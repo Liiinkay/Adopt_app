@@ -29,15 +29,6 @@ export class PostsController {
     return post;
   }
 
-  //obtener informacion de todos los post por id de usuario
-  @Get(':id/posts')
-  async getUserPosts(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    const posts = await this.postsService.getUserPosts(id);
-    return posts;
-  }
-
   //agregar formulario 
   @Post('adopt/:idPost/form/:idApplicant')
   async createFormAdopt(  
@@ -46,6 +37,18 @@ export class PostsController {
     @Body() formData: Partial<Form>,
   ): Promise<Form> {
     return this.postsService.createFormAdoption(idPost, idApplicant, formData);
+  }
+
+  @Get('/:userId')
+  async getUserPosts(@Param('userId') userId: string): Promise<any[]> {
+    const userPosts = await this.postsService.getUserPostsJson(userId);
+    return userPosts;
+  }
+
+  @Patch(':id')
+  async updatePost(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto): Promise<any> {
+    const updatedPost = await this.postsService.updatePost(id, updatePostDto);
+    return updatedPost;
   }
 
   @Get()
