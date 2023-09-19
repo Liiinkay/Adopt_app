@@ -4,13 +4,10 @@ export class CreateAdoptDto {
 
     @IsString()
     @MinLength(1)
-    tittle: string
+    title: string
 
     @IsString()
     description: string
-
-    @IsString()
-    authorID: string
 
     @IsString()
     type: string
@@ -31,10 +28,12 @@ export class CreateAdoptDto {
     @IsOptional()
     age: number
   
-    @IsPositive()
+    @IsString()
+    @IsOptional()
     personality: string
   
-    @IsPositive()
+    @IsString()
+    @IsOptional()
     medical_information: string
   
     @IsString({ each:true })
@@ -46,5 +45,4 @@ export class CreateAdoptDto {
     @IsArray()
     @IsOptional()
     coment: string[]
-
 }

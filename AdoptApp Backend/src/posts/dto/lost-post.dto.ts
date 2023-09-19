@@ -1,40 +1,37 @@
 import { IsArray, IsDate, IsOptional, IsString, MinLength } from "class-validator"
 
 
-export class createLostDto{
+export class CreateLostDto{
     
     @IsString()
     @MinLength(1)
-    tittle: string
-
+    title: string;
+  
     @IsString()
-    description: string
-
+    description: string;
+  
     @IsString()
-    authorID: string
-
+    authorID: string;
+  
     @IsString()
-    type: string
-
-    @IsString({ each:true })
+    type: string;
+  
+    @IsString({ each: true })
     @IsArray()
     @IsOptional()
-    multimedia: string[]
-
+    multimedia: string[];
+  
     @IsString()
     state: string;
-
+  
     @IsString()
-    track_detal: string
-
-    @IsDate()
-    last_change: string
-
+    track_detail: string;
+  
     @IsOptional()
-    coordinates: string
-
-    @IsString({ each:true })
+    coordinates: string;
+  
+    @IsString({ each: true })
     @IsArray()
     @IsOptional()
-    coment: string[]
+    comment: string[];
 }

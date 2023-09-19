@@ -2,14 +2,13 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToOne
 import {User} from 'src/users/entities/user.entity'
 import { PostMultimedia } from './multimedia-post.entity';
 
-
 @Entity()
-export class Post {
+export abstract class Post {
     @PrimaryGeneratedColumn('uuid')
-    id: number
+    id: string
 
     @Column()
-    tittle: string
+    title: string
 
     @Column()
     description: string

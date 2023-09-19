@@ -42,6 +42,6 @@ export class UsersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() postData: SavePostDto, // Define SavedPostDto según tus necesidades
   ) {
-    return this.usersService.addPostToUser(id, postData);
+    return this.usersService.savePostToUser(id, postData);
   }
 }
