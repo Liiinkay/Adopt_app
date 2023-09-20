@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToOne, OneToMany } from 'typeorm';
 import {User} from 'src/users/entities/user.entity'
 import { PostMultimedia } from './multimedia-post.entity';
+import { Report } from 'src/reports/entities/report.entity';
 
 @Entity()
 export abstract class Post {
@@ -30,4 +31,11 @@ export abstract class Post {
         user => user.post
     )
     author: User
+
+    @OneToMany(
+        () => Report, 
+        report => report.post,
+        { cascade: true } 
+    )
+    reports: Report[];
 }
