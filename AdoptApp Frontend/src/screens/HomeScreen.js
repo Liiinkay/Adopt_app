@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import PostListScreen from "./PostListScreen";
@@ -7,12 +7,12 @@ import AppHeader from "../components/Header";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const HomeScreen = () => {
-
     return (
         <View style={{flex: 1}}>
             <SafeAreaView style={styles.headerContainer}>
+                <StatusBar color={'black'}/>
                 <TouchableOpacity style={styles.menuIcon}>
-                    <Ionicons name="menu" size={24} color="#fff" />
+                    <Ionicons name="menu" size={24} color="#1E1E1E" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Adopción</Text>
             </SafeAreaView>
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     headerContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#0079d3',
+      backgroundColor: '#AEFAFF',
       paddingVertical: 12,
       paddingHorizontal: 16,
     },
