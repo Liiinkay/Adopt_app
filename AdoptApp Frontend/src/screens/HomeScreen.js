@@ -1,20 +1,31 @@
 import React from "react";
-import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
+import { useNavigation } from "@react-navigation/native";
 import PostListScreen from "./PostListScreen";
-import AppHeader from "../components/Header";
 import { SafeAreaView } from "react-native-safe-area-context";
+import user from "../assets/data/user";
 
 const HomeScreen = () => {
-
+    const { navigate } = useNavigation();
     return (
         <View style={{flex: 1}}>
             <SafeAreaView style={styles.headerContainer}>
+                <StatusBar color={'black'}/>
                 <TouchableOpacity style={styles.menuIcon}>
-                    <Ionicons name="menu" size={24} color="#fff" />
+                    <Ionicons name="menu" size={30} color="#1E1E1E" />
                 </TouchableOpacity>
-                <Text style={styles.title}>Adopción</Text>
+                <View style={styles.postTypeContainer}>
+                    <Text style={styles.title}>Adopción</Text>
+                </View>
+                <View style={styles.userImageContainer}>
+                    <Pressable
+                        onPress={() => {
+                        navigate("UserProfile", { user });
+                    }}>
+                        <Image src={user.image} style={styles.userImage} />
+                    </Pressable>    
+                </View>
             </SafeAreaView>
            <PostListScreen/>
         </View>
@@ -26,9 +37,23 @@ const styles = StyleSheet.create({
     headerContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#0079d3',
+      backgroundColor: '#AEFAFF',
       paddingVertical: 12,
       paddingHorizontal: 16,
+    },
+    userImage: {
+        width: 45,
+        height: 45,
+        borderRadius: 50,
+    },
+    userImageContainer: {
+        flexDirection: "row-reverse",
+        flex: 1,
+    },
+    postTypeContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 5,
+        padding: 5
     },
     menuIcon: {
       marginRight: 16,
@@ -36,7 +61,7 @@ const styles = StyleSheet.create({
     title: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: '#fff',
+      color: '#1E1E1E',
     },
     container: {
         flex: 1,

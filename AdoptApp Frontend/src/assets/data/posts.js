@@ -9,12 +9,19 @@ const posts = [
           'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/vadim.png',
       },
       createdAt: '2020-08-27T12:00:00.000Z',
-      content: 'Can you please check if the Subscribe button on Youtube works?',
+      content: 'Se busca dueño para un perro',
+      description: 'Esta es una descripción',
       image:
+        'https://static.fundacion-affinity.org/cdn/farfuture/PVbbIC-0M9y4fPbbCsdvAD8bcjjtbFc0NSP3lRwlWcE/mtime:1643275542/sites/default/files/los-10-sonidos-principales-del-perro.jpg',
+      multimedia: [
+        'https://static.fundacion-affinity.org/cdn/farfuture/PVbbIC-0M9y4fPbbCsdvAD8bcjjtbFc0NSP3lRwlWcE/mtime:1643275542/sites/default/files/los-10-sonidos-principales-del-perro.jpg',
         'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+      ],
       numberOfComments: 123,
       numberOfRetweets: 11,
       numberOfLikes: 10,
+      type: 'adopt'
     },
     {
       id: '111111111',
@@ -26,12 +33,18 @@ const posts = [
         image:
           'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/jeff.jpeg',
       },
-      content:
-        'Just had a great workout at the gym! 💪 #fitness #healthylifestyle',
+      content: 'Just had a great workout at the gym! 💪 #fitness #healthylifestyle',
+      description: 'Esta es una descripción',
+      multimedia: [
+        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+      ],
       numberOfComments: 2,
       numberOfRetweets: 5,
       numberOfLikes: 25,
       impressions: 500,
+      type: 'adopt'
     },
     {
       id: '222222222',
@@ -44,11 +57,18 @@ const posts = [
           'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/zuck.jpeg',
       },
       content: 'Had an amazing surf session this morning',
+      description: 'Esta es una descripción',
       image: 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/8.jpg',
+      multimedia: [
+        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/thumbnail.png',
+      ],
       numberOfComments: 10,
       numberOfRetweets: 20,
       numberOfLikes: 100,
       impressions: 1000,
+      type: 'search'
     }
   ];
 

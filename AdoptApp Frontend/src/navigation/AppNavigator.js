@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import TabNavigator from "./TabNavigator";
 import PostDetailScreen from "../screens/PostDetailScreen";
+import UserProfile from "../screens/UserProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -11,6 +12,7 @@ const AppNavigator = () => {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="TabNav" component={TabNavigator}/>
             <Stack.Screen name="PostDetailScreen" component={PostDetailScreen}/>
+            <Stack.Screen name="UserProfile" component={UserProfile}/>
         </Stack.Navigator>
     )
 }
