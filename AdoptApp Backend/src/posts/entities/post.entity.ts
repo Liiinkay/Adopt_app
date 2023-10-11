@@ -33,9 +33,8 @@ export abstract class Post {
     author: User
 
     @OneToMany(
-        () => Report, 
-        report => report.post,
-        { cascade: true } 
+        () => Report,
+        report => report.post
     )
-    reports: Report[];
+    reports: Report[]
 }

@@ -20,6 +20,9 @@ export class Report {
     @Column()
     postId: string; // ID del post reportado
 
+    @Column()
+    type: string;
+
     @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date; // Hora en la cual se realizó el reporte
 }
