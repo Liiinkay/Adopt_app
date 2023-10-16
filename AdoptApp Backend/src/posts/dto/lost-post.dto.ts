@@ -29,9 +29,4 @@ export class CreateLostDto{
   
     @IsOptional()
     coordinates: string;
-  
-    @IsString({ each: true })
-    @IsArray()
-    @IsOptional()
-    comment: string[];
 }

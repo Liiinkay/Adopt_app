@@ -68,7 +68,6 @@ export class PostsService {
     adopt.personality = createAdoptDto.personality;
     adopt.medical_information = createAdoptDto.medical_information;
     adopt.form = [];
-    adopt.coment = createAdoptDto.coment || [];
 
     // Guarda el nuevo post en la base de datos
     const createdAdopt = await this.adoptRepository.save(adopt);
@@ -98,7 +97,6 @@ export class PostsService {
     lost.last_change = new Date();
   
     lost.coordinates = createLostDto.coordinates;
-    lost.comment = createLostDto.comment || [];
   
     // Guarda el nuevo post en la base de datos
     const createdLost = await this.lostRepository.save(lost);
