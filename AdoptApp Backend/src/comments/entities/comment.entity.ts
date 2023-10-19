@@ -35,6 +35,9 @@ export class Comment {
   replies: Comment[];
 
   // Relación con el comentario principal (muchos a uno)
-  @ManyToOne(() => Comment, (parentComment) => parentComment.replies, { onDelete: 'CASCADE' })
+  @ManyToOne(
+    () => Comment,
+    (parentComment) => parentComment.replies,
+    { onDelete: 'CASCADE' })
   parentComment: Comment;
 }

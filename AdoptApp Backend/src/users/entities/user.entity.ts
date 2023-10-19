@@ -77,5 +77,11 @@ export class User {
         { cascade: true }
     )
     follows?: Follows[];
+
+    @Column('text', {
+        array: true,
+        default: ['user']
+    })
+    roles: string[]
 }   
 

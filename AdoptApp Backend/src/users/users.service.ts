@@ -9,6 +9,7 @@ import { SavedPost } from './entities/saved-post.entity';
 import { Followers } from './entities/followers.entity';
 import { Follows } from './entities/follows.entity';
 import { SavePostDto } from './dto/save-post.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {

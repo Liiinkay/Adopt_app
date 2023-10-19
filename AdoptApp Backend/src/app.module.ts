@@ -27,7 +27,7 @@ import { CommentsModule } from './comments/comments.module';
 
     ReportsModule,
 
-    CommentsModule,
+    CommentsModule
   
   ],
 })
