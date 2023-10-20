@@ -6,7 +6,7 @@ import PostListScreen from "./PostListScreen";
 import { SafeAreaView } from "react-native-safe-area-context";
 import user from "../assets/data/user";
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
     const { navigate } = useNavigation();
     return (
         <View style={{flex: 1}}>
@@ -17,6 +17,7 @@ const HomeScreen = () => {
                 </TouchableOpacity>
                 <View style={styles.postTypeContainer}>
                     <Text style={styles.title}>Adopción</Text>
+                    <Ionicons name="chevron-down-outline" size={20}/>
                 </View>
                 <View style={styles.userImageContainer}>
                     <Pressable
@@ -53,7 +54,9 @@ const styles = StyleSheet.create({
     postTypeContainer: {
         backgroundColor: '#FFFFFF',
         borderRadius: 5,
-        padding: 5
+        padding: 5,
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     menuIcon: {
       marginRight: 16,

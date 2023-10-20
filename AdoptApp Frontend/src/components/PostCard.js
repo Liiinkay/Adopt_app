@@ -7,7 +7,7 @@ import ShareButton from "./ShareButton";
 
 const PostCard = ({post}) => {
     const { navigate } = useNavigation();
-
+    
     return(
         <View style={styles.cardContainer}>
             <Pressable style={styles.container}
@@ -19,7 +19,7 @@ const PostCard = ({post}) => {
                 <View style={styles.mainContainer}>
                     <View style={{ flexDirection: 'row' }}>
                         <Text style={styles.name}>{post.user.name}</Text>
-                        <Text style={styles.username}>{post.user.username} · 2h</Text>
+                        <Text style={styles.username}>{post.user.username} · 6h</Text>
                     </View>
 
                     <Text style={styles.content}>{post.content}</Text>

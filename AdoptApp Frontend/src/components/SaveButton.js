@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Importa los iconos de Ionicons desde tu fuente
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; 
 
 const SaveButton = () => {
   const [saved, setSaved] = useState(false);
@@ -12,9 +12,9 @@ const SaveButton = () => {
   return (
     <TouchableOpacity onPress={toggleSave}>
       <Ionicons
-        name={saved ? 'bookmark' : 'bookmark-outline'} // Cambia 'bookmark' y 'bookmark-outline' por los nombres de tus iconos de Ionicons
-        size={25}
-        color={saved ? 'black' : 'black'} // Cambia 'green' al color que desees para el botón de "guardar" activo
+        name={saved ? 'bookmark' : 'bookmark-outline'}
+        size={24}
+        color={saved ? '#F3B63F' : 'black'} 
       />
     </TouchableOpacity>
   );
