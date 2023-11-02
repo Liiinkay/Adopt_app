@@ -1,5 +1,5 @@
 import { Post } from "src/posts/entities/post.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Followers } from "./followers.entity";
 import { Follows } from "./follows.entity";
 import { SavedPost } from "./saved-post.entity";
@@ -19,7 +19,8 @@ export class User {
     name: string;
 
     @Column('text', {
-        nullable: true
+        nullable: true,
+        select: false
     })
     password: string;
 
@@ -70,7 +71,6 @@ export class User {
     )
     followers?: Followers[];
 
-
     @OneToMany(
         () => Follows,
         follows => follows.author,
@@ -82,6 +82,21 @@ export class User {
         array: true,
         default: ['user']
     })
-    roles: string[]
+    roles: string[];
+
+    @Column('bool', {
+        default: true
+    })
+    isActive: boolean
+
+    @BeforeInsert()
+    checkFieldsBeforeInsert() {
+        this.nickname = this.nickname.toLowerCase().trim();
+    }
+
+    @BeforeUpdate()
+    checkFieldsBeforeUpdate() {
+        this.checkFieldsBeforeInsert;
+    }
 }   
 

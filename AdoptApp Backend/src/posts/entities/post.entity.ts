@@ -28,7 +28,8 @@ export abstract class Post {
 
     @ManyToOne(
         () => User,
-        user => user.post
+        user => user.post,
+        {onDelete: 'CASCADE'}
     )
     author: User
 
