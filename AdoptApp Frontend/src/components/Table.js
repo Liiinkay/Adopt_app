@@ -7,38 +7,38 @@ const Table = () => {
       {/* Encabezado de la tabla */}
       <View style={styles.rowHeader}>
         <View style={styles.cell}>
-          <Text style={styles.cellText}>Columna 1</Text>
+          <Text style={styles.cellText}>Característica</Text>
         </View>
         <View style={styles.cell}>
-          <Text style={styles.cellText}>Columna 2</Text>
+          <Text style={styles.cellText}>Información del animal</Text>
         </View>
       </View>
 
       {/* Filas de la tabla */}
       <View style={styles.row}>
         <View style={styles.cell}>
-          <Text style={styles.cellText}>Fila 1, Columna 1</Text>
+          <Text style={styles.cellText}>Sexo</Text>
         </View>
         <View style={styles.cell}>
-          <Text style={styles.cellText}>Fila 1, Columna 2</Text>
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        <View style={styles.cell}>
-          <Text style={styles.cellText}>Fila 2, Columna 1</Text>
-        </View>
-        <View style={styles.cell}>
-          <Text style={styles.cellText}>Fila 2, Columna 2</Text>
+          <Text style={styles.cellText}>Macho</Text>
         </View>
       </View>
 
       <View style={styles.row}>
         <View style={styles.cell}>
-          <Text style={styles.cellText}>Fila 3, Columna 1</Text>
+          <Text style={styles.cellText}>Temperamento</Text>
         </View>
         <View style={styles.cell}>
-          <Text style={styles.cellText}>Fila 3, Columna 2</Text>
+          <Text style={styles.cellText}>Tranquilo</Text>
+        </View>
+      </View>
+
+      <View style={styles.row}>
+        <View style={styles.cell}>
+          <Text style={styles.cellText}>Edad</Text>
+        </View>
+        <View style={styles.cell}>
+          <Text style={styles.cellText}>3 años</Text>
         </View>
       </View>
 

@@ -1,19 +1,26 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Asegúrate de importar los iconos de Ionicons desde tu fuente
+import { TouchableOpacity, Share } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; 
 
 const ShareButton = () => {
-  const sharePost = () => {
-    // Agrega aquí la lógica para compartir el post (puede ser un enlace o una acción específica)
-    alert('¡Post compartido!');
-  };
 
+  const share = async() => {
+    const options = {
+      message: '!Comparte esta publicación a tus amigos!'
+    }
+    try {
+      const ShareResponse = await Share.share(options);
+      console.log(ShareResponse);
+    } catch(e) {
+      console.log('Error: ', e);
+    }
+  }
   return (
-    <TouchableOpacity onPress={sharePost}>
+    <TouchableOpacity onPress={share}>
       <Ionicons
-        name="share-social" // Cambia 'share-social' por el nombre del icono de Ionicons que deseas utilizar para compartir
+        name="share-social"
         size={25}
-        color="black" // Cambia 'black' al color que desees para el botón de "compartir"
+        color="black" 
       />
     </TouchableOpacity>
   );
