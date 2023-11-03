@@ -5,14 +5,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { SliderBox } from "react-native-image-slider-box";
 import Table from "../components/Table";
-import Comentarios from "../components/Coments";
 import PreguntasRespuestasComponent from "../components/Coments";
+import LikeButton from "../components/LikeButton";
+import { useNavigation } from "@react-navigation/native";
 
 const PostDetailScreen = ({ navigation }) => {
     const {
         params: { post },
-      } = useRoute();
-/* 
+    } = useRoute();
+    const user = post.user;
+
+    const { navigate } = useNavigation();
+    /*  
     if(post.type === 'search'){
         return(
 
@@ -28,7 +32,9 @@ const PostDetailScreen = ({ navigation }) => {
                         <Ionicons name="arrow-back-outline" size={30} color={'#1E1E1E'} />
                     </TouchableOpacity>
                     <Text style={styles.headerText}>Adopción</Text>
-                    <View style={{ flex: 1 }}></View>
+                    <View style={{ flex: 1, flexDirection: 'row-reverse', marginLeft: 5 }}>
+                        <Ionicons name="ellipsis-vertical" size={20}/>
+                    </View>
                 </View>
                 <View style={styles.imageContainer}>
                     <SliderBox
@@ -41,8 +47,13 @@ const PostDetailScreen = ({ navigation }) => {
                 <View style={styles.container}>
                     <View style={{ flexDirection: 'row' }}>
                         <Image src={post.user.image} style={styles.userImage} />
-                        <Text style={styles.name}>{post.user.name}</Text>
-                        <Text style={styles.username}>{post.user.username} · 2h</Text>
+                        <View style={{justifyContent: 'center'}}>
+                            <Text style={styles.name}>{post.user.name}</Text>
+                            <Text style={styles.username}>{post.user.username} · 2h</Text>
+                        </View>
+                        <View style={{flexDirection: 'row-reverse', flex: 1}}>
+                            <LikeButton/>
+                        </View>
                     </View>
                 </View>
                 <View style={styles.container}>
@@ -74,7 +85,11 @@ const PostDetailScreen = ({ navigation }) => {
                         </View>
                     </View>
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigate("AdoptForm", { user });
+                            }}
+                        >
                             <View style={[styles.adoptFormButton, styles.adoptFormButtonShadow]}>
                                 <Text style={styles.buttonText}>Postular a Adopción</Text>
                             </View>
@@ -108,10 +123,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#AEFAFF',
         paddingTop: 8,
         paddingBottom: 8,
+        flex: 1
     },
     backButton: {
         marginLeft: 5,
-        marginRight: 112
+        flex: 1
     },
     headerText: {
         fontSize: 20,
@@ -129,11 +145,11 @@ const styles = StyleSheet.create({
     titleText: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#3F3F3F',
         paddingBottom: 10,
     },
     contentText: {
         color: '#3F3F3F',
+        textAlign: 'justify'
     },
     container: {
         paddingHorizontal: 10,
