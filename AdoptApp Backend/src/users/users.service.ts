@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
+import { ConsoleLogger } from '@nestjs/common/services';
 
 @Injectable()
 export class UsersService {
@@ -52,7 +53,7 @@ export class UsersService {
 
       return {
         ...user,
-        token: this.getJwtToken( {nickname: user.nickname} )
+        token: this.getJwtToken( {id: user.id} )
       };
 
     }catch (error){
@@ -65,7 +66,7 @@ export class UsersService {
 
     const user = await this.userRepository.findOne({
       where: {nickname},
-      select: {nickname: true, password: true}
+      select: {nickname: true, password: true, id: true}
     })
 
     if( !user )
@@ -76,7 +77,7 @@ export class UsersService {
 
     return {
       ...user,
-      token: this.getJwtToken( {nickname: user.nickname} )
+      token: this.getJwtToken( {id: user.id} )
     };
     //retornar jwt
   }

@@ -1,3 +1,4 @@
+import { Report } from 'src/reports/entities/report.entity';
 import { Entity, Column, OneToMany } from 'typeorm';
 import { Form } from '../form.entity';
 import { Post } from '../post.entity';
@@ -32,4 +33,7 @@ export class Adopt extends Post {
     default: []
   })
   coment: string[]
+
+  @OneToMany(() => Report, report => report.adoptPost)
+  reports: Report[];
 }

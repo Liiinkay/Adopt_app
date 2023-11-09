@@ -32,10 +32,4 @@ export abstract class Post {
         {onDelete: 'CASCADE'}
     )
     author: User
-
-    @OneToMany(
-        () => Report,
-        report => report.post
-    )
-    reports: Report[]
 }

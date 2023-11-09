@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Adopt } from 'src/posts/entities/typepost-entitys/adopt-post.entity';
+import { Informative } from 'src/posts/entities/typepost-entitys/informative-post.entity';
+import { Lost } from 'src/posts/entities/typepost-entitys/lost-post.entity';
 import { Repository } from 'typeorm';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
@@ -13,36 +15,65 @@ export class ReportsService {
     private readonly adoptRepository: Repository<Adopt>,
     @InjectRepository(Report)
     private readonly reportRepository: Repository<Report>,
+    @InjectRepository(Lost)
+    private readonly lostRepository: Repository<Lost>,
+    @InjectRepository(Informative)
+    private readonly informativeRepository: Repository<Informative>,
   ) {}
 
   async createAdoptReport(userId: string, postId: string, createReportDto: CreateReportDto): Promise<Report> {
 
-    try {
-        const adoptPost = await this.adoptRepository.findOneBy({ id: postId })
+    const post = await this.adoptRepository.findOneBy({ id: postId });
 
-        if (!adoptPost) {
-          throw new NotFoundException(`Adopt Post with ID ${postId} not found`);
-        }
+    if (!post) {
+      throw new NotFoundException('Adopt post not found');
+    }
 
-        console.log(adoptPost)
+    const report = this.reportRepository.create({
+      reason: createReportDto.reason,
+      userId: userId,
+      postId: postId,
+      type: 'adopt',
+      adoptPost: post,
+    });
+    return this.reportRepository.save(report);
+  }
 
-        const report = new Report();
-        report.userId = userId;
-        report.postId = postId; // ID del posteo a reportar
-        report.reason = createReportDto.reason;
-        report.post = adoptPost;
-        report.type = adoptPost.type;
+  async createLostReport(userId: string, postId: string, createReportDto: CreateReportDto): Promise<Report> {
 
-        console.log(report)
+    const post = await this.lostRepository.findOneBy({ id: postId });
 
-        // Guardar el informe en la base de datos
-        return this.reportRepository.save(report);
+    if (!post) {
+      throw new NotFoundException('Adopt post not found');
+    }
 
-        // Código para insertar el reporte aquí
-      } catch (error) {
-        console.error('Error al insertar el reporte:', error);
-        throw error; // Lanza nuevamente el error para que NestJS lo maneje
-      }
+    const report = this.reportRepository.create({
+      reason: createReportDto.reason,
+      userId: userId,
+      postId: postId,
+      type: 'adopt',
+      lostPost: post,
+    });
+    return this.reportRepository.save(report);
+
+  }
+
+  async createInformativeReport(userId: string, postId: string, createReportDto: CreateReportDto): Promise<Report> {
+
+    const post = await this.informativeRepository.findOneBy({ id: postId });
+
+    if (!post) {
+      throw new NotFoundException('Adopt post not found');
+    }
+
+    const report = this.reportRepository.create({
+      reason: createReportDto.reason,
+      userId: userId,
+      postId: postId,
+      type: 'adopt',
+      informativePost: post,
+    });
+    return this.reportRepository.save(report);
 
   }
 }

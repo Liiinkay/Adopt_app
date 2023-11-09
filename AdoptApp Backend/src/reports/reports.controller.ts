@@ -15,4 +15,23 @@ export class ReportsController {
   ) {
     return this.reportsService.createAdoptReport(userId, postId, createReportDto);
   }
+
+  @Post('lost/:userId/:postId')
+  async createLostReport(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Param('postId', ParseUUIDPipe) postId: string,
+    @Body() createReportDto: CreateReportDto,
+  ) {
+    return this.reportsService.createLostReport(userId, postId, createReportDto);
+  }
+
+  @Post('informative/:userId/:postId')
+  async createInformativeReport(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Param('postId', ParseUUIDPipe) postId: string,
+    @Body() createReportDto: CreateReportDto,
+  ) {
+    return this.reportsService.createInformativeReport(userId, postId, createReportDto);
+  }
 }
+
