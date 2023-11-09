@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {validate as isUUID} from 'uuid';
@@ -9,6 +9,11 @@ import { SavedPost } from './entities/saved-post.entity';
 import { Followers } from './entities/followers.entity';
 import { Follows } from './entities/follows.entity';
 import { SavePostDto } from './dto/save-post.dto';
+import * as bcrypt from 'bcrypt';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtService } from '@nestjs/jwt';
+import { ConsoleLogger } from '@nestjs/common/services';
 
 @Injectable()
 export class UsersService {
@@ -27,37 +32,54 @@ export class UsersService {
     private readonly FollowersRepository: Repository<Followers>,
 
     @InjectRepository(Follows)
-    private readonly FollowsRepository: Repository<Follows>
+    private readonly FollowsRepository: Repository<Follows>,
+
+    private readonly jwtService: JwtService,
 
   ) {}
 
   async create(createUserDto: CreateUserDto) {
     try{
-      const newUser = new User();
-      newUser.nickname = createUserDto.nickname;
-      newUser.name = createUserDto.name;
-      newUser.password = createUserDto.password;
-      newUser.banner_multimedia = createUserDto.banner_multimedia || '';
-      newUser.profile_img = createUserDto.profile_img || '';
-      newUser.last_name = createUserDto.last_name || '';
-      newUser.rut = createUserDto.rut || '';
-      newUser.phone_number = createUserDto.phone_number || 0;
-      newUser.contact_email = createUserDto.contact_email || '';
-      newUser.instagram = createUserDto.instagram || '';
-      newUser.facebook = createUserDto.facebook || '';
-  
-      // Las propiedades saved_post, posts, followers y follows se inicializan vacías.
-      newUser.saved_post = [];
-      newUser.post = [];
-      newUser.followers = [];
-      newUser.follows = [];
-  
+      const { password, ...userData} = createUserDto;
+
+      const user = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync( password, 10)
+      })
+
       // Guardar el nuevo usuario en la base de datos.
-      return await this.userRepository.save(newUser);
+      await this.userRepository.save( user )
+      delete user.password;
+
+      return {
+        ...user,
+        token: this.getJwtToken( {id: user.id} )
+      };
 
     }catch (error){
       this.hadleDBExceptions(error);
     }
+  }
+
+  async login( loginUserDto: LoginUserDto){
+    const { password, nickname } = loginUserDto;
+
+    const user = await this.userRepository.findOne({
+      where: {nickname},
+      select: {nickname: true, password: true, id: true}
+    })
+
+    if( !user )
+      throw new UnauthorizedException('Credentials are not valid (nickname)');
+
+    if ( !bcrypt.compareSync( password, user.password ) )
+    throw new UnauthorizedException('Credentials are not valid (password)');
+
+    return {
+      ...user,
+      token: this.getJwtToken( {id: user.id} )
+    };
+    //retornar jwt
   }
 
   findAll() {
@@ -102,12 +124,12 @@ export class UsersService {
     }
 
     if ( !user )
-    throw new NotFoundException(`Product with id ${ id } not found`);
+    throw new NotFoundException(`User with id ${ id } not found`);
 
     return this.userRepository.delete(id);
   }
 
-  private hadleDBExceptions( error: any ){
+  private hadleDBExceptions( error: any ): never{
     if ( error.code === '23505' )
       throw new BadRequestException(error.detail);
 
@@ -135,5 +157,13 @@ export class UsersService {
 
     return user;
   }
+
+  private getJwtToken( payload: JwtPayload) {
+    
+    const token = this.jwtService.sign( payload );
+    return token;
+
+  }
+
  }
 

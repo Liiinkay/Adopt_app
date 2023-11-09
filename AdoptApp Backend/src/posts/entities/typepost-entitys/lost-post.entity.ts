@@ -1,5 +1,8 @@
-import { Entity, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Post } from '../post.entity';
+import { Comment } from '../../../comments/entities/comment.entity';
+import { Report } from 'src/reports/entities/report.entity';
+
 
 @Entity()
 export class Lost extends Post {
@@ -18,9 +21,12 @@ export class Lost extends Post {
   @Column()
   coordinates: string;
 
-  @Column('text',{
-    array: true,
-    default: []
-  })
-  comment: string[];
+  @OneToMany(
+    () => Comment,
+    (comment) => comment.lost
+  )
+  comments: Comment[];
+
+  @OneToMany(() => Report, report => report.lostPost)
+  reports: Report[];
 }
