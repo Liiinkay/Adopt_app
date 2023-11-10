@@ -46,25 +46,5 @@ export class CreateUserDto {
     @IsString()
     @IsOptional()
     facebook: string;
-
-    @IsString({ each:true })
-    @IsArray()
-    @IsOptional()
-    post?: string[];
-
-    @IsString({ each:true })
-    @IsArray()
-    @IsOptional()
-    saved_post?: string[];
-
-    @IsString({ each:true })
-    @IsArray()
-    @IsOptional()
-    followers?: string[];
-
-    @IsString({ each:true })
-    @IsArray()
-    @IsOptional()
-    follows?: string[];
 }   
 

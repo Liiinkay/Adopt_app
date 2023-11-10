@@ -63,7 +63,8 @@ export class Form{
 
     @ManyToOne(
         () => Adopt,
-        adopt => adopt.form
+        adopt => adopt.form,
+        {onDelete: 'CASCADE'}
     )
     author: Adopt
 }
