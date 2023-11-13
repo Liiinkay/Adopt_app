@@ -5,14 +5,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Post } from '../posts/entities/post.entity';
 import { SavedPost } from './entities/saved-post.entity';
-import { Followers } from './entities/followers.entity';
 import { Follows } from './entities/follows.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Form } from 'src/posts/entities/form.entity';
-import { Adopt } from 'src/posts/entities/typepost-entitys/adopt-post.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
+
+import { Informative } from '../posts/entities/typepost-entitys/informative-post.entity';
+import { Lost } from 'src/posts/entities/typepost-entitys/lost-post.entity';
+import { Adopt } from 'src/posts/entities/typepost-entitys/adopt-post.entity';
+import { PostLikes } from '../posts/entities/post-like.entity';
 
 @Module({
   controllers: [UsersController],
@@ -20,7 +23,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   imports: [
     ConfigModule,
 
-    TypeOrmModule.forFeature([ User, Post, SavedPost, Followers, Follows, Form, Adopt ]),
+    TypeOrmModule.forFeature([ User, Post, SavedPost, Follows, Form, Adopt, Lost, Informative, PostLikes ]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),
 

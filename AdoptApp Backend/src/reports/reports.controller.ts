@@ -33,5 +33,10 @@ export class ReportsController {
   ) {
     return this.reportsService.createInformativeReport(userId, postId, createReportDto);
   }
+
+  @Delete(':id')
+  async deleteReport(@Param('id') id: string) {
+    return await this.reportsService.deleteReport(id);
+  }
 }
 

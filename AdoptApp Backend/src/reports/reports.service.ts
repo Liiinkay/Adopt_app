@@ -76,4 +76,12 @@ export class ReportsService {
     return this.reportRepository.save(report);
 
   }
+
+  async deleteReport(id: string): Promise<void> {
+  const report = await this.reportRepository.findOneBy({ id });
+  if (!report) {
+    throw new NotFoundException(`Report with ID ${id} not found.`);
+  }
+  await this.reportRepository.remove(report);
+  }
 }

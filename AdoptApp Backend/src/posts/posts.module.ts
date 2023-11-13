@@ -11,12 +11,13 @@ import { PostMultimedia } from './entities/multimedia-post.entity';
 import { Form } from './entities/form.entity';
 import { Report } from '../reports/entities/report.entity';
 import { Comment } from '../comments/entities/comment.entity';
+import { PostLikes } from './entities/post-like.entity';
 
 @Module({
   controllers: [PostsController],
   providers: [PostsService],
   imports: [
-    TypeOrmModule.forFeature([ User, Adopt, Informative, Lost, Post, PostMultimedia, Form, Report, Comment ])
+    TypeOrmModule.forFeature([ User, Adopt, Informative, Lost, Post, PostMultimedia, Form, Report, Comment, PostLikes ])
   ]
 })
 export class PostsModule {}

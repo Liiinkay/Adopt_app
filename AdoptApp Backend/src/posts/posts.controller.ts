@@ -4,6 +4,7 @@ import { CreateAdoptDto } from './dto/adopt-post.dto';
 import { CreateLostDto } from './dto/lost-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Form } from './entities/form.entity';
+import { Auth } from 'src/users/decorators/auth.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -51,23 +52,15 @@ export class PostsController {
     return updatedPost;
   }
 
-  @Get()
-  findAll() {
-    return this.postsService.findAll();
+  //Seccion LikePosts
+
+  @Post(':postId/like')
+  async likePost(@Param('postId') postId: string, @Body('userId') userId: string) {
+      return this.postsService.likePost(postId, userId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+  @Delete(':postId/like')
+  async unlikePost(@Param('postId') postId: string, @Body('userId') userId: string) {
+      return this.postsService.unlikePost(postId, userId);
   }
 }

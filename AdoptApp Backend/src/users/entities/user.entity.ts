@@ -1,6 +1,6 @@
+import { PostLikes } from "src/posts/entities/post-like.entity";
 import { Post } from "src/posts/entities/post.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Followers } from "./followers.entity";
 import { Follows } from "./follows.entity";
 import { SavedPost } from "./saved-post.entity";
 
@@ -65,18 +65,18 @@ export class User {
     saved_post?: SavedPost[];
 
     @OneToMany(
-        () => Followers,
-        followers => followers.author,
-        { cascade: true }
-    )
-    followers?: Followers[];
-
-    @OneToMany(
         () => Follows,
         follows => follows.author,
         { cascade: true }
     )
     follows?: Follows[];
+
+    @OneToMany(
+        () => PostLikes, 
+        postLikes => postLikes.user,
+        { cascade: true }
+    )
+    likedPosts: PostLikes[];
 
     @Column('text', {
         array: true,
@@ -88,6 +88,12 @@ export class User {
         default: true
     })
     isActive: boolean
+
+    @Column('int', { default: 0 })
+    followersCount: number;
+
+    @Column('int', { default: 0 })
+    followingCount: number;
 
     @BeforeInsert()
     checkFieldsBeforeInsert() {

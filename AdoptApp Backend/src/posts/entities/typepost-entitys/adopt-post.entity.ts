@@ -1,6 +1,7 @@
 import { Report } from 'src/reports/entities/report.entity';
 import { Entity, Column, OneToMany } from 'typeorm';
 import { Form } from '../form.entity';
+import { PostLikes } from '../post-like.entity';
 import { Post } from '../post.entity';
 
 @Entity()
@@ -36,4 +37,7 @@ export class Adopt extends Post {
 
   @OneToMany(() => Report, report => report.adoptPost)
   reports: Report[];
+
+  @OneToMany(() => PostLikes, postLikes => postLikes.adoptPost)
+  postLikes: PostLikes[];
 }

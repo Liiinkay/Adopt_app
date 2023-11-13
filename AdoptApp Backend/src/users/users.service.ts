@@ -6,14 +6,16 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SavedPost } from './entities/saved-post.entity';
-import { Followers } from './entities/followers.entity';
 import { Follows } from './entities/follows.entity';
 import { SavePostDto } from './dto/save-post.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
-import { ConsoleLogger } from '@nestjs/common/services';
+
+import { Informative } from '../posts/entities/typepost-entitys/informative-post.entity';
+import { Lost } from 'src/posts/entities/typepost-entitys/lost-post.entity';
+import { Adopt } from 'src/posts/entities/typepost-entitys/adopt-post.entity';
 
 @Injectable()
 export class UsersService {
@@ -28,11 +30,17 @@ export class UsersService {
     @InjectRepository(SavedPost)
     private readonly savedPostRepository: Repository<SavedPost>,
 
-    @InjectRepository(Followers)
-    private readonly FollowersRepository: Repository<Followers>,
-
     @InjectRepository(Follows)
-    private readonly FollowsRepository: Repository<Follows>,
+    private readonly followsRepository: Repository<Follows>,
+
+    @InjectRepository(Lost)
+    private readonly lostRepository: Repository<Lost>,
+
+    @InjectRepository(Adopt)
+    private readonly adoptRepository: Repository<Adopt>,
+
+    @InjectRepository(Informative)
+    private readonly informativeRepository: Repository<Informative>,
 
     private readonly jwtService: JwtService,
 
@@ -75,11 +83,15 @@ export class UsersService {
     if ( !bcrypt.compareSync( password, user.password ) )
     throw new UnauthorizedException('Credentials are not valid (password)');
 
+    //Return del token
     return {
       ...user,
       token: this.getJwtToken( {id: user.id} )
     };
-    //retornar jwt
+  }
+
+  logout(userId: string): void {
+    console.log(`User with ID ${userId} logged out`);
   }
 
   findAll() {
@@ -116,18 +128,18 @@ export class UsersService {
     return updatedUser;
   }
 
- async remove(id: string) {
-    let user: User;
+    async remove(id: string) {
+      let user: User;
 
-    if (isUUID(id) ){
-      user = await this.userRepository.findOneBy({ id: id });
+      if (isUUID(id) ){
+        user = await this.userRepository.findOneBy({ id: id });
+      }
+
+      if ( !user )
+      throw new NotFoundException(`User with id ${ id } not found`);
+
+      return this.userRepository.delete(id);
     }
-
-    if ( !user )
-    throw new NotFoundException(`User with id ${ id } not found`);
-
-    return this.userRepository.delete(id);
-  }
 
   private hadleDBExceptions( error: any ): never{
     if ( error.code === '23505' )
@@ -137,27 +149,6 @@ export class UsersService {
     throw new InternalServerErrorException('Unexpected error, check server logs');
   }
 
-  async savePostToUser(id: string, postData: SavePostDto) {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.saved_post', 'savedPost')
-      .where('user.id = :id', { id })
-      .getOne();
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const savedPost = new SavedPost();
-    savedPost.authorId = postData.authorId;
-    savedPost.idPost = postData.idPost;
-
-    user.saved_post.push(savedPost);
-    await this.userRepository.save(user);
-
-    return user;
-  }
-
   private getJwtToken( payload: JwtPayload) {
     
     const token = this.jwtService.sign( payload );
@@ -165,5 +156,160 @@ export class UsersService {
 
   }
 
- }
+  ///////////////////////
+  // Seccion SavedPost //
+  ///////////////////////
+
+  async savePost(userId: string, postId: string): Promise<SavedPost> {
+
+    // Se Verifica si el post ya está guardado
+    const existingSavedPost = await this.savedPostRepository.findOne({
+      where: { authorId: userId, idPost: postId }
+    });
+
+    if (existingSavedPost) {
+      throw new Error('Post already saved');
+    }
+
+    // Se verifica si el post existe en alguna de las tres bases de datos
+    const postExists = await this.adoptRepository.findOneBy({ id: postId })
+    || await this.informativeRepository.findOneBy({ id: postId })
+    || await this.lostRepository.findOneBy({ id: postId });
+
+    if (!postExists) {
+      throw new NotFoundException('Post not found');
+    }
+
+    // Crea el nuevo posteo guardado
+    const newSavedPost = this.savedPostRepository.create({
+      authorId: userId,
+      idPost: postId
+    });
+
+    return this.savedPostRepository.save(newSavedPost);
+  }
+
+  async removeSavedPost(userId: string, postId: string): Promise<void> {
+    const savedPost = await this.savedPostRepository.findOne({
+    where: { authorId: userId, idPost: postId }
+    });
+
+    if (!savedPost) {
+    throw new NotFoundException('Saved Post not found');
+    }
+
+    await this.savedPostRepository.remove(savedPost);
+  }
+
+  async getSavedPosts(idUser: string): Promise<SavedPost[]> {
+    return this.savedPostRepository.find({
+      where: { authorId: idUser }
+    });
+  }
+
+  /////////////////////
+  // Seccion Follows //
+  /////////////////////
+
+  async followUser(followerId: string, followingId: string): Promise<Follows> {
+    // Se verifica si el seguidor (follower) existe
+    const follower = await this.userRepository.findOneBy({ id: followerId });
+    if (!follower) {
+      throw new NotFoundException(`Follower with ID ${followerId} not found`);
+    }
+
+    // Se verifica si el usuario a seguir (following) existe
+    const following = await this.userRepository.findOneBy({ id: followingId });
+    if (!following) {
+      throw new NotFoundException(`Following with ID ${followingId} not found`);
+    }
+
+    // Se verifica si el usuario ya sigue al otro
+    const existingFollow = await this.followsRepository.findOne({
+      where: { authorId: followerId, followingId: followingId }
+    });
+
+    if (existingFollow) {
+      throw new Error('You already follow this user');
+    }
+
+    // Crea el nuevo seguimiento
+    const newFollow = this.followsRepository.create({ authorId: followerId, followingId: followingId });
+    
+    await this.incrementFollowersCount(followingId);
+    await this.incrementFollowingCount(followerId);
+    
+    return this.followsRepository.save(newFollow);
+  }
+
+  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+
+    //Se verifica si realmente sigue a la cuenta
+    const follow = await this.followsRepository.findOne({
+      where: { authorId: followerId, followingId: followingId }
+    });
+  
+    if (!follow) {
+      throw new NotFoundException('Follow relationship not found');
+    }
+  
+    //se actualizan los counts de cada usuario
+    await this.decrementFollowersCount(followingId);
+    await this.decrementFollowingCount(followerId);
+
+    await this.followsRepository.remove(follow);
+  }
+
+  async getFollowing(followerId: string): Promise<Follows[]> {
+    return this.followsRepository.find({
+      where: { authorId: followerId },
+      relations: ['author'] // Asegúrate de cargar la relación con 'author' si es necesario
+    });
+  }
+
+  async getFollowers(userId: string): Promise<User[]> {
+    const follows = await this.followsRepository.find({
+      where: { followingId: userId },
+      relations: ['author']
+    });
+
+    return follows.map(follow => follow.author);
+  }
+
+  async incrementFollowersCount(userId: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (user) {
+      user.followersCount++;
+      await this.userRepository.save(user);
+    }
+  }
+
+  async decrementFollowersCount(userId: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (user && user.followersCount > 0) {
+      user.followersCount--;
+      await this.userRepository.save(user);
+    }
+  }
+
+  async incrementFollowingCount(userId: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (user) {
+      user.followingCount++;
+      await this.userRepository.save(user);
+    } else {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+  }
+
+  async decrementFollowingCount(userId: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (user && user.followingCount > 0) {
+      user.followingCount--;
+      await this.userRepository.save(user);
+    } else if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+  }
+}
 

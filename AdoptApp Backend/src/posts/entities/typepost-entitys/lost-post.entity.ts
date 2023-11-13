@@ -2,6 +2,7 @@ import { Entity, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 't
 import { Post } from '../post.entity';
 import { Comment } from '../../../comments/entities/comment.entity';
 import { Report } from 'src/reports/entities/report.entity';
+import { PostLikes } from '../post-like.entity';
 
 
 @Entity()
@@ -29,4 +30,7 @@ export class Lost extends Post {
 
   @OneToMany(() => Report, report => report.lostPost)
   reports: Report[];
+
+  @OneToMany(() => PostLikes, postLikes => postLikes.lostPost)
+  postLikes: PostLikes[];
 }

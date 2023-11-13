@@ -9,6 +9,8 @@ import { Repository } from 'typeorm';
 import { Adopt } from './entities/typepost-entitys/adopt-post.entity';
 import { Lost } from './entities/typepost-entitys/lost-post.entity';
 import { Form } from './entities/form.entity';
+import { PostLikes } from './entities/post-like.entity';
+import { Informative } from './entities/typepost-entitys/informative-post.entity';
 
 @Injectable()
 export class PostsService {
@@ -24,29 +26,13 @@ export class PostsService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Lost)
     private readonly lostRepository: Repository<Lost>,
+    @InjectRepository(Informative)
+    private readonly informativeRepository: Repository<Informative>,
     @InjectRepository(Form)
     private readonly formRepository: Repository<Form>,
+    @InjectRepository(PostLikes)
+    private postLikesRepository: Repository<PostLikes>
   ) {}
-
-  create(createPostDto: CreateAdoptDto) {
-    return 'This action adds a new post';
-  }
-
-  findAll() {
-    return `This action returns all posts`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
-  }
-
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} post`;
-  }
 
   async createAdoptPost(id: string, createAdoptDto: CreateAdoptDto): Promise<Adopt> {
     // Busca al usuario correspondiente por su ID
@@ -178,5 +164,101 @@ export class PostsService {
     throw new InternalServerErrorException('Unexpected error, check server logs');
   }
 
+  ///////////////////////
+  // Seccion LikePost //
+  ///////////////////////
 
+  async unlikePost(postId: string, userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const post = await this.findPost(postId);
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    let existingLike;
+    // Determina el tipo específico de post y verifica si ya existe un "like"
+    if (post instanceof Adopt) {
+        existingLike = await this.postLikesRepository.findOne({ where: { adoptPost: { id: postId }, user: { id: userId } } });
+    } else if (post instanceof Lost) {
+        existingLike = await this.postLikesRepository.findOne({ where: { lostPost: { id: postId }, user: { id: userId } } });
+    } else if (post instanceof Informative) {
+        existingLike = await this.postLikesRepository.findOne({ where: { informativePost: { id: postId }, user: { id: userId } } });
+    }
+
+    if (existingLike) {
+        await this.postLikesRepository.remove(existingLike);
+
+        // Decrementar el contador de likes en el post específico
+        post.likesCount--;
+        // Guardar el post en su repositorio correspondiente
+        if (post instanceof Adopt) {
+            await this.adoptRepository.save(post);
+        } else if (post instanceof Lost) {
+            await this.lostRepository.save(post);
+        } else if (post instanceof Informative) {
+            await this.informativeRepository.save(post);
+        }
+    }
+  }
+
+  async likePost(postId: string, userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const post = await this.findPost(postId);
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    let existingLike;
+    // Determina el tipo específico de post y verifica si ya existe un "like"
+    if (post instanceof Adopt) {
+        existingLike = await this.postLikesRepository.findOne({ where: { adoptPost: { id: postId }, user: { id: userId } } });
+    } else if (post instanceof Lost) {
+        existingLike = await this.postLikesRepository.findOne({ where: { lostPost: { id: postId }, user: { id: userId } } });
+    } else if (post instanceof Informative) {
+        existingLike = await this.postLikesRepository.findOne({ where: { informativePost: { id: postId }, user: { id: userId } } });
+    }
+    if (existingLike) {
+      throw new Error('Liked yet');
+    }
+
+    if (!existingLike) {
+        const postLike = new PostLikes();
+        // Se guarda el posteo segun su tipo en la bdd
+        if (post instanceof Adopt) {
+            postLike.adoptPost = post;
+        } else if (post instanceof Lost) {
+            postLike.lostPost = post;
+        } else if (post instanceof Informative) {
+            postLike.informativePost = post;
+        }
+        postLike.user = user;
+        await this.postLikesRepository.save(postLike);
+
+        // Se Incrementa el contador de likes en el post específico
+        post.likesCount++;
+        // Se guarda el post en su repositorio correspondiente
+        if (post instanceof Adopt) {
+            await this.adoptRepository.save(post);
+        } else if (post instanceof Lost) {
+            await this.lostRepository.save(post);
+        } else if (post instanceof Informative) {
+            await this.informativeRepository.save(post);
+        }
+    }
+  }
+
+  private async findPost(postId: string): Promise<Post | Informative | Adopt | Lost | undefined> {
+    return await this.informativeRepository.findOne({ where: { id: postId } }) || 
+           await this.adoptRepository.findOne({ where: { id: postId } }) ||
+           await this.lostRepository.findOne({ where: { id: postId } });
+  }
+  
 }
