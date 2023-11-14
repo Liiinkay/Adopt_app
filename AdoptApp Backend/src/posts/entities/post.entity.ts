@@ -21,25 +21,13 @@ export abstract class Post {
     @Column()
     type: string
 
-    @OneToMany(
-        () => PostMultimedia,
-        postMultimedia => postMultimedia.post
-    )
-    multimedia: PostMultimedia
-
     @ManyToOne(
         () => User,
         user => user.post,
         {onDelete: 'CASCADE'}
     )
     author: User
-
-    //@OneToMany(
-    //    () => PostLikes, 
-    //    postLikes => postLikes.post
-    //)
-    //postLikes: PostLikes[];
-
+    
     @Column({ default: 0 })
     likesCount: number;
 }

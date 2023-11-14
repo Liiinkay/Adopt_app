@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, ParseUUIDPipe, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreateAdoptDto } from './dto/adopt-post.dto';
 import { CreateLostDto } from './dto/lost-post.dto';
+import { createInformativeDto } from './dto/informative-post.dto'
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Form } from './entities/form.entity';
 import { Auth } from 'src/users/decorators/auth.decorator';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
 export class PostsController {
@@ -29,6 +31,8 @@ export class PostsController {
     const post = await this.postsService.createLostPost(id, createLostDto);
     return post;
   }
+
+  @Post('informative/:id')
 
   //agregar formulario 
   @Post('adopt/:idPost/form/:idApplicant')

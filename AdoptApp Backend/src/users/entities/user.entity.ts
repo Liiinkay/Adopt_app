@@ -50,6 +50,12 @@ export class User {
     @Column('text')
     facebook: string;
 
+    @Column({ type: 'float', default: 0 })
+    rating: number;
+
+    @Column({ type: 'int', default: 0 })
+    ratingCount: number;
+
     @OneToMany(
         () => Post,
         post => post.author,

@@ -1,6 +1,7 @@
 import { Report } from 'src/reports/entities/report.entity';
 import { Entity, Column, OneToMany } from 'typeorm';
 import { Form } from '../form.entity';
+import { PostMultimedia } from '../multimedia-post.entity';
 import { PostLikes } from '../post-like.entity';
 import { Post } from '../post.entity';
 
@@ -40,4 +41,7 @@ export class Adopt extends Post {
 
   @OneToMany(() => PostLikes, postLikes => postLikes.adoptPost)
   postLikes: PostLikes[];
+
+  @OneToMany(() => PostMultimedia, multimedia => multimedia.adoptPost)
+  multimedia: PostMultimedia[];
 }

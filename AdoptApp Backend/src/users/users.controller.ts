@@ -39,6 +39,12 @@ export class UsersController {
     return { message: 'Logout successful' };
   }
 
+  @Post(':userId/rate')
+  @Auth( ValidRoles.user )
+  async rateUser(@Param('userId') userId: string, @Body('rating') rating: number) {
+      return this.usersService.rateUser(userId, rating);
+  }
+
   //@Get()
   //findAll(){
   //  return this.usersService.findAll();

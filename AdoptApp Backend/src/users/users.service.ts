@@ -141,6 +141,19 @@ export class UsersService {
       return this.userRepository.delete(id);
     }
 
+  async rateUser(userId: string, rating: number): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    // Actualizar la calificación promedio
+    user.rating = ((user.rating * user.ratingCount) + rating) / (user.ratingCount + 1);
+    user.ratingCount++;
+
+    await this.userRepository.save(user);
+  }
+
   private hadleDBExceptions( error: any ): never{
     if ( error.code === '23505' )
       throw new BadRequestException(error.detail);

@@ -3,6 +3,7 @@ import { Post } from '../post.entity';
 import { Comment } from '../../../comments/entities/comment.entity';
 import { Report } from 'src/reports/entities/report.entity';
 import { PostLikes } from '../post-like.entity';
+import { PostMultimedia } from '../multimedia-post.entity';
 
 
 @Entity()
@@ -33,4 +34,7 @@ export class Lost extends Post {
 
   @OneToMany(() => PostLikes, postLikes => postLikes.lostPost)
   postLikes: PostLikes[];
+
+  @OneToMany(() => PostMultimedia, multimedia => multimedia.lostPost)
+  multimedia: PostMultimedia[];
 }

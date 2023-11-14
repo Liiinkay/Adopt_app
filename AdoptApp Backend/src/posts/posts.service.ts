@@ -90,6 +90,8 @@ export class PostsService {
     return createdLost;
   }
 
+  
+
   async getUserPosts(id: string): Promise<Adopt[]> {
     // Lógica para obtener todos los posteos del usuario, sin importar el tipo
     const posts = await this.adoptRepository.find({
