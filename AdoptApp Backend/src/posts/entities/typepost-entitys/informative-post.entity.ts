@@ -8,7 +8,7 @@ import { PostMultimedia } from '../multimedia-post.entity';
 @Entity()
 export class Informative extends Post {
   @Column()
-  tipo: string;
+  type: string;
 
   @OneToMany(
     () => Comment,

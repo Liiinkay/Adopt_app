@@ -11,6 +11,8 @@ import { Lost } from './entities/typepost-entitys/lost-post.entity';
 import { Form } from './entities/form.entity';
 import { PostLikes } from './entities/post-like.entity';
 import { Informative } from './entities/typepost-entitys/informative-post.entity';
+import { createInformativeDto } from './dto/informative-post.dto';
+import { PostMultimedia } from './entities/multimedia-post.entity';
 
 @Injectable()
 export class PostsService {
@@ -31,15 +33,22 @@ export class PostsService {
     @InjectRepository(Form)
     private readonly formRepository: Repository<Form>,
     @InjectRepository(PostLikes)
-    private postLikesRepository: Repository<PostLikes>
+    private postLikesRepository: Repository<PostLikes>,
+    @InjectRepository(PostMultimedia)
+    private postMultimediaRepository: Repository<PostMultimedia>
   ) {}
 
-  async createAdoptPost(id: string, createAdoptDto: CreateAdoptDto): Promise<Adopt> {
+  async createAdoptPost(id: string, createAdoptDto: CreateAdoptDto, mediaUrls: string[]): Promise<Adopt> {
     // Busca al usuario correspondiente por su ID
     const user = await this.userRepository.findOneBy({id: id});
 
     if ( !user )
     throw new NotFoundException(`Product with id ${ id } not found`);
+
+    //const ageNumber = parseInt(createAdoptDto.age, 10);
+    //if (isNaN(ageNumber) || ageNumber <= 0) {
+    //    throw new BadRequestException('Invalid age value');
+    //}
 
     // Crea un nuevo post de tipo Adopt y asigna las propiedades
     const adopt = new Adopt();
@@ -50,13 +59,18 @@ export class PostsService {
     adopt.type = createAdoptDto.type;
     adopt.state = createAdoptDto.state;
     adopt.gender = createAdoptDto.gender;
-    adopt.age = createAdoptDto.age;
+    adopt.age = createAdoptDto.age ;
     adopt.personality = createAdoptDto.personality;
     adopt.medical_information = createAdoptDto.medical_information;
     adopt.form = [];
 
     // Guarda el nuevo post en la base de datos
     const createdAdopt = await this.adoptRepository.save(adopt);
+
+    for (const url of mediaUrls) {
+      const multimedia = this.postMultimediaRepository.create({ url, adoptPost: createdAdopt });
+      await this.postMultimediaRepository.save(multimedia);
+    }
 
     return createdAdopt;
   }
@@ -90,7 +104,28 @@ export class PostsService {
     return createdLost;
   }
 
-  
+  async createInformativePost(dto: createInformativeDto, userId: string, mediaUrls: string[]): Promise<Informative> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const newPost = this.informativeRepository.create({
+      ...dto,
+      author: user,
+      authorID: user.id
+    });
+
+    const savedPost = await this.informativeRepository.save(newPost);
+
+    // Guardar cada entidad multimedia en la base de datos
+    for (const url of mediaUrls) {
+      const multimedia = this.postMultimediaRepository.create({ url, informativePost: savedPost });
+      await this.postMultimediaRepository.save(multimedia);
+    }
+
+    return savedPost;
+  }
 
   async getUserPosts(id: string): Promise<Adopt[]> {
     // Lógica para obtener todos los posteos del usuario, sin importar el tipo
@@ -113,18 +148,11 @@ export class PostsService {
   }
 
   async getUserPostsJson(userId: string): Promise<any[]> {
-    // Busca todos los posteos creados por el usuario con el ID proporcionado
-    const userPosts = await this.adoptRepository.find({
-      where: { authorID: userId },
-    });
-  
-    // También busca los posteos "Lost" creados por el usuario
-    const lostUserPosts = await this.lostRepository.find({
-      where: { authorID: userId },
-    });
-  
-    // Combina los resultados de ambos tipos de posteos en una sola lista
-    const allUserPosts = [...userPosts, ...lostUserPosts];
+    const allUserPosts = [
+      ...await this.adoptRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
+      ...await this.lostRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
+      ...await this.informativeRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
+    ];
   
     // Transforma los objetos en un formato JSON adecuado para el frontend
     const userPostsJson = allUserPosts.map(post => {
@@ -132,6 +160,8 @@ export class PostsService {
         id: post.id,
         title: post.title,
         description: post.description,
+        likesCount: post.likesCount,
+        firstImageUrl: post.multimedia.length > 0 ? post.multimedia[0].url : null,
         // Agrega aquí más campos si es necesario
       };
     });
@@ -194,9 +224,9 @@ export class PostsService {
     if (existingLike) {
         await this.postLikesRepository.remove(existingLike);
 
-        // Decrementar el contador de likes en el post específico
+        // se quita un like
         post.likesCount--;
-        // Guardar el post en su repositorio correspondiente
+        // se guardar el post en su repositorio correspondiente
         if (post instanceof Adopt) {
             await this.adoptRepository.save(post);
         } else if (post instanceof Lost) {

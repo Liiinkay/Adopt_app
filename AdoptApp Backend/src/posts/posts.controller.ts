@@ -12,14 +12,17 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  //agrear un nuevo posteo de tipo Adopcion 
   @Post('adopt/:id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'images', maxCount: 5 }
+  ]))
   async createAdoptPost(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createAdoptDto: CreateAdoptDto,
+    @UploadedFiles() files: { images?: Express.Multer.File[] }
   ) {
-    const post = await this.postsService.createAdoptPost(id, createAdoptDto);
-    return post;
+    const mediaUrls = files.images.map(file => `uploads/${file.filename}`);
+    return this.postsService.createAdoptPost(id, createAdoptDto, mediaUrls);
   }
 
   //agrear un nuevo posteo de tipo perdido 
@@ -33,6 +36,17 @@ export class PostsController {
   }
 
   @Post('informative/:id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'images', maxCount: 5 }
+  ]))
+  async createInformativePost(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() createInformativeDto: createInformativeDto,
+    @UploadedFiles() files: { images?: Express.Multer.File[] }
+  ) {
+    const mediaUrls = files.images.map(file => `uploads/${file.filename}`);
+    return this.postsService.createInformativePost(createInformativeDto, id, mediaUrls);
+  }
 
   //agregar formulario 
   @Post('adopt/:idPost/form/:idApplicant')

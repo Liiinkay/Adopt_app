@@ -4,7 +4,7 @@ export class createInformativeDto{
     
     @IsString()
     @MinLength(1)
-    tittle: string
+    title: string
 
     @IsString()
     description: string

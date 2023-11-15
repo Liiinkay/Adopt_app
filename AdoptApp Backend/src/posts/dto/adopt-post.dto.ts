@@ -22,7 +22,7 @@ export class CreateAdoptDto {
   
     @IsString()
     gender: string
-  
+    
     @IsNumber()
     @IsPositive()
     @IsOptional()
