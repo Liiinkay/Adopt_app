@@ -27,14 +27,19 @@ export class PostsController {
 
   //agrear un nuevo posteo de tipo perdido 
   @Post('lost/:id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'images', maxCount: 5 }
+  ]))
   async createLostPost(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createLostDto: CreateLostDto,
+    @UploadedFiles() files: { images?: Express.Multer.File[] }
   ) {
-    const post = await this.postsService.createLostPost(id, createLostDto);
-    return post;
+    const mediaUrls = files.images.map(file => `uploads/${file.filename}`);
+    return this.postsService.createLostPost(id, createLostDto, mediaUrls);
   }
 
+  //agrear un nuevo posteo de tipo informativo
   @Post('informative/:id')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'images', maxCount: 5 }

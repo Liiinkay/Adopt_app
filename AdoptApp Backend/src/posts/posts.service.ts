@@ -75,31 +75,29 @@ export class PostsService {
     return createdAdopt;
   }
 
-  async createLostPost(id: string, createLostDto: CreateLostDto): Promise<Lost> {
-    // Busca al usuario correspondiente por su ID
+  async createLostPost(id: string, createLostDto: CreateLostDto, mediaUrls: string[]): Promise<Lost> {
     const user = await this.userRepository.findOneBy({ id: id });
-  
     if (!user) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
-  
-    // Crea un nuevo post de tipo "Lost" y asigna las propiedades
+
     const lost = new Lost();
     lost.title = createLostDto.title;
     lost.description = createLostDto.description;
     lost.author = user;
-    lost.authorID = user.id; // 
+    lost.authorID = user.id;
     lost.type = createLostDto.type;
     lost.state = createLostDto.state;
     lost.track_detail = createLostDto.track_detail;
-  
-    // Establece la fecha y hora inicial en last_change
     lost.last_change = new Date();
-  
     lost.coordinates = createLostDto.coordinates;
-  
-    // Guarda el nuevo post en la base de datos
+
     const createdLost = await this.lostRepository.save(lost);
+
+    for (const url of mediaUrls) {
+      const multimedia = this.postMultimediaRepository.create({ url, lostPost: createdLost });
+      await this.postMultimediaRepository.save(multimedia);
+    }
 
     return createdLost;
   }
@@ -154,7 +152,7 @@ export class PostsService {
       ...await this.informativeRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
     ];
   
-    // Transforma los objetos en un formato JSON adecuado para el frontend
+    // Se transforma los objetos en un formato JSON entendible en el front
     const userPostsJson = allUserPosts.map(post => {
       return {
         id: post.id,
@@ -162,7 +160,8 @@ export class PostsService {
         description: post.description,
         likesCount: post.likesCount,
         firstImageUrl: post.multimedia.length > 0 ? post.multimedia[0].url : null,
-        // Agrega aquí más campos si es necesario
+        type: post.type
+        // Quedan pendientes segun peticion por definir
       };
     });
   
@@ -262,28 +261,28 @@ export class PostsService {
     }
 
     if (!existingLike) {
-        const postLike = new PostLikes();
-        // Se guarda el posteo segun su tipo en la bdd
-        if (post instanceof Adopt) {
-            postLike.adoptPost = post;
-        } else if (post instanceof Lost) {
-            postLike.lostPost = post;
-        } else if (post instanceof Informative) {
-            postLike.informativePost = post;
-        }
-        postLike.user = user;
-        await this.postLikesRepository.save(postLike);
+      const postLike = new PostLikes();
+      // Se guarda el posteo segun su tipo en la bdd
+      if (post instanceof Adopt) {
+          postLike.adoptPost = post;
+      } else if (post instanceof Lost) {
+          postLike.lostPost = post;
+      } else if (post instanceof Informative) {
+          postLike.informativePost = post;
+      }
+      postLike.user = user;
+      await this.postLikesRepository.save(postLike);
 
-        // Se Incrementa el contador de likes en el post específico
-        post.likesCount++;
-        // Se guarda el post en su repositorio correspondiente
-        if (post instanceof Adopt) {
-            await this.adoptRepository.save(post);
-        } else if (post instanceof Lost) {
-            await this.lostRepository.save(post);
-        } else if (post instanceof Informative) {
-            await this.informativeRepository.save(post);
-        }
+      // Se Incrementa el contador de likes en el post específico
+      post.likesCount++;
+      // Se guarda el post en su repositorio correspondiente
+      if (post instanceof Adopt) {
+          await this.adoptRepository.save(post);
+      } else if (post instanceof Lost) {
+          await this.lostRepository.save(post);
+      } else if (post instanceof Informative) {
+          await this.informativeRepository.save(post);
+      }
     }
   }
 
