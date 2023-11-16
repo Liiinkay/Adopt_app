@@ -28,6 +28,7 @@ export class CommentsService {
     
     const comment = new Comment();
     comment.text = commentData.text;
+    comment.author = commentData.authorId;
     //Se establece la relacion
     comment.lost = post;
 
@@ -43,42 +44,68 @@ export class CommentsService {
     
     const comment = new Comment();
     comment.text = commentData.text;
+    comment.author = commentData.authorId;
+
     //Se establece la relacion
     comment.informative = post;
 
     return await this.commentRepository.save(comment);
   }
 
-  // Función para crear una respuesta a un comentario
-  async createReply(parentId: string, replyData: any): Promise<Comment> {
-    //Se comprueba la existencia del Post
-    const parentComment = await this.commentRepository.findOneBy({id: parentId});
-
-    if ( !parentComment )
-    throw new NotFoundException(`Product with id ${ parentId } not found`);
-
+  //Funcion de respuesta de comentario
+  async createReply(commentId: string, commentData: CreateCommentDto): Promise<Comment> {
+    const parentComment = await this.commentRepository.findOneBy({ id: commentId });
+    if (!parentComment) {
+      throw new NotFoundException(`Comentario con id ${commentId} no encontrado`);
+    }
+  
     const reply = new Comment();
-    reply.text = replyData.text;
-    //Se establece la relacion
+    reply.text = commentData.text;
+    reply.author = commentData.authorId; 
     reply.parentComment = parentComment;
-
+  
+    // Se guarda la respuesta en la base de datos
     return await this.commentRepository.save(reply);
   }
   
-  // Función para obtener todos los comentarios de una publicación
-  async getCommentsForLostPost(postId: string): Promise<Comment[]> {
-    return await this.commentRepository.find({
-      where: { lost: { id: postId } },
-      relations: ['replies'], // Esto traerá las respuestas de cada comentario
+  async getPostWithComments(postId: string): Promise<any> {
+    let post = await this.informativeRepository.findOne({
+      where: { id: postId },
+      relations: ['comments', 'comments.replies']
     });
+
+    if (!post) {
+      post = await this.lostRepository.findOne({
+        where: { id: postId },
+        relations: ['comments', 'comments.replies']
+      });
+    }
+
+    if (!post) {
+      throw new NotFoundException(`Post con ID ${postId} no encontrado`);
+    }
+
+    return post;
   }
 
-  // Función para obtener todos los comentarios de una publicación
-  async getCommentsForInformativePost(postId: string): Promise<Comment[]> {
-    return await this.commentRepository.find({
-      where: { informative: { id: postId } },
-      relations: ['replies'], // Esto traerá las respuestas de cada comentario
+  async getCommentsByPostId(postId: string): Promise<Comment[]> {
+    let post = await this.informativeRepository.findOne({
+      where: { id: postId },
+      relations: ['comments', 'comments.replies']
     });
+
+    if (!post) {
+      post = await this.lostRepository.findOne({
+        where: { id: postId },
+        relations: ['comments', 'comments.replies']
+      });
+    }
+
+    if (!post) {
+      throw new NotFoundException(`Post con ID ${postId} no encontrado`);
+    }
+
+    return post.comments;
   }
 
   async deleteComment(commentId: string): Promise<void> {
