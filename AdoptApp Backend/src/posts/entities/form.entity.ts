@@ -13,6 +13,9 @@ export class Form{
     @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     createdDate: Date;
 
+    @Column({ type: 'boolean', default: false })
+    state: boolean;
+
     @Column()
     city: string;
 
@@ -66,5 +69,5 @@ export class Form{
         adopt => adopt.form,
         {onDelete: 'CASCADE'}
     )
-    author: Adopt
+    post: Adopt
 }

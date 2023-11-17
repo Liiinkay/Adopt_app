@@ -45,17 +45,12 @@ export class PostsService {
     if ( !user )
     throw new NotFoundException(`Product with id ${ id } not found`);
 
-    //const ageNumber = parseInt(createAdoptDto.age, 10);
-    //if (isNaN(ageNumber) || ageNumber <= 0) {
-    //    throw new BadRequestException('Invalid age value');
-    //}
-
     // Crea un nuevo post de tipo Adopt y asigna las propiedades
     const adopt = new Adopt();
     adopt.title = createAdoptDto.title;
     adopt.description = createAdoptDto.description;
     adopt.author = user;
-    adopt.authorID = user.id; // Asigna la ID del usuario como autor
+    adopt.authorID = user.id;
     adopt.type = createAdoptDto.type;
     adopt.state = createAdoptDto.state;
     adopt.gender = createAdoptDto.gender;
@@ -139,10 +134,32 @@ export class PostsService {
     const form = this.formRepository.create({
       ...formData,
       idApplicant: idApplicant,
-      author: adopt,
+      post: adopt,
     });
 
     return this.formRepository.save(form);
+  }
+
+  async getFormsByPostId(idPost: string): Promise<Form[]> {
+    const forms = await this.formRepository.find({
+        where: { post: { id: idPost } },
+        relations: ['post'],
+    });
+    if (!forms) {
+        throw new NotFoundException(`No forms found for post with id ${idPost}`);
+    }
+    return forms;
+    }
+
+  async getPostsAppliedByUserId(idUser: string): Promise<Form[]> {
+    const forms = await this.formRepository.find({
+        where: { idApplicant: idUser },
+        relations: ['post'],
+    });
+    if (!forms) {
+        throw new NotFoundException(`No posts found applied by user with id ${idUser}`);
+    }
+    return forms;
   }
 
   async getUserPostsJson(userId: string): Promise<any[]> {
@@ -168,22 +185,50 @@ export class PostsService {
     return userPostsJson;
   }
 
-  async updatePost(id: string, updatePostDto: UpdatePostDto): Promise<Post> {
-    // Busca la publicación con el ID proporcionado
-    const post = await this.postRepository.findOneBy({id: id});
-  
-    // Verifica si la publicación existe
-    if (!post) {
-      throw new NotFoundException(`Publicación con ID ${id} no encontrada`);
+  async updatePost(id: string, updatePostDto: any): Promise<Post> {
+    let post: Adopt | Lost | Informative;
+
+    // Buscar el post en las tres tablas
+    post = await this.adoptRepository.findOneBy({ id });
+    if (!post) post = await this.lostRepository.findOneBy({ id });
+    if (!post) post = await this.informativeRepository.findOneBy({ id });
+
+    if (!post) throw new NotFoundException(`Post with id ${id} not found`);
+
+    // Actualizar campos específicos
+    if (post instanceof Adopt) {
+      post.title = updatePostDto.title ?? post.title;
+      post.description = updatePostDto.description ?? post.description;  
+      post.state = updatePostDto.state ?? post.state;
+      post.gender = updatePostDto.gender ?? post.gender;
+      post.age = updatePostDto.age ?? post.age;
+      post.personality = updatePostDto.personality ?? post.personality;
+      post.medical_information = updatePostDto.medical_information ?? post.medical_information;
+    } else if (post instanceof Lost) {
+      post.track_detail = updatePostDto.track_detail ?? post.track_detail;
+      post.state = updatePostDto.state ?? post.state;
+      post.coordinates = updatePostDto.coordinates ?? post.coordinates;
+    } else if (post instanceof Informative) {
+      post.title = updatePostDto.title ?? post.title;
+      post.description = updatePostDto.description ?? post.description;
     }
-  
-    // Actualiza las propiedades de la publicación con los valores proporcionados en updatePostDto
-    Object.assign(post, updatePostDto);
-  
-    // Guarda la publicación actualizada en la base de datos
-    const updatedPost = await this.postRepository.save(post);
-  
-    return updatedPost;
+
+    // Guardar el posteo actualizado
+    if (post instanceof Adopt) {
+        return await this.adoptRepository.save(post);
+    } else if (post instanceof Lost) {
+        return await this.lostRepository.save(post);
+    } else if (post instanceof Informative) {
+        return await this.informativeRepository.save(post);
+    }
+  }
+
+  async deletePost(id: string): Promise<void> {
+    const post = await this.postRepository.findOneBy({ id: id });
+    if (!post) {
+        throw new NotFoundException(`Post with id ${id} not found`);
+    }
+    await this.postRepository.remove(post);
   }
 
   //funcion de errores

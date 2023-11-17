@@ -23,11 +23,7 @@ export class Adopt extends Post {
   @Column()
   medical_information: string;
 
-  @OneToMany(
-    () => Form,
-    form => form.author,
-    {cascade: true }
-  )
+  @OneToMany(() => Form, form => form.post, {cascade: true })
   form: Form[]
 
   @Column('text',{

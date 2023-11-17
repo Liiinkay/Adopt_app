@@ -12,6 +12,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  //agregar un nuevo posteo de tipo adopcion
   @Post('adopt/:id')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'images', maxCount: 5 }
@@ -53,6 +54,37 @@ export class PostsController {
     return this.postsService.createInformativePost(createInformativeDto, id, mediaUrls);
   }
 
+  @Patch(':id')
+  async updatePost(@Param('id', ParseUUIDPipe) id: string, @Body() updatePostDto: any): Promise<any> {
+      return await this.postsService.updatePost(id, updatePostDto);
+  }
+
+  @Delete(':id')
+  async deletePost(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
+      await this.postsService.deletePost(id);
+      return { message: 'Post successfully deleted' };
+  }
+
+  /////////////////////////
+  // Seccion lIKE/UNLIKE //
+  /////////////////////////
+
+  //Like
+  @Post(':postId/like')
+  async likePost(@Param('postId') postId: string, @Body('userId') userId: string) {
+      return this.postsService.likePost(postId, userId);
+  }
+
+  //Unlike
+  @Delete(':postId/like')
+  async unlikePost(@Param('postId') postId: string, @Body('userId') userId: string) {
+      return this.postsService.unlikePost(postId, userId);
+  }
+
+  ////////////////////////
+  // Seccion Formulario //
+  ////////////////////////
+  
   //agregar formulario 
   @Post('adopt/:idPost/form/:idApplicant')
   async createFormAdopt(  
@@ -63,27 +95,17 @@ export class PostsController {
     return this.postsService.createFormAdoption(idPost, idApplicant, formData);
   }
 
-  @Get('/:userId')
-  async getUserPosts(@Param('userId') userId: string): Promise<any[]> {
-    const userPosts = await this.postsService.getUserPostsJson(userId);
-    return userPosts;
+  //Get de formularios x id del post
+  @Get('forms/:idPost')
+  async getFormsByPostId(@Param('idPost', ParseUUIDPipe) idPost: string) {
+      const forms = await this.postsService.getFormsByPostId(idPost);
+      return forms;
   }
 
-  @Patch(':id')
-  async updatePost(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto): Promise<any> {
-    const updatedPost = await this.postsService.updatePost(id, updatePostDto);
-    return updatedPost;
-  }
-
-  //Seccion LikePosts
-
-  @Post(':postId/like')
-  async likePost(@Param('postId') postId: string, @Body('userId') userId: string) {
-      return this.postsService.likePost(postId, userId);
-  }
-
-  @Delete(':postId/like')
-  async unlikePost(@Param('postId') postId: string, @Body('userId') userId: string) {
-      return this.postsService.unlikePost(postId, userId);
+  //Get de formularios x id del usuario postulante
+  @Get('userAppliedPosts/:idUser')
+  async getPostsAppliedByUserId(@Param('idUser', ParseUUIDPipe) idUser: string) {
+      const posts = await this.postsService.getPostsAppliedByUserId(idUser);
+      return posts;
   }
 }
