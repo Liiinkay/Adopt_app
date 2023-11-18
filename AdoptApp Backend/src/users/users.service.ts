@@ -46,14 +46,16 @@ export class UsersService {
 
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto, profileImagePath: string, bannerImagePath: string) {
     try{
       const { password, ...userData} = createUserDto;
 
       const user = this.userRepository.create({
         ...userData,
-        password: bcrypt.hashSync( password, 10)
-      })
+        password: bcrypt.hashSync(password, 10),
+        profile_img: profileImagePath,
+        banner_multimedia: bannerImagePath
+      });
 
       // Guardar el nuevo usuario en la base de datos.
       await this.userRepository.save( user )
@@ -111,13 +113,16 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: string, updateUserDto: UpdateUserDto, profileImagePath: string, bannerImagePath: string): Promise<User> {
     // Busca al usuario correspondiente por su ID
     const user = await this.userRepository.findOneBy({id: id});
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
+    if (profileImagePath) user.profile_img = profileImagePath;
+    if (bannerImagePath) user.banner_multimedia = bannerImagePath;
 
     // Actualiza los campos del usuario con los valores de updateUserDto
     Object.assign(user, updateUserDto);

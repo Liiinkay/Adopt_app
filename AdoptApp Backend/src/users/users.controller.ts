@@ -8,18 +8,28 @@ import { SavePostDto } from './dto/save-post.dto';
 import { SaveFollowDto } from './dto/save-follow.dto';
 
 import { LoginUserDto } from './dto/login-user.dto';
-import { Req, SetMetadata } from '@nestjs/common/decorators';
+import { Req, SetMetadata, UploadedFiles, UseInterceptors } from '@nestjs/common/decorators';
 import { GetUser } from './decorators/get-user.decorator';
 import { ValidRoles } from './interfaces/valid-roles';
 import { Auth } from './decorators/auth.decorator';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  register(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'profileImage', maxCount: 1 },
+    { name: 'bannerImage', maxCount: 1 }
+  ]))
+  register(
+    @Body() createUserDto: CreateUserDto,
+    @UploadedFiles() files: { profileImage?: Express.Multer.File[], bannerImage?: Express.Multer.File[] }
+  ) {
+    const profileImagePath = files.profileImage ? `uploads/${files.profileImage[0].filename}` : null;
+    const bannerImagePath = files.bannerImage ? `uploads/${files.bannerImage[0].filename}` : null;
+    return this.usersService.create(createUserDto, profileImagePath, bannerImagePath);
   }
 
   @Post('login')
@@ -58,6 +68,7 @@ export class UsersController {
     }
   }
 
+  //Obtener seguidos del usuario
   @Get('following')
   @Auth( ValidRoles.user )
   getFollowing(@Req() req) {
@@ -65,6 +76,7 @@ export class UsersController {
     return this.usersService.getFollowing(followerId);
   }
 
+  //Obtener seguidores del usuario
   @Get('followers')
   @Auth(ValidRoles.user)
   getFollowers(@Req() req) {
@@ -78,11 +90,18 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'profileImage', maxCount: 1 },
+    { name: 'bannerImage', maxCount: 1 }
+  ]))
   update(
-    @Param('id', ParseUUIDPipe) id: string, 
-    @Body() updateUserDto: UpdateUserDto
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFiles() files: { profileImage?: Express.Multer.File[], bannerImage?: Express.Multer.File[] }
   ) {
-    return this.usersService.update(id, updateUserDto);
+    const profileImagePath = files.profileImage ? `uploads/${files.profileImage[0].filename}` : null;
+    const bannerImagePath = files.bannerImage ? `uploads/${files.bannerImage[0].filename}` : null;
+    return this.usersService.update(id, updateUserDto, profileImagePath, bannerImagePath);
   }
 
   @Delete(':id')
