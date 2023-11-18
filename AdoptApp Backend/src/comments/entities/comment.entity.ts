@@ -10,6 +10,9 @@ export class Comment {
   @Column()
   text: string;
 
+  @Column()
+  author: string;
+
   // Relación con la clase Informative (uno a muchos)
   @ManyToOne(
     () => Informative,

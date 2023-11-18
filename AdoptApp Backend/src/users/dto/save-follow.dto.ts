@@ -1,14 +1,8 @@
 import { IsString } from "class-validator";
 
 
-export class saveFollowDto{
+export class SaveFollowDto{
     
     @IsString()
-    id: string
-
-    @IsString()
-    authorId: string;
-
-    @IsString()
-    followerId: string;
+    followingId: string;
 }

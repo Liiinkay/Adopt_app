@@ -8,6 +8,8 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { Report } from './entities/report.entity';
 
+type PostType = Adopt | Lost | Informative;
+
 @Injectable()
 export class ReportsService {
   constructor(
@@ -75,5 +77,34 @@ export class ReportsService {
     });
     return this.reportRepository.save(report);
 
+  }
+
+  async getReportsByPostId(postId: string): Promise<Report[]> {
+    let post: PostType;
+
+    post = await this.adoptRepository.findOneBy({ id: postId });
+    if (post) return this.reportRepository.find({ where: { adoptPost: { id: postId } } });
+
+    post = await this.lostRepository.findOneBy({ id: postId });
+    if (post) return this.reportRepository.find({ where: { lostPost: { id: postId } } });
+
+    post = await this.informativeRepository.findOneBy({ id: postId });
+    if (post) return this.reportRepository.find({ where: { informativePost: { id: postId } } });
+
+    throw new NotFoundException(`Post with ID ${postId} not found`);
+  }
+
+  async getReportById(id: string): Promise<Report> {
+    const report = await this.reportRepository.findOneBy({ id });
+    if (!report) throw new NotFoundException(`Report with ID ${id} not found`);
+    return report;
+  }
+
+  async deleteReport(id: string): Promise<void> {
+  const report = await this.reportRepository.findOneBy({ id });
+  if (!report) {
+    throw new NotFoundException(`Report with ID ${id} not found.`);
+  }
+  await this.reportRepository.remove(report);
   }
 }

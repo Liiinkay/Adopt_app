@@ -7,22 +7,20 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @Post(':postId')
+  @Post('lost/:postId')
   async createCommentLostPost(
     @Param('postId', ParseUUIDPipe) postId: string,
     @Body() commentData: CreateCommentDto,
     ) {
-    // Lógica para crear un comentario principal
     const comment = await this.commentsService.createLostComment(postId, commentData);
     return comment;
   }
 
-  @Post(':postId')
+  @Post('informative/:postId')
   async createCommentInformativePost(
     @Param('postId', ParseUUIDPipe) postId: string,
     @Body() commentData: CreateCommentDto,
   ) {
-    // Lógica para crear un comentario principal
     const comment = await this.commentsService.createInformativeComment(postId, commentData);
     return comment;
   }
@@ -37,22 +35,15 @@ export class CommentsController {
     return reply;
   }
 
-  // Ruta para obtener todos los comentarios de una publicación de perdida
-  @Get('lost/:postId')
-  async getCommentsLostPost(
-    @Param('postId',ParseUUIDPipe) postId: string
-  ) {
-    const comments = await this.commentsService.getCommentsForLostPost(postId);
-    return comments;
+  // Get comentarios de un post mas la informacion de este por ID
+  @Get('/:postId/with-comments')
+  async getPostWithComments(@Param('postId', ParseUUIDPipe) postId: string) {
+    return await this.commentsService.getPostWithComments(postId);
   }
 
-  // Ruta para obtener todos los comentarios de una publicación informativa
-  @Get('informative/:postId')
-  async getCommentsInformativePost(
-    @Param('postId',ParseUUIDPipe) postId: string
-  ) {
-    const comments = await this.commentsService.getCommentsForInformativePost(postId);
-    return comments;
+  @Get('/:postId/comments')
+  async getCommentsByPostId(@Param('postId', ParseUUIDPipe) postId: string) {
+    return await this.commentsService.getCommentsByPostId(postId);
   }
 
   // Ruta para eliminar un comentario por su ID

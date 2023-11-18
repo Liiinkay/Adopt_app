@@ -5,7 +5,7 @@ import { User } from 'src/users/entities/user.entity';
 @Entity()
 export class SavedPost {
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id: string
 
     @Column('text')

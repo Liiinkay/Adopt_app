@@ -11,15 +11,7 @@ export class CreateLostDto{
     description: string;
   
     @IsString()
-    authorID: string;
-  
-    @IsString()
     type: string;
-  
-    @IsString({ each: true })
-    @IsArray()
-    @IsOptional()
-    multimedia: string[];
   
     @IsString()
     state: string;
