@@ -86,6 +86,9 @@ export class PostsService {
     lost.type = createLostDto.type;
     lost.state = createLostDto.state;
     lost.track_detail = createLostDto.track_detail;
+    lost.relevant_information = createLostDto.relevant_information;
+    lost.latitude = createLostDto.latitude;
+    lost.longitude = createLostDto.longitude
     lost.last_change = new Date();
     lost.coordinates = createLostDto.coordinates;
 

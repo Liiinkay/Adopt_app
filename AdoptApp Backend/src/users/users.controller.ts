@@ -13,6 +13,7 @@ import { GetUser } from './decorators/get-user.decorator';
 import { ValidRoles } from './interfaces/valid-roles';
 import { Auth } from './decorators/auth.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -49,6 +50,11 @@ export class UsersController {
   @Auth( ValidRoles.user )
   async rateUser(@Param('userId') userId: string, @Body('rating') rating: number) {
       return this.usersService.rateUser(userId, rating);
+  }
+
+  @Patch('change-password')
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
+    return this.usersService.changePassword(changePasswordDto.email, changePasswordDto.currentPassword, changePasswordDto.newPassword);
   }
 
   //@Get()

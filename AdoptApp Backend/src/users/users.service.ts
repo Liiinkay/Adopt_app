@@ -113,6 +113,24 @@ export class UsersService {
     return user;
   }
 
+  async changePassword(contact_email: string, currentPassword: string, newPassword: string): Promise<any> {
+    const user = await this.userRepository.findOne({ where: { contact_email } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordValid = bcrypt.compareSync(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    user.password = bcrypt.hashSync(newPassword, 10);
+    await this.userRepository.save(user);
+
+    return { message: 'Password changed successfully' };
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto, profileImagePath: string, bannerImagePath: string): Promise<User> {
     // Busca al usuario correspondiente por su ID
     const user = await this.userRepository.findOneBy({id: id});

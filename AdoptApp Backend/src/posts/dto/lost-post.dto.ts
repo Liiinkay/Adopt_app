@@ -21,4 +21,13 @@ export class CreateLostDto{
   
     @IsOptional()
     coordinates: string;
+
+    @IsOptional()
+    relevant_information: string;
+
+    @IsOptional()
+    latitude: string;
+
+    @IsOptional()
+    longitude: string;
 }

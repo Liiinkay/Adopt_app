@@ -40,8 +40,9 @@ export class User {
         default: 0
     })
     phone_number: number;
-
-    @Column('text')
+    
+    @Column('text', { unique: true })
+    //@Column('text')
     contact_email: string;
 
     @Column('text')
@@ -55,6 +56,16 @@ export class User {
 
     @Column({ type: 'int', default: 0 })
     ratingCount: number;
+
+    @Column('text', {
+        nullable: true
+    })
+    region: string;
+
+    @Column('text', {
+        nullable: true
+    })
+    city: string;
 
     @OneToMany(
         () => Post,

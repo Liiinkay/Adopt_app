@@ -46,5 +46,13 @@ export class CreateUserDto {
     @IsString()
     @IsOptional()
     facebook: string;
+
+    @IsString()
+    @IsOptional()
+    region: string;
+
+    @IsString()
+    @IsOptional()
+    city: string;
 }   
 

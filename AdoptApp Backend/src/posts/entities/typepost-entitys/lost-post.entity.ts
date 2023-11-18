@@ -23,6 +23,15 @@ export class Lost extends Post {
   @Column()
   coordinates: string;
 
+  @Column({ nullable: true })
+  relevant_information: string;
+
+  @Column({ nullable: true })
+  latitude: string;
+
+  @Column({ nullable: true })
+  longitude: string;
+
   @OneToMany(
     () => Comment,
     (comment) => comment.lost
