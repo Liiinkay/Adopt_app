@@ -128,18 +128,18 @@ export class UsersService {
     return updatedUser;
   }
 
-    async remove(id: string) {
-      let user: User;
+  async remove(id: string) {
+    let user: User;
 
-      if (isUUID(id) ){
-        user = await this.userRepository.findOneBy({ id: id });
-      }
-
-      if ( !user )
-      throw new NotFoundException(`User with id ${ id } not found`);
-
-      return this.userRepository.delete(id);
+    if (isUUID(id) ){
+      user = await this.userRepository.findOneBy({ id: id });
     }
+
+    if ( !user )
+    throw new NotFoundException(`User with id ${ id } not found`);
+
+    return this.userRepository.delete(id);
+  }
 
   async rateUser(userId: string, rating: number): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId } });

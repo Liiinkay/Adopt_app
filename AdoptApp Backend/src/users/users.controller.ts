@@ -8,12 +8,8 @@ import { SavePostDto } from './dto/save-post.dto';
 import { SaveFollowDto } from './dto/save-follow.dto';
 
 import { LoginUserDto } from './dto/login-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { Req, SetMetadata } from '@nestjs/common/decorators';
 import { GetUser } from './decorators/get-user.decorator';
-import { RawHeaders } from './decorators/raw-headers.decorator';
-import { UserRoleGuard } from './guards/user-role/user-role.guard';
-import { RoleProtected } from './decorators/role-protected.decorator';
 import { ValidRoles } from './interfaces/valid-roles';
 import { Auth } from './decorators/auth.decorator';
 

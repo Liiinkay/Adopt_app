@@ -56,13 +56,28 @@ export class PostsController {
 
   @Patch(':id')
   async updatePost(@Param('id', ParseUUIDPipe) id: string, @Body() updatePostDto: any): Promise<any> {
-      return await this.postsService.updatePost(id, updatePostDto);
+    return await this.postsService.updatePost(id, updatePostDto);
   }
 
   @Delete(':id')
   async deletePost(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-      await this.postsService.deletePost(id);
-      return { message: 'Post successfully deleted' };
+    await this.postsService.deletePost(id);
+    return { message: 'Post successfully deleted' };
+  }
+
+  @Get(':id')
+  async getPostById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.postsService.getPostById(id);
+  }
+
+  @Get('type/:type')
+  async getPostsByType(@Param('type') type: string) {
+    return this.postsService.getPostsByType(type);
+  }
+
+  @Get('/user/:id')
+  async getUserPostsJson(@Param('id', ParseUUIDPipe) id: string) {
+    return this.postsService.getUserPostsJson(id);
   }
 
   /////////////////////////
@@ -108,4 +123,23 @@ export class PostsController {
       const posts = await this.postsService.getPostsAppliedByUserId(idUser);
       return posts;
   }
+
+  ////////////////////////
+  // Seccion Imagenes   //
+  ////////////////////////
+
+  //Cambio de imagenes de los posteos.
+  @Patch(':id/images')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'images', maxCount: 5 }
+  ]))
+  async updatePostImages(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFiles() files: { images?: Express.Multer.File[] }
+  ) {
+    const mediaUrls = files.images.map(file => `uploads/${file.filename}`);
+    return this.postsService.updatePostImages(id, mediaUrls);
+  }
 }
+
+

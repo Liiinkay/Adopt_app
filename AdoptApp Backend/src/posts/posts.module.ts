@@ -15,6 +15,7 @@ import { PostLikes } from './entities/post-like.entity';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path'; 
+import { Question } from '../question/entities/question.entity';
 
 @Module({
   controllers: [PostsController],
@@ -29,7 +30,7 @@ import { extname } from 'path';
         },
       }),
     }),
-    TypeOrmModule.forFeature([User, Adopt, Informative, Lost, Post, PostMultimedia, Form, Report, Comment, PostLikes]),
+    TypeOrmModule.forFeature([User, Adopt, Informative, Lost, Post, PostMultimedia, Form, Report, Comment, PostLikes, Question]),
   ],
 })
 export class PostsModule {}

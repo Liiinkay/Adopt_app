@@ -34,6 +34,16 @@ export class ReportsController {
     return this.reportsService.createInformativeReport(userId, postId, createReportDto);
   }
 
+  @Get('byPost/:postId')
+  async getReportsByPostId(@Param('postId', ParseUUIDPipe) postId: string) {
+    return this.reportsService.getReportsByPostId(postId);
+  }
+
+  @Get(':id')
+  async getReportById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.reportsService.getReportById(id);
+  }
+
   @Delete(':id')
   async deleteReport(@Param('id') id: string) {
     return await this.reportsService.deleteReport(id);

@@ -1,5 +1,6 @@
+import { Question } from 'src/question/entities/question.entity';
 import { Report } from 'src/reports/entities/report.entity';
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToOne } from 'typeorm';
 import { Form } from '../form.entity';
 import { PostMultimedia } from '../multimedia-post.entity';
 import { PostLikes } from '../post-like.entity';
@@ -25,6 +26,9 @@ export class Adopt extends Post {
 
   @OneToMany(() => Form, form => form.post, {cascade: true })
   form: Form[]
+
+  @ManyToOne(() => Question, question => question.adoptPost, { cascade: true })
+  questions: Question[];
 
   @Column('text',{
     array: true,

@@ -14,6 +14,8 @@ import { Informative } from './entities/typepost-entitys/informative-post.entity
 import { createInformativeDto } from './dto/informative-post.dto';
 import { PostMultimedia } from './entities/multimedia-post.entity';
 
+type PostType = Adopt | Lost | Informative;
+
 @Injectable()
 export class PostsService {
   
@@ -120,13 +122,112 @@ export class PostsService {
     return savedPost;
   }
 
-  async getUserPosts(id: string): Promise<Adopt[]> {
-    // Lógica para obtener todos los posteos del usuario, sin importar el tipo
-    const posts = await this.adoptRepository.find({
-      where: { authorID: id },
-    });
-    return posts;
+  async getPostsByType(type: string): Promise<Adopt[] | Lost[] | Informative[]> {
+    switch(type) {
+        case 'adopt':
+            return await this.adoptRepository.find();
+        case 'lost':
+            return await this.lostRepository.find();
+        case 'informative':
+            return await this.informativeRepository.find();
+        default:
+            throw new BadRequestException(`Invalid post type: ${type}`);
+    }
   }
+
+  async getPostById(id: string): Promise<PostType> {
+    let post: PostType;
+
+    post = await this.adoptRepository.findOneBy({ id });
+    if (post) return post;
+
+    post = await this.lostRepository.findOneBy({ id });
+    if (post) return post;
+
+    post = await this.informativeRepository.findOneBy({ id });
+    if (!post) throw new NotFoundException(`Post with id ${id} not found`);
+
+    return post;
+}
+
+  async getUserPostsJson(userId: string): Promise<any[]> {
+    const allUserPosts = [
+      ...await this.adoptRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
+      ...await this.lostRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
+      ...await this.informativeRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
+    ];
+  
+    // Se transforma los objetos en un formato JSON entendible en el front
+    const userPostsJson = allUserPosts.map(post => {
+      return {
+        id: post.id,
+        title: post.title,
+        description: post.description,
+        likesCount: post.likesCount,
+        firstImageUrl: post.multimedia.length > 0 ? post.multimedia[0].url : null,
+        type: post.type
+        // Quedan pendientes segun peticion por definir
+      };
+  });
+  
+    return userPostsJson;
+  }
+
+  async updatePost(id: string, updatePostDto: any): Promise<Post> {
+    let post: Adopt | Lost | Informative;
+
+    // Buscar el post en las tres tablas
+    post = await this.adoptRepository.findOneBy({ id });
+    if (!post) post = await this.lostRepository.findOneBy({ id });
+    if (!post) post = await this.informativeRepository.findOneBy({ id });
+
+    if (!post) throw new NotFoundException(`Post with id ${id} not found`);
+
+    // Actualizar campos específicos
+    if (post instanceof Adopt) {
+      post.title = updatePostDto.title ?? post.title;
+      post.description = updatePostDto.description ?? post.description;  
+      post.state = updatePostDto.state ?? post.state;
+      post.gender = updatePostDto.gender ?? post.gender;
+      post.age = updatePostDto.age ?? post.age;
+      post.personality = updatePostDto.personality ?? post.personality;
+      post.medical_information = updatePostDto.medical_information ?? post.medical_information;
+    } else if (post instanceof Lost) {
+      post.track_detail = updatePostDto.track_detail ?? post.track_detail;
+      post.state = updatePostDto.state ?? post.state;
+      post.coordinates = updatePostDto.coordinates ?? post.coordinates;
+    } else if (post instanceof Informative) {
+      post.title = updatePostDto.title ?? post.title;
+      post.description = updatePostDto.description ?? post.description;
+    }
+
+    // Guarda el posteo actualizado
+    if (post instanceof Adopt) {
+        return await this.adoptRepository.save(post);
+    } else if (post instanceof Lost) {
+        return await this.lostRepository.save(post);
+    } else if (post instanceof Informative) {
+        return await this.informativeRepository.save(post);
+    }
+  }
+
+  async deletePost(id: string): Promise<void> {
+    let result = await this.adoptRepository.delete({ id });
+    if (result.affected === 0) {
+        result = await this.lostRepository.delete({ id });
+    }
+    if (result.affected === 0) {
+        result = await this.informativeRepository.delete({ id });
+    }
+
+    if (result.affected === 0) {
+        throw new NotFoundException(`Post with id ${id} not found`);
+  }
+}
+
+  ////////////////////////
+  // Seccion Formulario //
+  ////////////////////////
 
   async createFormAdoption(idPost: string, idApplicant: string,formData: Partial<Form>): Promise<Form> {
     const adopt = await this.adoptRepository.findOneBy(({ id: idPost }));
@@ -162,75 +263,6 @@ export class PostsService {
     return forms;
   }
 
-  async getUserPostsJson(userId: string): Promise<any[]> {
-    const allUserPosts = [
-      ...await this.adoptRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
-      ...await this.lostRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
-      ...await this.informativeRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
-    ];
-  
-    // Se transforma los objetos en un formato JSON entendible en el front
-    const userPostsJson = allUserPosts.map(post => {
-      return {
-        id: post.id,
-        title: post.title,
-        description: post.description,
-        likesCount: post.likesCount,
-        firstImageUrl: post.multimedia.length > 0 ? post.multimedia[0].url : null,
-        type: post.type
-        // Quedan pendientes segun peticion por definir
-      };
-    });
-  
-    return userPostsJson;
-  }
-
-  async updatePost(id: string, updatePostDto: any): Promise<Post> {
-    let post: Adopt | Lost | Informative;
-
-    // Buscar el post en las tres tablas
-    post = await this.adoptRepository.findOneBy({ id });
-    if (!post) post = await this.lostRepository.findOneBy({ id });
-    if (!post) post = await this.informativeRepository.findOneBy({ id });
-
-    if (!post) throw new NotFoundException(`Post with id ${id} not found`);
-
-    // Actualizar campos específicos
-    if (post instanceof Adopt) {
-      post.title = updatePostDto.title ?? post.title;
-      post.description = updatePostDto.description ?? post.description;  
-      post.state = updatePostDto.state ?? post.state;
-      post.gender = updatePostDto.gender ?? post.gender;
-      post.age = updatePostDto.age ?? post.age;
-      post.personality = updatePostDto.personality ?? post.personality;
-      post.medical_information = updatePostDto.medical_information ?? post.medical_information;
-    } else if (post instanceof Lost) {
-      post.track_detail = updatePostDto.track_detail ?? post.track_detail;
-      post.state = updatePostDto.state ?? post.state;
-      post.coordinates = updatePostDto.coordinates ?? post.coordinates;
-    } else if (post instanceof Informative) {
-      post.title = updatePostDto.title ?? post.title;
-      post.description = updatePostDto.description ?? post.description;
-    }
-
-    // Guardar el posteo actualizado
-    if (post instanceof Adopt) {
-        return await this.adoptRepository.save(post);
-    } else if (post instanceof Lost) {
-        return await this.lostRepository.save(post);
-    } else if (post instanceof Informative) {
-        return await this.informativeRepository.save(post);
-    }
-  }
-
-  async deletePost(id: string): Promise<void> {
-    const post = await this.postRepository.findOneBy({ id: id });
-    if (!post) {
-        throw new NotFoundException(`Post with id ${id} not found`);
-    }
-    await this.postRepository.remove(post);
-  }
-
   //funcion de errores
   private hadleDBExceptions( error: any ){
     if ( error.code === '23505' )
@@ -256,7 +288,7 @@ export class PostsService {
     }
 
     let existingLike;
-    // Determina el tipo específico de post y verifica si ya existe un "like"
+
     if (post instanceof Adopt) {
         existingLike = await this.postLikesRepository.findOne({ where: { adoptPost: { id: postId }, user: { id: userId } } });
     } else if (post instanceof Lost) {
@@ -336,5 +368,36 @@ export class PostsService {
            await this.adoptRepository.findOne({ where: { id: postId } }) ||
            await this.lostRepository.findOne({ where: { id: postId } });
   }
-  
+
+  ////////////////////////
+  // Seccion Imagenes   //
+  ////////////////////////
+
+  async updatePostImages(id: string, newMediaUrls: string[]): Promise<void> {
+    const post = await this.findPost(id);
+    if (!post) throw new NotFoundException(`Post with id ${id} not found`);
+
+    // Determina el tipo de post y elimina las imágenes antiguas
+    if (post instanceof Adopt) {
+      await this.postMultimediaRepository.delete({ adoptPost: { id } });
+    } else if (post instanceof Lost) {
+      await this.postMultimediaRepository.delete({ lostPost: { id } });
+    } else if (post instanceof Informative) {
+      await this.postMultimediaRepository.delete({ informativePost: { id } });
+    }
+
+    // Agregar nuevas imágenes
+    for (const url of newMediaUrls) {
+      const multimedia = new PostMultimedia();
+      multimedia.url = url;
+      if (post instanceof Adopt) {
+        multimedia.adoptPost = post;
+      } else if (post instanceof Lost) {
+        multimedia.lostPost = post;
+      } else if (post instanceof Informative) {
+        multimedia.informativePost = post;
+      }
+      await this.postMultimediaRepository.save(multimedia);
+    }
+  }
 }
