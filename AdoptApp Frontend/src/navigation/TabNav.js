@@ -2,13 +2,12 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from '@expo/vector-icons'; 
 
-import HomeScreen from "../screens/HomeScreen";
 import CreatePostsScreen from "../screens/CreatePostsScreen";
-import UserAccountScreen from "../screens/UserAccountScreen";
+import DrawerGroup from "./DrawerNav";
 
 const Tab = createBottomTabNavigator();
 
-const AppTabGroup = () => {
+const TabGroup = () => {
     return( 
         <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -29,15 +28,17 @@ const AppTabGroup = () => {
             },
             tabBarActiveTintColor: 'white',
             tabBarInactiveTintColor: 'gray',
-            headerShown: false,
             tabBarStyle: { backgroundColor: 'black' }
         })}
         >
-            <Tab.Screen name="Posts" component={HomeScreen}/>
+            <Tab.Screen 
+                name="Posts" 
+                component={DrawerGroup}
+                options={{ headerShown: false }}
+            />
             <Tab.Screen name="Crear" component={CreatePostsScreen}/>
-            <Tab.Screen name="Cuenta" component={UserAccountScreen}/>
         </Tab.Navigator>
     )
 }
 
-export default AppTabGroup;
+export default TabGroup;
