@@ -10,24 +10,6 @@ const HomeScreen = ({navigation}) => {
     const { navigate } = useNavigation();
     return (
         <View style={{flex: 1}}>
-            <SafeAreaView style={styles.headerContainer}>
-                <StatusBar color={'black'}/>
-                <TouchableOpacity style={styles.menuIcon}>
-                    <Ionicons name="menu" size={30} color="#1E1E1E" />
-                </TouchableOpacity>
-                <View style={styles.postTypeContainer}>
-                    <Text style={styles.title}>Adopción</Text>
-                    <Ionicons name="chevron-down-outline" size={20}/>
-                </View>
-                <View style={styles.userImageContainer}>
-                    <Pressable
-                        onPress={() => {
-                        navigate("UserProfile", { user });
-                    }}>
-                        <Image src={user.image} style={styles.userImage} />
-                    </Pressable>    
-                </View>
-            </SafeAreaView>
            <PostListScreen/>
         </View>
 

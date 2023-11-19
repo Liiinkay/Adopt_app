@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useLayoutEffect} from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, StatusBar } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,33 +9,28 @@ import PreguntasRespuestasComponent from "../components/Coments";
 import LikeButton from "../components/LikeButton";
 import { useNavigation } from "@react-navigation/native";
 
-const PostDetailScreen = ({ navigation }) => {
+const PostDetailScreen = ({ navigation, route }) => {
     const {
         params: { post },
     } = useRoute();
     const user = post.user;
 
     const { navigate } = useNavigation();
-    /*  
-    if(post.type === 'search'){
-        return(
+    useLayoutEffect(() => {
+        navigation.setOptions({
+          title: route.params?.postType || 'Detalle del Post', // Personaliza el título
+          headerRight: () => (
+            <TouchableOpacity onPress={() => Alert.alert('Menú')}>
+              <Ionicons name="ellipsis-vertical" size={24} color="black" style={{ marginRight: 15 }} />
+            </TouchableOpacity>
+          ),
+        });
+      }, [navigation, route]);
 
-        )
-    }
-     */
     return(
         <SafeAreaView>
             <StatusBar color={'black'}/>
             <ScrollView>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back-outline" size={30} color={'#1E1E1E'} />
-                    </TouchableOpacity>
-                    <Text style={styles.headerText}>Adopción</Text>
-                    <View style={{ flex: 1, flexDirection: 'row-reverse', marginLeft: 5 }}>
-                        <Ionicons name="ellipsis-vertical" size={20}/>
-                    </View>
-                </View>
                 <View style={styles.imageContainer}>
                     <SliderBox
                         images={post.multimedia}
