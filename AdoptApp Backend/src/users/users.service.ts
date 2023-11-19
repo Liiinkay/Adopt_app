@@ -19,7 +19,6 @@ import { Lost } from 'src/posts/entities/typepost-entitys/lost-post.entity';
 import { Adopt } from 'src/posts/entities/typepost-entitys/adopt-post.entity';
 
 
-
 @Injectable()
 export class UsersService {
 
@@ -59,27 +58,30 @@ export class UsersService {
 
   ) {}
 
-  async create(createUserDto: CreateUserDto, profileImagePath: string, bannerImagePath: string) {
-    try{
-      const { password, ...userData} = createUserDto;
-
+  async create(createUserDto: CreateUserDto, profileImagePath?: string, bannerImagePath?: string) {
+    try {
+      const { password, ...userData } = createUserDto;
+  
+      // Se establecen imágenes predeterminadas si no se proporcionan
+      const defaultProfileImg = 'img/profile/profile_default.jpg';
+      const defaultBannerImg = 'img/banner/banner_default.jpg';
+  
       const user = this.userRepository.create({
         ...userData,
         password: bcrypt.hashSync(password, 10),
-        profile_img: profileImagePath,
-        banner_multimedia: bannerImagePath
+        profile_img: profileImagePath || defaultProfileImg,
+        banner_multimedia: bannerImagePath || defaultBannerImg,
       });
-
-      // Guardar el nuevo usuario en la base de datos.
-      await this.userRepository.save( user )
+  
+      await this.userRepository.save(user);
       delete user.password;
-
+  
       return {
         ...user,
-        token: this.getJwtToken( {id: user.id} )
+        token: this.getJwtToken({ id: user.id }),
       };
-
-    }catch (error){
+  
+    } catch (error) {
       this.hadleDBExceptions(error);
     }
   }
