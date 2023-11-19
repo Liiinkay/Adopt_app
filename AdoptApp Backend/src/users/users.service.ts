@@ -12,13 +12,26 @@ import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
+import * as nodemailer from 'nodemailer';
 
 import { Informative } from '../posts/entities/typepost-entitys/informative-post.entity';
 import { Lost } from 'src/posts/entities/typepost-entitys/lost-post.entity';
 import { Adopt } from 'src/posts/entities/typepost-entitys/adopt-post.entity';
 
+
+
 @Injectable()
 export class UsersService {
+
+  private createTransporter() {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL,     // Tu correo de Gmail
+        pass: process.env.EMAIL_PASS // Tu contraseña de aplicación de Gmail
+      },
+    });
+  }
 
   private readonly logger = new Logger('ProductService');
 
@@ -129,6 +142,36 @@ export class UsersService {
     await this.userRepository.save(user);
 
     return { message: 'Password changed successfully' };
+  }
+
+  // Método de restablecimiento de contraseña
+  async requestPasswordReset(contact_email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { contact_email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Genera contraseña temporal
+    const tempPassword = Math.random().toString(36).slice(-8);
+    user.password = bcrypt.hashSync(tempPassword, 10);
+
+    await this.userRepository.save(user);
+
+    // Enviar correo electrónico con la contraseña temporal
+    await this.sendResetPasswordEmail(contact_email, tempPassword);
+  }
+
+  // Método para enviar correo electrónico con la contraseña temporal
+  private async sendResetPasswordEmail(email: string, tempPassword: string): Promise<void> {
+    const transporter = this.createTransporter();
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Recuperación de Contraseña',
+      text: `Tu contraseña temporal es: ${tempPassword}`,
+    };
+
+    await transporter.sendMail(mailOptions);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, profileImagePath: string, bannerImagePath: string): Promise<User> {
