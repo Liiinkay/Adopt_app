@@ -21,15 +21,15 @@ export class UsersController {
 
   @Post('register')
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'profileImage', maxCount: 1 },
-    { name: 'bannerImage', maxCount: 1 }
+    { name: 'profile_img', maxCount: 1 },
+    { name: 'banner_multimedia', maxCount: 1 }
   ]))
   register(
     @Body() createUserDto: CreateUserDto,
-    @UploadedFiles() files: { profileImage?: Express.Multer.File[], bannerImage?: Express.Multer.File[] }
+    @UploadedFiles() files: { profile_img?: Express.Multer.File[], banner_multimedia?: Express.Multer.File[] }
   ) {
-    const profileImagePath = files.profileImage ? `uploads/${files.profileImage[0].filename}` : null;
-    const bannerImagePath = files.bannerImage ? `uploads/${files.bannerImage[0].filename}` : null;
+    const profileImagePath = files.profile_img && files.profile_img[0] ? `img/profile/${files.profile_img[0].filename}` : null;
+    const bannerImagePath = files.banner_multimedia && files.banner_multimedia[0] ? `img/banner/${files.banner_multimedia[0].filename}` : null;
     return this.usersService.create(createUserDto, profileImagePath, bannerImagePath);
   }
 

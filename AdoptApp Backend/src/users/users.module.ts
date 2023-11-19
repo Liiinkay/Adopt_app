@@ -16,6 +16,9 @@ import { Informative } from '../posts/entities/typepost-entitys/informative-post
 import { Lost } from 'src/posts/entities/typepost-entitys/lost-post.entity';
 import { Adopt } from 'src/posts/entities/typepost-entitys/adopt-post.entity';
 import { PostLikes } from '../posts/entities/post-like.entity';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Module({
   controllers: [UsersController],
@@ -31,8 +34,6 @@ import { PostLikes } from '../posts/entities/post-like.entity';
       imports: [ ConfigModule ],
       inject: [ ConfigService ],
       useFactory: ( configService: ConfigService ) => {
-        //console.log('JWT SECRET', configService.get('JWT_SECRET'))
-        //console.log('JWT SECRET', process.env.JWT_SECRET)
         return{
           secret: configService.get('JWT_SECRET'),
           signOptions: {
@@ -40,14 +41,17 @@ import { PostLikes } from '../posts/entities/post-like.entity';
           }
         }
       },
-    })
-
-    //JwtModule.register({
-    //  secret: process.env.JWT_SECRET,
-    //  signOptions: {
-    //    expiresIn: '2h'
-    //  }
-    //})
+    }),
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './img', // Directorio base para los archivos de usuario
+        filename: (req, file, cb) => {
+          const folder = file.fieldname === 'profile_img' ? 'profile' : 'banner';
+          const randomName = Array(32).fill(null).map(() => Math.round(Math.random() * 16).toString(16)).join('');
+          cb(null, `${folder}/${randomName}${extname(file.originalname)}`); // Nombre de archivo aleatorio en la subcarpeta correspondiente
+        },
+      }),
+    }),
   ],
   exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule]
 })
