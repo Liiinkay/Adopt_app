@@ -1,28 +1,76 @@
 import React from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthProvider';
+
+import config from '../../config';
+
+const apiUrl = config.API_URL;
 
 // Esquema de validación de Yup
 const SignupSchema = Yup.object().shape({
-  nickname: Yup.string().required('Requerido'),
-  name: Yup.string().required('Requerido'),
-  last_name: Yup.string().required('Requerido'),
-  password: Yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('Requerido'),
-  phone_number: Yup.string().matches(/^[0-9]{9}$/, 'El número de teléfono debe tener exactamente 9 dígitos').required('Requerido'),
-  contact_email: Yup.string().email('Correo electrónico inválido').required('Requerido'),
-  rut: Yup.string(),
+  nickname: Yup.string()
+    .required('Escribe tu nombre de usuario')
+    .max(25, 'El nombre de usuario no puede exceder los 25 caracteres'),
+  name: Yup.string()
+    .required('Escribe tu nombre')
+    .max(30, 'El nombre no puede exceder los 30 caracteres'),
+  last_name: Yup.string()
+    .required('Escribe tu apellid')
+    .max(30, 'El apellido no puede exceder los 30 caracteres'),
+  password: Yup.string()
+    .min(6, 'La contraseña debe tener al menos 6 caracteres')
+    .max(20, 'La contraseña no puede exceder los 20 caracteres')
+    .required('Escribe una contraseña'),
+  phone_number: Yup.string()
+    .matches(/^[0-9]{9}$/, 'El número de teléfono debe tener exactamente 9 dígitos')
+    .required('Escribe tu número de contacto'),
+  contact_email: Yup.string()
+    .email('Correo electrónico inválido')
+    .required('Escribe tu correo'),
+  rut: Yup.string()
+    .test(
+      'valid-rut',
+      'El RUT debe de estar escrito con o sin puntos y con guión',
+      (value) => !value || validateRut(value) // Valida solo si hay un valor
+  ),
   banner_multimedia: '',
   profile_img: '',
   instagram: '',
   facebook: '',
 });
 
+const validateRut = (rut) => {
+  // Eliminar puntos y guion
+  let valor = rut.replace(/\./g, '').replace('-', '');
+
+  // Extraer dígito verificador e invertir orden de los números
+  let cuerpo = valor.slice(0, -1).split('').reverse();
+  let dv = valor.slice(-1).toUpperCase();
+
+  // Calcular suma según el algoritmo del módulo 11
+  let suma = 0;
+  let multiplo = 2;
+  for (let i = 0; i < cuerpo.length; i++) {
+    suma += parseInt(cuerpo[i]) * multiplo;
+    multiplo = multiplo === 7 ? 2 : multiplo + 1;
+  }
+
+  // Calcular dígito verificador
+  let dvEsperado = 11 - (suma % 11);
+  dvEsperado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
+
+  // Comparar el DV esperado con el ingresado
+  return dv === dvEsperado;
+};
+
 
 const SignUpScreen = () => {
   const [isPasswordShown, setIsPasswordShown] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const { logIn } = useAuth();
 
   // Función para determinar el estilo del borde en función del estado de error
   const getBorderStyle = (errors, touched, fieldName) => {
@@ -37,27 +85,36 @@ const SignUpScreen = () => {
     return (touched[fieldName] && errors[fieldName]) ? 'red' : '#a9a9a9';
   };
 
-
   const handleFormSubmit = async (values) => {
-    console.log(JSON.stringify(values));
+    const url = apiUrl + '/api/users/register'
+    console.log(url);
     const formattedValues = {
       ...values,
       phone_number: values.phone_number ? parseInt(values.phone_number, 10) : null,
     };
     setIsLoading(true); // Activa el loader
     try {
-      await fetch("http://10.0.2.2:3000/api/users/register", {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formattedValues),
-      }).then((response) => response.json())
-      .then((json) => console.log(json))
-      .catch((error) => console.error(error));
+      })
+      
+      const json = await response.json();
+  
+      if (response.ok) {
+        // Inicio de sesión exitoso
+        logIn(json.token, json.id);
+        navigation.navigate('AppStackGroup');
+      } else {
+        // Manejo de errores, como credenciales incorrectas
+        console.error('Error de creación de cuenta:', json.message);
+      }
     } catch (error) {
-      console.error(error);
+      console.error('Error en la petición:', error);
     }
     setIsLoading(false); // Desactiva el loader
   };
@@ -65,7 +122,7 @@ const SignUpScreen = () => {
   return (
     <ScrollView style={styles.safeArea}>
       <View style={styles.scrollViewContent}>
-        <Text style={styles.titleText}>Crear Cuenta</Text>
+        <Text style={styles.titleText}>Ingresa tus datos</Text>
 
         <Formik
           initialValues={{
@@ -84,7 +141,7 @@ const SignUpScreen = () => {
           validationSchema={SignupSchema}
           onSubmit={handleFormSubmit}
         >
-          {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid, dirty }) => (
             <>
               {/* Campos del formulario */}
               <View style={styles.inputContainer}>
@@ -95,6 +152,7 @@ const SignUpScreen = () => {
                   keyboardType='default'
                   onChangeText={handleChange('nickname')}
                   onBlur={handleBlur('nickname')}
+                  maxLength={25}
                   value={values.nickname}
                   style={getBorderStyle(errors, touched, 'nickname')}
                 />
@@ -109,6 +167,7 @@ const SignUpScreen = () => {
                   keyboardType='default'
                   onChangeText={handleChange('name')}
                   onBlur={handleBlur('name')}
+                  maxLength={30}
                   value={values.name}
                   style={getBorderStyle(errors, touched, 'name')}
                 />
@@ -123,6 +182,7 @@ const SignUpScreen = () => {
                   keyboardType='default'
                   onChangeText={handleChange('last_name')}
                   onBlur={handleBlur('last_name')}
+                  maxLength={30}
                   value={values.last_name}
                   style={getBorderStyle(errors, touched, 'last_name')}
                 />
@@ -137,11 +197,14 @@ const SignUpScreen = () => {
                   keyboardType='default'
                   onChangeText={handleChange('rut')}
                   onBlur={handleBlur('rut')}
+                  maxLength={25}
                   value={values.rut}
                   style={getBorderStyle(errors, touched, 'rut')}
                 />
                 {touched.rut && errors.rut && <Text style={styles.errorText}>{errors.rut}</Text>}
               </View>
+
+              <Text style={styles.sectionTitle}>Información de Contacto</Text>
 
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Correo personal</Text>
@@ -151,23 +214,35 @@ const SignUpScreen = () => {
                   keyboardType='email-address'
                   onChangeText={handleChange('contact_email')}
                   onBlur={handleBlur('contact_email')}
+                  maxLength={40}
                   value={values.contact_email}
-                  style={getBorderStyle(errors, touched, 'email')}
+                  style={touched.contact_email && errors.contact_email ? styles.inputError : styles.textInput}
                 />
                 {touched.contact_email && errors.contact_email && <Text style={styles.errorText}>{errors.contact_email}</Text>}
               </View>
 
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Número de teléfono</Text>
-                <TextInput
-                  placeholder='Escribe tu número de teléfono'
-                  placeholderTextColor={getPlaceholderColor(errors, touched, 'phone_number')}
-                  keyboardType='numeric'
-                  onChangeText={handleChange('phone_number')}
-                  onBlur={handleBlur('phone_number')}
-                  value={values.phone_number}
-                  style={getBorderStyle(errors, touched, 'phone_number')}
-                />
+                <View style={touched.phone_number && errors.phone_number ? styles.phoneFieldErrorContainer : styles.phoneFieldContainer}>
+                  <View style={styles.flagContainer}>
+                    <Image
+                      source={require('../../assets/images/chile-flag.png')}
+                      style={styles.flagIcon}
+                      resizeMode="contain" 
+                    />
+                    <Text style={styles.phonePrefix}>+56</Text>
+                  </View>
+                  <TextInput
+                    placeholder="Ingresa tu número de telefono"
+                    placeholderTextColor={getPlaceholderColor(errors, touched, 'phone_number')}
+                    keyboardType="numeric"
+                    maxLength={9}
+                    onChangeText={handleChange('phone_number')}
+                    onBlur={handleBlur('phone_number')}
+                    value={values.phone_number}
+                    style={styles.phoneInput}
+                  />
+                </View>
                 {touched.phone_number && errors.phone_number && <Text style={styles.errorText}>{errors.phone_number}</Text>}
               </View>
 
@@ -180,6 +255,7 @@ const SignUpScreen = () => {
                     secureTextEntry={!isPasswordShown}
                     onChangeText={handleChange('password')}
                     onBlur={handleBlur('password')}
+                    maxLength={20}
                     value={values.password}
                     style={getBorderStyle(errors, touched, 'password')}
                   />
@@ -191,19 +267,19 @@ const SignUpScreen = () => {
                   </TouchableOpacity>
                 </View>
                 {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                <TouchableOpacity
+                  style={[styles.button, !(isValid && dirty) && styles.disabledButton]}
+                  onPress={handleSubmit}
+                  disabled={!(isValid && dirty)}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Enviar Formulario</Text>
+                  )}
+                </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                style={[styles.button, { marginTop: 20 }]}
-                onPress={handleSubmit}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Enviar Formulario</Text>
-                )}
-              </TouchableOpacity>
             </>
           )}
         </Formik>
@@ -226,12 +302,52 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  phoneFieldContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#a9a9a9',
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden', 
+  },
+  flagContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    borderRightWidth: 1,
+    borderColor: '#a9a9a9',
+    borderTopLeftRadius: 8, 
+    borderBottomLeftRadius: 8,
+  },
+  flagIcon: {
+    width: 24,
+    height: 24,
+  },
+  phonePrefix: {
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 5,
+  },
+  phoneInput: {
+    flex: 1,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    height: 48,
+  },
   inputContainer: {
     marginBottom: 12,
   },
   inputLabel: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '400',
     color: '#333',
     marginBottom: 5,
   },
@@ -251,6 +367,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
   },
+  phoneFieldErrorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: 'red',
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   passwordInputContainer: {
     position: 'relative',
   },
@@ -265,16 +389,21 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#F348A4',
-    marginVertical: 10,
-    borderRadius: 8,
+    borderRadius: 25,
     padding: 15,
     alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 20,
+    width: '80%',
+    alignSelf: 'center',
+    marginVertical: 10, 
   },
   buttonText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '500',
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
   },
 });
 
