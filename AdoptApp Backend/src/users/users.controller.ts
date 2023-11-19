@@ -47,6 +47,7 @@ export class UsersController {
     return { message: 'Logout successful' };
   }
 
+  //calificar a usuario
   @Post(':userId/rate')
   @Auth( ValidRoles.user )
   async rateUser(@Param('userId') userId: string, @Body('rating') rating: number) {
@@ -61,23 +62,7 @@ export class UsersController {
   @Post('request-password-reset')
   async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto) {
     await this.usersService.requestPasswordReset(requestPasswordResetDto.email);
-    return { message: 'Password reset email sent' };
-  }
-  //@Get()
-  //findAll(){
-  //  return this.usersService.findAll();
-  //}
-
-  @Get('private3')
-  @Auth( ValidRoles.user )
-  privateRoute3(
-    @GetUser() user: User
-  ) {
-
-    return {
-      ok: true,
-      user
-    }
+    return { message: 'Solicitud de restablecimiento de contraseña enviada con éxito' };
   }
 
   //Obtener seguidos del usuario
@@ -101,19 +86,19 @@ export class UsersController {
     return this.usersService.findOne(term);
   }
 
-  @Patch(':id')
+  @Patch('update-user/:id')
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'profileImage', maxCount: 1 },
-    { name: 'bannerImage', maxCount: 1 }
+      { name: 'profile_img', maxCount: 1 },
+      { name: 'banner_multimedia', maxCount: 1 }
   ]))
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @UploadedFiles() files: { profileImage?: Express.Multer.File[], bannerImage?: Express.Multer.File[] }
-  ) {
-    const profileImagePath = files.profileImage ? `uploads/${files.profileImage[0].filename}` : null;
-    const bannerImagePath = files.bannerImage ? `uploads/${files.bannerImage[0].filename}` : null;
-    return this.usersService.update(id, updateUserDto, profileImagePath, bannerImagePath);
+  async update(
+      @Param('id', ParseUUIDPipe) id: string,
+      @Body() updateUserDto: UpdateUserDto,
+      @UploadedFiles() files: { profile_img?: Express.Multer.File[], banner_multimedia?: Express.Multer.File[] }
+  ): Promise<User> {
+      const profileImagePath = files.profile_img ? `uploads/${files.profile_img[0].filename}` : null;
+      const bannerImagePath = files.banner_multimedia ? `uploads/${files.banner_multimedia[0].filename}` : null;
+      return this.usersService.update(id, updateUserDto, profileImagePath, bannerImagePath);
   }
 
   @Delete(':id')

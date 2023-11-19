@@ -79,6 +79,7 @@ export class UsersService {
       return {
         ...user,
         token: this.getJwtToken({ id: user.id }),
+        message: 'Usuario creado con éxito'
       };
   
     } catch (error) {
@@ -95,35 +96,41 @@ export class UsersService {
     })
 
     if( !user )
-      throw new UnauthorizedException('Credentials are not valid (nickname)');
+      throw new UnauthorizedException('Credenciales no válidas (nickname)');
 
     if ( !bcrypt.compareSync( password, user.password ) )
-    throw new UnauthorizedException('Credentials are not valid (password)');
+      throw new UnauthorizedException('Credentials are not valid (password)');
 
     //Return del token
     return {
       ...user,
-      token: this.getJwtToken( {id: user.id} )
+      token: this.getJwtToken( {id: user.id} ),
+      message: 'Inicio de sesión exitoso'
     };
   }
 
-  logout(userId: string): void {
+  logout(userId: string): { message: string } {
     console.log(`User with ID ${userId} logged out`);
+    return { message: 'Cierre de sesión exitoso' };
   }
 
   findAll() {
-    return this.userRepository.find();
+    const users = this.userRepository.find();
+    if ( !users ) {
+      throw new NotFoundException('No se encontraron usuarios');
+    }
+    return users;
   }
 
-  async findOne(term: string) {
+  async findOne(id: string) {
     let user: User;
 
-    if (isUUID(term) ){
-      user = await this.userRepository.findOneBy({ id: term });
+    if (isUUID(id) ){
+      user = await this.userRepository.findOneBy({ id: id });
     }
 
     if ( !user )
-    throw new NotFoundException(`Product with id ${ term } not found`);
+      throw new NotFoundException(`Usuario con el id ${id} no encontrado`);
 
     return user;
   }
@@ -143,14 +150,14 @@ export class UsersService {
     user.password = bcrypt.hashSync(newPassword, 10);
     await this.userRepository.save(user);
 
-    return { message: 'Password changed successfully' };
+    return { message: 'Contraseña cambiada con éxito' };
   }
 
   // Método de restablecimiento de contraseña
-  async requestPasswordReset(contact_email: string): Promise<void> {
+  async requestPasswordReset(contact_email: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { contact_email } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuario no encontrado');
     }
 
     // Genera contraseña temporal
@@ -161,6 +168,7 @@ export class UsersService {
 
     // Enviar correo electrónico con la contraseña temporal
     await this.sendResetPasswordEmail(contact_email, tempPassword);
+    return { message: 'Solicitud de restablecimiento de contraseña enviada con éxito' };
   }
 
   // Método para enviar correo electrónico con la contraseña temporal
@@ -176,25 +184,28 @@ export class UsersService {
     await transporter.sendMail(mailOptions);
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, profileImagePath: string, bannerImagePath: string): Promise<User> {
-    // Busca al usuario correspondiente por su ID
+  async update(id: string, updateUserDto: UpdateUserDto, profileImagePath: string, bannerImagePath: string): Promise<any> {
     const user = await this.userRepository.findOneBy({id: id});
 
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    if (profileImagePath) user.profile_img = profileImagePath;
-    if (bannerImagePath) user.banner_multimedia = bannerImagePath;
+    // Actualiza la imagen de perfil si se ha subido una nueva, de lo contrario mantiene la actual
+    user.profile_img = profileImagePath ? profileImagePath : user.profile_img;
 
-    // Actualiza los campos del usuario con los valores de updateUserDto
+    // Actualiza la imagen de banner si se ha subido una nueva, de lo contrario mantiene la actual
+    user.banner_multimedia = bannerImagePath ? bannerImagePath : user.banner_multimedia;
+
+    // Actualiza los demás campos del usuario
     Object.assign(user, updateUserDto);
 
     // Guarda la actualización en la base de datos
     const updatedUser = await this.userRepository.save(user);
 
-    return updatedUser;
-  }
+    return { ...updatedUser, message: 'Usuario actualizado con éxito' };
+}
+
 
   async remove(id: string) {
     let user: User;
@@ -204,22 +215,25 @@ export class UsersService {
     }
 
     if ( !user )
-    throw new NotFoundException(`User with id ${ id } not found`);
+    throw new NotFoundException(`Usuario con id ${id} no encontrado`);
 
-    return this.userRepository.delete(id);
+    await this.userRepository.delete(id);
+    return { message: 'Usuario eliminado con éxito' };
   }
 
-  async rateUser(userId: string, rating: number): Promise<void> {
+  async rateUser(userId: string, rating: number) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-        throw new Error('User not found');
+      throw new NotFoundException('Usuario no encontrado');
     }
 
-    // Actualizar la calificación promedio
+    // Se actualiza la calificacion promedio
     user.rating = ((user.rating * user.ratingCount) + rating) / (user.ratingCount + 1);
     user.ratingCount++;
 
     await this.userRepository.save(user);
+
+    return { message: 'Usuario calificado con éxito' };
   }
 
   private hadleDBExceptions( error: any ): never{
@@ -241,7 +255,7 @@ export class UsersService {
   // Seccion SavedPost //
   ///////////////////////
 
-  async savePost(userId: string, postId: string): Promise<SavedPost> {
+  async savePost(userId: string, postId: string): Promise<{ savedPost: SavedPost, message: string }> {
 
     // Se Verifica si el post ya está guardado
     const existingSavedPost = await this.savedPostRepository.findOne({
@@ -249,7 +263,7 @@ export class UsersService {
     });
 
     if (existingSavedPost) {
-      throw new Error('Post already saved');
+      throw new BadRequestException('Publicación ya guardada');
     }
 
     // Se verifica si el post existe en alguna de las tres bases de datos
@@ -258,7 +272,7 @@ export class UsersService {
     || await this.lostRepository.findOneBy({ id: postId });
 
     if (!postExists) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('Publicación no encontrada');
     }
 
     // Crea el nuevo posteo guardado
@@ -267,42 +281,53 @@ export class UsersService {
       idPost: postId
     });
 
-    return this.savedPostRepository.save(newSavedPost);
+    return {
+      savedPost: newSavedPost,
+      message: 'Publicación guardada con éxito'
+    };
+
   }
 
-  async removeSavedPost(userId: string, postId: string): Promise<void> {
+  async removeSavedPost(userId: string, postId: string): Promise<{ message: string }>{
     const savedPost = await this.savedPostRepository.findOne({
     where: { authorId: userId, idPost: postId }
     });
 
     if (!savedPost) {
-    throw new NotFoundException('Saved Post not found');
+      throw new NotFoundException('Publicación guardada no encontrada');
     }
 
     await this.savedPostRepository.remove(savedPost);
+    return { message: 'Publicación guardada eliminada con éxito' };
   }
 
   async getSavedPosts(idUser: string): Promise<SavedPost[]> {
-    return this.savedPostRepository.find({
+    const savedPosts = await this.savedPostRepository.find({
       where: { authorId: idUser }
     });
+  
+    if (!savedPosts || savedPosts.length === 0) {
+      throw new NotFoundException('No se encontraron publicaciones guardadas');
+    }
+  
+    return savedPosts;
   }
 
   /////////////////////
   // Seccion Follows //
   /////////////////////
 
-  async followUser(followerId: string, followingId: string): Promise<Follows> {
-    // Se verifica si el seguidor (follower) existe
+  async followUser(followerId: string, followingId: string):  Promise<{ follow: Follows, message: string }> {
+    // Se verifica si el seguidor existe
     const follower = await this.userRepository.findOneBy({ id: followerId });
     if (!follower) {
-      throw new NotFoundException(`Follower with ID ${followerId} not found`);
+      throw new NotFoundException(`Seguidor con ID ${followerId} no encontrado`);
     }
 
-    // Se verifica si el usuario a seguir (following) existe
+    // Se verifica si el usuario a seguir existe
     const following = await this.userRepository.findOneBy({ id: followingId });
     if (!following) {
-      throw new NotFoundException(`Following with ID ${followingId} not found`);
+      throw new NotFoundException(`Usuario a seguir con ID ${followingId} no encontrado`);
     }
 
     // Se verifica si el usuario ya sigue al otro
@@ -311,7 +336,7 @@ export class UsersService {
     });
 
     if (existingFollow) {
-      throw new Error('You already follow this user');
+      throw new BadRequestException('Ya sigues a este usuario');
     }
 
     // Crea el nuevo seguimiento
@@ -320,10 +345,13 @@ export class UsersService {
     await this.incrementFollowersCount(followingId);
     await this.incrementFollowingCount(followerId);
     
-    return this.followsRepository.save(newFollow);
+    return {
+      follow: await this.followsRepository.save(newFollow),
+      message: 'Usuario seguido con éxito'
+    };
   }
 
-  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+  async unfollowUser(followerId: string, followingId: string): Promise<{ message: string }> {
 
     //Se verifica si realmente sigue a la cuenta
     const follow = await this.followsRepository.findOne({
@@ -331,7 +359,7 @@ export class UsersService {
     });
   
     if (!follow) {
-      throw new NotFoundException('Follow relationship not found');
+      throw new NotFoundException('Relación de seguimiento no encontrada');
     }
   
     //se actualizan los counts de cada usuario
@@ -339,12 +367,14 @@ export class UsersService {
     await this.decrementFollowingCount(followerId);
 
     await this.followsRepository.remove(follow);
+
+    return { message: 'Has dejado de seguir a este usuario con éxito' };
   }
 
   async getFollowing(followerId: string): Promise<Follows[]> {
     return this.followsRepository.find({
       where: { authorId: followerId },
-      relations: ['author'] // Asegúrate de cargar la relación con 'author' si es necesario
+      relations: ['author'] 
     });
   }
 
