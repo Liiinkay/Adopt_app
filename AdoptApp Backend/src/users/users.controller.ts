@@ -14,6 +14,7 @@ import { ValidRoles } from './interfaces/valid-roles';
 import { Auth } from './decorators/auth.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RequestPasswordResetDto } from './dto/request-pass.dto';
 
 @Controller('users')
 export class UsersController {
@@ -57,6 +58,11 @@ export class UsersController {
     return this.usersService.changePassword(changePasswordDto.email, changePasswordDto.currentPassword, changePasswordDto.newPassword);
   }
 
+  @Post('request-password-reset')
+  async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto) {
+    await this.usersService.requestPasswordReset(requestPasswordResetDto.email);
+    return { message: 'Password reset email sent' };
+  }
   //@Get()
   //findAll(){
   //  return this.usersService.findAll();
