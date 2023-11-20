@@ -54,18 +54,20 @@ export class UsersController {
       return this.usersService.rateUser(userId, rating);
   }
 
+  //cambiar pass
   @Patch('change-password')
   async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
     return this.usersService.changePassword(changePasswordDto.email, changePasswordDto.currentPassword, changePasswordDto.newPassword);
   }
 
+  //restablecer pass
   @Post('request-password-reset')
   async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto) {
     await this.usersService.requestPasswordReset(requestPasswordResetDto.email);
     return { message: 'Solicitud de restablecimiento de contraseña enviada con éxito' };
   }
 
-  //Obtener seguidos del usuario
+  //obtener seguidos del usuario
   @Get('following')
   @Auth( ValidRoles.user )
   getFollowing(@Req() req) {
@@ -73,7 +75,7 @@ export class UsersController {
     return this.usersService.getFollowing(followerId);
   }
 
-  //Obtener seguidores del usuario
+  //obtener seguidores del usuario
   @Get('followers')
   @Auth(ValidRoles.user)
   getFollowers(@Req() req) {
@@ -81,11 +83,13 @@ export class UsersController {
     return this.usersService.getFollowers(userId);
   }
 
-  @Get(':term')
-  findOne(@Param('term') term: string) {
+  //Obtener info de un usuario
+  @Get(':id')
+  findOne(@Param('id') term: string) {
     return this.usersService.findOne(term);
   }
 
+  //actualizar informacion del usuario
   @Patch('update-user/:id')
   @UseInterceptors(FileFieldsInterceptor([
       { name: 'profile_img', maxCount: 1 },
@@ -101,12 +105,15 @@ export class UsersController {
       return this.usersService.update(id, updateUserDto, profileImagePath, bannerImagePath);
   }
 
+  //eliminar usuario
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
   
-  //Seccion SavedPost
+  ///////////////////////
+  // Seccion SavedPost //
+  ///////////////////////
 
   @Post('saved-post')
   @Auth( ValidRoles.user )
@@ -128,7 +135,9 @@ export class UsersController {
     return this.usersService.getSavedPosts(idUser);
   }
   
-  //Seccion Follows
+  /////////////////////
+  // Seccion Follows //
+  /////////////////////
 
   @Post('follow')
   @Auth( ValidRoles.user )

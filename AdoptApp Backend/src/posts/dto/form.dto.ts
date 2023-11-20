@@ -25,7 +25,7 @@ export class FormDto {
     @IsNotEmpty()
     address: string;
   
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
     phone: number;
   

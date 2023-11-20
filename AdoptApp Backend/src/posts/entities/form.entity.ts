@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
-import { IsDate } from 'class-validator';
 import { Adopt } from './typepost-entitys/adopt-post.entity';
 
 @Entity()
@@ -26,7 +25,7 @@ export class Form{
     adress: string;
     
     @Column()
-    phone: number;
+    phone: string;
 
     @Column()
     question1: string;

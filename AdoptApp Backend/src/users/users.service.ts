@@ -26,8 +26,8 @@ export class UsersService {
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL,     // Tu correo de Gmail
-        pass: process.env.EMAIL_PASS // Tu contraseña de aplicación de Gmail
+        user: process.env.EMAIL,    
+        pass: process.env.EMAIL_PASS
       },
     });
   }
@@ -191,10 +191,10 @@ export class UsersService {
     throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    // Actualiza la imagen de perfil si se ha subido una nueva, de lo contrario mantiene la actual
+    // Actualiza la imagen de perfil si se ha subido una nueva, si no, queda igual
     user.profile_img = profileImagePath ? profileImagePath : user.profile_img;
 
-    // Actualiza la imagen de banner si se ha subido una nueva, de lo contrario mantiene la actual
+    // Actualiza la imagen de banner si se ha subido una nueva, si no, queda igual
     user.banner_multimedia = bannerImagePath ? bannerImagePath : user.banner_multimedia;
 
     // Actualiza los demás campos del usuario

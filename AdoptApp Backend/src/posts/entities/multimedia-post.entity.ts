@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Post } from './post.entity';
 import { Adopt } from './typepost-entitys/adopt-post.entity';
 import { Informative } from './typepost-entitys/informative-post.entity';
 import { Lost } from './typepost-entitys/lost-post.entity';
