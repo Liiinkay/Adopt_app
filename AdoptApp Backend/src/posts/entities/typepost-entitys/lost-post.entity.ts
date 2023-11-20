@@ -17,9 +17,6 @@ export class Lost extends Post {
   @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   last_change: Date;
 
-  @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  createdDate: Date;
-
   @Column()
   coordinates: string;
 

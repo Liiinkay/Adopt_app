@@ -7,7 +7,7 @@ import { Lost } from './typepost-entitys/lost-post.entity';
 @Entity()
 export class PostMultimedia {
     
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id: number
 
     @Column('text')
