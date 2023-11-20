@@ -23,10 +23,9 @@ export class CreateAdoptDto {
     @IsString()
     gender: string
     
-    @IsNumber()
-    @IsPositive()
+    @IsString()
     @IsOptional()
-    age: number
+    age: string
   
     @IsString()
     @IsOptional()

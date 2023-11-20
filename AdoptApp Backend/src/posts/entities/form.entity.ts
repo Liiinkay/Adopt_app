@@ -25,7 +25,7 @@ export class Form{
     @Column()
     adress: string;
     
-    @Column()
+    @Column({ nullable: false, default: 0 })
     phone: number;
 
     @Column()

@@ -47,40 +47,27 @@ export class UsersController {
     return { message: 'Logout successful' };
   }
 
+  //calificar a usuario
   @Post(':userId/rate')
   @Auth( ValidRoles.user )
   async rateUser(@Param('userId') userId: string, @Body('rating') rating: number) {
       return this.usersService.rateUser(userId, rating);
   }
 
+  //cambiar pass
   @Patch('change-password')
   async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
     return this.usersService.changePassword(changePasswordDto.email, changePasswordDto.currentPassword, changePasswordDto.newPassword);
   }
 
+  //restablecer pass
   @Post('request-password-reset')
   async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto) {
     await this.usersService.requestPasswordReset(requestPasswordResetDto.email);
-    return { message: 'Password reset email sent' };
-  }
-  //@Get()
-  //findAll(){
-  //  return this.usersService.findAll();
-  //}
-
-  @Get('private3')
-  @Auth( ValidRoles.user )
-  privateRoute3(
-    @GetUser() user: User
-  ) {
-
-    return {
-      ok: true,
-      user
-    }
+    return { message: 'Solicitud de restablecimiento de contraseña enviada con éxito' };
   }
 
-  //Obtener seguidos del usuario
+  //obtener seguidos del usuario
   @Get('following')
   @Auth( ValidRoles.user )
   getFollowing(@Req() req) {
@@ -88,7 +75,7 @@ export class UsersController {
     return this.usersService.getFollowing(followerId);
   }
 
-  //Obtener seguidores del usuario
+  //obtener seguidores del usuario
   @Get('followers')
   @Auth(ValidRoles.user)
   getFollowers(@Req() req) {
@@ -96,32 +83,37 @@ export class UsersController {
     return this.usersService.getFollowers(userId);
   }
 
-  @Get(':term')
-  findOne(@Param('term') term: string) {
+  //Obtener info de un usuario
+  @Get(':id')
+  findOne(@Param('id') term: string) {
     return this.usersService.findOne(term);
   }
 
-  @Patch(':id')
+  //actualizar informacion del usuario
+  @Patch('update-user/:id')
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'profileImage', maxCount: 1 },
-    { name: 'bannerImage', maxCount: 1 }
+      { name: 'profile_img', maxCount: 1 },
+      { name: 'banner_multimedia', maxCount: 1 }
   ]))
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @UploadedFiles() files: { profileImage?: Express.Multer.File[], bannerImage?: Express.Multer.File[] }
-  ) {
-    const profileImagePath = files.profileImage ? `uploads/${files.profileImage[0].filename}` : null;
-    const bannerImagePath = files.bannerImage ? `uploads/${files.bannerImage[0].filename}` : null;
-    return this.usersService.update(id, updateUserDto, profileImagePath, bannerImagePath);
+  async update(
+      @Param('id', ParseUUIDPipe) id: string,
+      @Body() updateUserDto: UpdateUserDto,
+      @UploadedFiles() files: { profile_img?: Express.Multer.File[], banner_multimedia?: Express.Multer.File[] }
+  ): Promise<User> {
+      const profileImagePath = files.profile_img ? `uploads/${files.profile_img[0].filename}` : null;
+      const bannerImagePath = files.banner_multimedia ? `uploads/${files.banner_multimedia[0].filename}` : null;
+      return this.usersService.update(id, updateUserDto, profileImagePath, bannerImagePath);
   }
 
+  //eliminar usuario
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
   
-  //Seccion SavedPost
+  ///////////////////////
+  // Seccion SavedPost //
+  ///////////////////////
 
   @Post('saved-post')
   @Auth( ValidRoles.user )
@@ -143,7 +135,9 @@ export class UsersController {
     return this.usersService.getSavedPosts(idUser);
   }
   
-  //Seccion Follows
+  /////////////////////
+  // Seccion Follows //
+  /////////////////////
 
   @Post('follow')
   @Auth( ValidRoles.user )

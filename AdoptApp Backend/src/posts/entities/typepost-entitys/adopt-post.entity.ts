@@ -15,8 +15,8 @@ export class Adopt extends Post {
   @Column()
   gender: string;
 
-  @Column()
-  age: number;
+  @Column({ nullable: false, default: 0 })
+  age: string;
 
   @Column()
   personality: string;

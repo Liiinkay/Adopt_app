@@ -16,13 +16,13 @@ export class Report {
     userId: string;
 
     @Column('text')
-    postId: string; // ID del post reportado
+    postId: string;
 
     @Column('text')
     type: string;
 
     @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date; // Hora en la cual se realizó el reporte
+    createdAt: Date;
 
     // Relación con AdoptPost
     @ManyToOne(() => Adopt, adoptPost => adoptPost.reports, { nullable: true })

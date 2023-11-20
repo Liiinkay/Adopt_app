@@ -42,6 +42,7 @@ import { extname } from 'path';
         }
       },
     }),
+
     MulterModule.register({
       storage: diskStorage({
         destination: './img', // Directorio base para los archivos de usuario
@@ -53,6 +54,7 @@ import { extname } from 'path';
       }),
     }),
   ],
+  
   exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule]
 })
 export class UsersModule {}

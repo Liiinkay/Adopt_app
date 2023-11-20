@@ -45,7 +45,7 @@ export class PostsService {
     const user = await this.userRepository.findOneBy({id: id});
 
     if ( !user )
-    throw new NotFoundException(`Product with id ${ id } not found`);
+    throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 
     // Crea un nuevo post de tipo Adopt y asigna las propiedades
     const adopt = new Adopt();
@@ -61,7 +61,7 @@ export class PostsService {
     adopt.medical_information = createAdoptDto.medical_information;
     adopt.form = [];
 
-    // Guarda el nuevo post en la base de datos
+    // Se guarda el nuevo post en la base de datos
     const createdAdopt = await this.adoptRepository.save(adopt);
 
     for (const url of mediaUrls) {
@@ -105,7 +105,7 @@ export class PostsService {
   async createInformativePost(dto: createInformativeDto, userId: string, mediaUrls: string[]): Promise<Informative> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
     }
 
     const newPost = this.informativeRepository.create({
@@ -134,7 +134,7 @@ export class PostsService {
         case 'informative':
             return await this.informativeRepository.find();
         default:
-            throw new BadRequestException(`Invalid post type: ${type}`);
+          throw new BadRequestException(`Tipo de publicación inválido: ${type}`);
     }
   }
 
@@ -159,6 +159,10 @@ export class PostsService {
       ...await this.lostRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
       ...await this.informativeRepository.find({ where: { authorID: userId }, relations: ['multimedia'] }),
     ];
+
+    if (allUserPosts.length === 0) {
+      throw new NotFoundException(`No se encontraron publicaciones para el usuario con ID ${userId}`);
+    }
   
     // Se transforma los objetos en un formato JSON entendible en el front
     const userPostsJson = allUserPosts.map(post => {
@@ -179,14 +183,14 @@ export class PostsService {
   async updatePost(id: string, updatePostDto: any): Promise<Post> {
     let post: Adopt | Lost | Informative;
 
-    // Buscar el post en las tres tablas
+    // se busca el posteo en todas las bases de datos
     post = await this.adoptRepository.findOneBy({ id });
     if (!post) post = await this.lostRepository.findOneBy({ id });
     if (!post) post = await this.informativeRepository.findOneBy({ id });
 
-    if (!post) throw new NotFoundException(`Post with id ${id} not found`);
+    if (!post) throw new NotFoundException(`Publicación con ID ${id} no encontrada`);
 
-    // Actualizar campos específicos
+    // Se actualizan los campos específicos
     if (post instanceof Adopt) {
       post.title = updatePostDto.title ?? post.title;
       post.description = updatePostDto.description ?? post.description;  
@@ -204,7 +208,7 @@ export class PostsService {
       post.description = updatePostDto.description ?? post.description;
     }
 
-    // Guarda el posteo actualizado
+    // Se guarda el posteo actualizado
     if (post instanceof Adopt) {
         return await this.adoptRepository.save(post);
     } else if (post instanceof Lost) {
@@ -232,8 +236,13 @@ export class PostsService {
   // Seccion Formulario //
   ////////////////////////
 
+  //se crea el formulario de adopcion con los parametros rellenados por le usuario
   async createFormAdoption(idPost: string, idApplicant: string,formData: Partial<Form>): Promise<Form> {
     const adopt = await this.adoptRepository.findOneBy(({ id: idPost }));
+
+    if (!adopt) {
+      throw new NotFoundException(`Publicación con ID ${idPost} no encontrada`);
+    }
 
     const form = this.formRepository.create({
       ...formData,
@@ -244,17 +253,22 @@ export class PostsService {
     return this.formRepository.save(form);
   }
 
+  //se obtienen los formularios creados enviados a la publicacion
   async getFormsByPostId(idPost: string): Promise<Form[]> {
+
     const forms = await this.formRepository.find({
         where: { post: { id: idPost } },
         relations: ['post'],
     });
+
     if (!forms) {
-        throw new NotFoundException(`No forms found for post with id ${idPost}`);
+        throw new NotFoundException(`No existe un formulario con el id: ${idPost}`);
     }
+
     return forms;
     }
 
+  //se obtienen los post donde se envio formulario por id del usuario
   async getPostsAppliedByUserId(idUser: string): Promise<Form[]> {
     const forms = await this.formRepository.find({
         where: { idApplicant: idUser },
@@ -282,12 +296,12 @@ export class PostsService {
   async unlikePost(postId: string, userId: string): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-        throw new Error('User not found');
+        throw new Error('Usuario no encontrado');
     }
 
     const post = await this.findPost(postId);
     if (!post) {
-        throw new Error('Post not found');
+        throw new Error('Publicacion no encontrada');
     }
 
     let existingLike;
@@ -319,16 +333,16 @@ export class PostsService {
   async likePost(postId: string, userId: string): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-        throw new Error('User not found');
+        throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
     }
 
     const post = await this.findPost(postId);
     if (!post) {
-        throw new Error('Post not found');
+      throw new NotFoundException(`Publicación con ID ${postId} no encontrada`);
     }
 
     let existingLike;
-    // Determina el tipo específico de post y verifica si ya existe un "like"
+    // se busca el tipo especifico del post y verifica si ya existe un "like"
     if (post instanceof Adopt) {
         existingLike = await this.postLikesRepository.findOne({ where: { adoptPost: { id: postId }, user: { id: userId } } });
     } else if (post instanceof Lost) {
@@ -353,7 +367,7 @@ export class PostsService {
       postLike.user = user;
       await this.postLikesRepository.save(postLike);
 
-      // Se Incrementa el contador de likes en el post específico
+      // Se incrementa el contador de likes en el post encontrado
       post.likesCount++;
       // Se guarda el post en su repositorio correspondiente
       if (post instanceof Adopt) {
@@ -378,9 +392,9 @@ export class PostsService {
 
   async updatePostImages(id: string, newMediaUrls: string[]): Promise<void> {
     const post = await this.findPost(id);
-    if (!post) throw new NotFoundException(`Post with id ${id} not found`);
+    if (!post) throw new NotFoundException(`Publicación con ID ${id} no encontrada`);
 
-    // Determina el tipo de post y elimina las imágenes antiguas
+    // Se busca el tipo del posteo y una vez enocontrado se eliminan las imagenes
     if (post instanceof Adopt) {
       await this.postMultimediaRepository.delete({ adoptPost: { id } });
     } else if (post instanceof Lost) {
@@ -389,7 +403,7 @@ export class PostsService {
       await this.postMultimediaRepository.delete({ informativePost: { id } });
     }
 
-    // Agregar nuevas imágenes
+    // Se cambian a las nuevas imagenes ingresadas
     for (const url of newMediaUrls) {
       const multimedia = new PostMultimedia();
       multimedia.url = url;

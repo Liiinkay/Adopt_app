@@ -54,27 +54,32 @@ export class PostsController {
     return this.postsService.createInformativePost(createInformativeDto, id, mediaUrls);
   }
 
+  //actualizar informacion de un post
   @Patch(':id')
   async updatePost(@Param('id', ParseUUIDPipe) id: string, @Body() updatePostDto: any): Promise<any> {
     return await this.postsService.updatePost(id, updatePostDto);
   }
 
+  //eliminar Post
   @Delete(':id')
   async deletePost(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
     await this.postsService.deletePost(id);
     return { message: 'Post successfully deleted' };
   }
 
+  //obtener post por Id
   @Get(':id')
   async getPostById(@Param('id', ParseUUIDPipe) id: string) {
     return this.postsService.getPostById(id);
   }
 
+  //obtener todos los post de un tipo de publicacion
   @Get('type/:type')
   async getPostsByType(@Param('type') type: string) {
     return this.postsService.getPostsByType(type);
   }
 
+  //obtener todos los posteos de todo tipo por usuario
   @Get('/user/:id')
   async getUserPostsJson(@Param('id', ParseUUIDPipe) id: string) {
     return this.postsService.getUserPostsJson(id);
@@ -110,14 +115,14 @@ export class PostsController {
     return this.postsService.createFormAdoption(idPost, idApplicant, formData);
   }
 
-  //Get de formularios x id del post
+  //get de formularios x id del post
   @Get('forms/:idPost')
   async getFormsByPostId(@Param('idPost', ParseUUIDPipe) idPost: string) {
       const forms = await this.postsService.getFormsByPostId(idPost);
       return forms;
   }
 
-  //Get de formularios x id del usuario postulante
+  //get de formularios x id del usuario postulante
   @Get('userAppliedPosts/:idUser')
   async getPostsAppliedByUserId(@Param('idUser', ParseUUIDPipe) idUser: string) {
       const posts = await this.postsService.getPostsAppliedByUserId(idUser);
@@ -128,7 +133,7 @@ export class PostsController {
   // Seccion Imagenes   //
   ////////////////////////
 
-  //Cambio de imagenes de los posteos.
+  //cambio de imagenes de los posteos.
   @Patch(':id/images')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'images', maxCount: 5 }
