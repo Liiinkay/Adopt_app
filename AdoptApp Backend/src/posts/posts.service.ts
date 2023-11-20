@@ -125,17 +125,33 @@ export class PostsService {
     return savedPost;
   }
 
-  async getPostsByType(type: string): Promise<Adopt[] | Lost[] | Informative[]> {
-    switch(type) {
-        case 'adopt':
-            return await this.adoptRepository.find();
-        case 'lost':
-            return await this.lostRepository.find();
-        case 'informative':
-            return await this.informativeRepository.find();
-        default:
-          throw new BadRequestException(`Tipo de publicación inválido: ${type}`);
+  async getPostsByType(type: string) {
+    let posts;
+    switch (type) {
+      case 'adopt':
+        posts = await this.adoptRepository.find({
+          relations: ['multimedia'],
+        });
+        break;
+      case 'informative':
+        posts = await this.informativeRepository.find({
+          relations: ['multimedia'],
+        });
+        break;
+      case 'lost':
+        posts = await this.lostRepository.find({
+          relations: ['multimedia'],
+        });
+        break;
+      default:
+        throw new NotFoundException(`Type ${type} not found`);
     }
+  
+    return posts.map(post => ({
+      ...post,
+      multimedia: undefined,
+      images: post.multimedia.map(multimedia => multimedia.url) 
+    }));
   }
 
   async getPostById(id: string): Promise<PostType> {
@@ -151,7 +167,7 @@ export class PostsService {
     if (!post) throw new NotFoundException(`Post with id ${id} not found`);
 
     return post;
-}
+  }
 
   async getUserPostsJson(userId: string): Promise<any[]> {
     const allUserPosts = [

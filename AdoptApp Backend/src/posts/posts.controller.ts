@@ -64,7 +64,7 @@ export class PostsController {
   @Delete(':id')
   async deletePost(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
     await this.postsService.deletePost(id);
-    return { message: 'Post successfully deleted' };
+    return { message: 'Posteo Borrado con Exito' };
   }
 
   //obtener post por Id

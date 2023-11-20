@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import {User} from 'src/users/entities/user.entity'
 
 @Entity()
@@ -27,4 +27,7 @@ export abstract class Post {
     
     @Column({ default: 0 })
     likesCount: number;
+    
+    @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    createdDate: Date;
 }
