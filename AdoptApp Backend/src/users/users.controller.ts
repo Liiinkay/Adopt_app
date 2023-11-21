@@ -52,6 +52,11 @@ export class UsersController {
     return this.usersService.findAllUsers();
   }
 
+  @Get('nickname/:nickname')
+  findByNickname(@Param('nickname') nickname: string) {
+    return this.usersService.findByNickname(nickname);
+  }
+
   //calificar a usuario
   @Post(':userId/rate')
   @Auth( ValidRoles.user )
