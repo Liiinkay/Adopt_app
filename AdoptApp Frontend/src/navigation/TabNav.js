@@ -2,7 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from '@expo/vector-icons'; 
 
-import CreatePostsScreen from "../screens/CreatePostsScreen";
+import CreatePostsScreen from "../screens/CreatePostScreen";
 import DrawerGroup from "./DrawerNav";
 
 const Tab = createBottomTabNavigator();
