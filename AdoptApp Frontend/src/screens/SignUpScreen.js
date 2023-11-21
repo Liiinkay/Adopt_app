@@ -40,6 +40,8 @@ const SignupSchema = Yup.object().shape({
   profile_img: '',
   instagram: '',
   facebook: '',
+  region: '',
+  city: ''
 });
 
 const validateRut = (rut) => {
@@ -67,7 +69,7 @@ const validateRut = (rut) => {
 };
 
 
-const SignUpScreen = () => {
+const SignUpScreen = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const { logIn } = useAuth();
@@ -87,20 +89,27 @@ const SignUpScreen = () => {
 
   const handleFormSubmit = async (values) => {
     const url = apiUrl + '/api/users/register'
-    console.log(url);
-    const formattedValues = {
-      ...values,
-      phone_number: values.phone_number ? parseInt(values.phone_number, 10) : null,
-    };
+
+    const formData = new FormData();
+
+    formData.append('nickname', values.nickname);
+    formData.append('name', values.name);
+    formData.append('last_name', values.last_name);
+    formData.append('password', values.password);
+    formData.append('contact_email', values.contact_email);
+    formData.append('rut', values.rut);
+    formData.append('banner_multimedia', values.banner_multimedia);
+    formData.append('profile_img', values.profile_img);
+    formData.append('facebook', values.facebook);
+    formData.append('instagram', values.instagram);
+    formData.append('region', values.region);
+    formData.append('city', values.city);
+
     setIsLoading(true); // Activa el loader
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formattedValues),
+        body: formData,
       })
       
       const json = await response.json();
@@ -108,7 +117,6 @@ const SignUpScreen = () => {
       if (response.ok) {
         // Inicio de sesión exitoso
         logIn(json.token, json.id);
-        navigation.navigate('AppStackGroup');
       } else {
         // Manejo de errores, como credenciales incorrectas
         console.error('Error de creación de cuenta:', json.message);
@@ -137,6 +145,8 @@ const SignUpScreen = () => {
             profile_img: '',
             instagram: '',
             facebook: '',
+            region: '',
+            city: '',
           }}
           validationSchema={SignupSchema}
           onSubmit={handleFormSubmit}
