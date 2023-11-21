@@ -48,5 +48,10 @@ export class ReportsController {
   async deleteReport(@Param('id') id: string) {
     return await this.reportsService.deleteReport(id);
   }
+
+  @Get()
+  getAllReports() {
+    return this.reportsService.findAllReports();
+  }
 }
 

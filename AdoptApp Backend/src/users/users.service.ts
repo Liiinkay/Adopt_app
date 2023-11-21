@@ -122,6 +122,21 @@ export class UsersService {
     return users;
   }
 
+    async findAllUsers() {
+      const users = await this.userRepository.find({
+        select: ['id', 'name', 'last_name'] // Selecciona solo los campos necesarios
+      });
+
+      if (!users.length) {
+        throw new NotFoundException('No se encontraron usuarios');
+      }
+
+      return users.map(user => ({
+        id: user.id,
+        fullName: `${user.name} ${user.last_name}`
+      }));
+    }
+
   async findOne(id: string) {
     let user: User;
 
