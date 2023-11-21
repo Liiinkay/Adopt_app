@@ -16,14 +16,14 @@ const CreatePostsScreen = ({ navigation }) => {
     
           <TouchableOpacity
             style={[styles.button, { backgroundColor: '#FFC107', flexDirection: 'row-reverse' }]}
-            onPress={() => navigation.navigate('Busqueda')}>
+            onPress={() => navigation.navigate('CreateSearchPost')}>
             <Text style={styles.textRight}>Búsqueda</Text>
             {/* Coloca aquí la imagen para el botón de Búsqueda si es necesario */}
           </TouchableOpacity>
     
           <TouchableOpacity
             style={[styles.button, { backgroundColor: '#9C27B0', flexDirection: 'row' }]}
-            onPress={() => navigation.navigate('Informativa')}>
+            onPress={() => navigation.navigate('CreateInformativePost')}>
             <Text style={styles.textLeft}>Informativa</Text>
             {/* Coloca aquí la imagen para el botón de Informativa si es necesario */}
           </TouchableOpacity>
