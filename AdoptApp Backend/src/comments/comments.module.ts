@@ -12,7 +12,9 @@ import { Informative } from '../posts/entities/typepost-entitys/informative-post
   providers: [CommentsService],
   imports: [
     TypeOrmModule.forFeature([ Post, Lost, Informative, Comment ])
-  ]
+  ],
+  exports: [TypeOrmModule]
 })
+
 
 export class CommentsModule {}

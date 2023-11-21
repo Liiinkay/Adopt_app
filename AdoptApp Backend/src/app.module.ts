@@ -8,6 +8,7 @@ import { CommentsModule } from './comments/comments.module';
 import { QuestionModule } from './question/question.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CoordinateModule } from './coordinate/coordinate.module';
 
 @Module({
   imports: [
@@ -47,6 +48,8 @@ import { join } from 'path';
       serveRoot: '/api/img/banner',
     },
     ),
+    
+    CoordinateModule,
   ],
 })
 export class AppModule {}
