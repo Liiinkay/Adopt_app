@@ -43,7 +43,6 @@ const LoginScreen = ({ navigation }) => {
       if (response.ok) {
         // Inicio de sesión exitoso
         logIn(json.token, json.id);
-        navigation.navigate('AppStackGroup');
       } else {
         // Manejo de errores, como credenciales incorrectas
         console.error('Error de inicio de sesión:', json.message);
