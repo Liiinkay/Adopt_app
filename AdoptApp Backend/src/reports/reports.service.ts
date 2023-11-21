@@ -107,4 +107,16 @@ export class ReportsService {
   }
   await this.reportRepository.remove(report);
   }
+
+  async findAllReports() {
+    const reports = await this.reportRepository.find({
+      select: ['id', 'createdAt', 'type', 'userId', 'postId'] // Selecciona solo los campos necesarios
+    });
+
+    if (!reports.length) {
+      throw new NotFoundException('No se encontraron reportes');
+    }
+
+    return reports;
+  }
 }
