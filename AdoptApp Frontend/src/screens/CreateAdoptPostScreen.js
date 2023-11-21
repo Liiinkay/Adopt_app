@@ -5,10 +5,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Ionicons } from '@expo/vector-icons';
-
-import Config from 'react-native-config';
-
-const apiUrl = Config.API_URL;
+import { useAuth } from '../contexts/AuthProvider';
+import { usePosts } from '../contexts/PostProvider';
 
 // Esquema de validación para el formulario completo
 const validationSchema = Yup.object().shape({
@@ -23,37 +21,54 @@ const validationSchema = Yup.object().shape({
 const CreateAdoptPostScreen = ({ navigation }) => {
     const [imagenes, setImagenes] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const { getUserId } = useAuth();
+    const { createAdoptPost } = usePosts();
 
     const handleFormSubmit = async (values) => {
-        setIsLoading(true); // Activar el indicador de carga
+        setIsLoading(true);
+        const formData = transformData(values);
+        const userId = getUserId();
 
         try {
-            const response = await fetch('URL_DEL_SERVIDOR/api/adopciones', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(values), // Aquí irían los valores del formulario
-            });
-
-            const json = await response.json();
-
-            if (response.ok) {
-                // Envío exitoso
-                console.log('Respuesta:', json); // Manejar la respuesta (ejemplo: mostrar mensaje de éxito)
-                // Navegar a otra pantalla o realizar otra acción
-            } else {
-                // Manejo de errores del servidor, como validación fallida
-                console.error('Error en el formulario:', json.message);
-                // Mostrar mensaje de error al usuario
-            }
+            const data = await createAdoptPost(formData, userId); // Usa createAdoptPost en lugar de fetch
+            console.log('Respuesta:', data);
+            // Manejo de la navegación o acciones después del envío exitoso
+            // navigation.navigate('OtraPantalla');
         } catch (error) {
             console.error('Error en la petición:', error);
-            // Mostrar mensaje de error al usuario
+            // Manejo de errores
+        } finally {
+            setIsLoading(false);
         }
-
-        setIsLoading(false); // Desactivar el indicador de carga
     };
+
+    const transformData = (values) => {
+        const formData = new FormData();
+        // Agregar campos de texto al formData
+        formData.append('title', values.titulo);
+        formData.append('description', values.descripcion);
+        formData.append('gender', values.genero);
+        //formData.append('age', values.edad);
+        formData.append('personality', values.personalidad);
+        formData.append('medical_information', values.informacionMedica);
+        formData.append('state', 'open');
+        formData.append('type', 'adopt');
+        formData.append('age', 9);
+    
+        // Agregar imágenes al formData
+        imagenes.forEach((img, index) => {
+            // Aquí asumo que cada imagen en el array `imagenes` es un objeto con una propiedad `localUri`
+            const localUri = img.localUri;
+            const filename = localUri.split('/').pop();
+            // Inferir el tipo MIME de la imagen
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : `image`;
+            
+            // Agregar la imagen al formData
+            formData.append('images', { uri: localUri, name: filename, type });
+        });
+        return formData;
+    }
 
     const eliminarImagen = (index) => {
         setImagenes(imagenes.filter((_, idx) => idx !== index));
@@ -195,8 +210,14 @@ const CreateAdoptPostScreen = ({ navigation }) => {
                                 onPress={handleSubmit}
                                 disabled={!(isValid && dirty)}
                             >
-                                <Text style={styles.publishButtonText}>Publicar</Text>
-                                <Ionicons name="send" size={24} color="#FFFFFF" />
+                                {isLoading ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <Text style={styles.publishButtonText}>Publicar</Text>
+                                        <Ionicons name="send" size={24} color="#FFFFFF" />
+                                    </View>    
+                                )}
                             </TouchableOpacity>
                         </>
                     )}
