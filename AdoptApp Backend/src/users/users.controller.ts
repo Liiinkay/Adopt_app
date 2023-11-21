@@ -47,6 +47,11 @@ export class UsersController {
     return { message: 'Logout successful' };
   }
 
+  @Get('all')
+  getAllUsers() {
+    return this.usersService.findAllUsers();
+  }
+
   //calificar a usuario
   @Post(':userId/rate')
   @Auth( ValidRoles.user )
@@ -152,4 +157,5 @@ export class UsersController {
     const followerId = req.user.id;
     return this.usersService.unfollowUser(followerId, followingId);
   }
+
 }
