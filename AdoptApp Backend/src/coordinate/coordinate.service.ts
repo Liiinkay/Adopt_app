@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Post, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Post, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Coordinates } from './entities/coordinate.entity';
@@ -14,10 +14,14 @@ export class CoordinatesService {
 
   async create(createCoordinatesDto: CreateCoordinatesDto, image?: Express.Multer.File): Promise<Coordinates> {
     const coordinates = this.coordinatesRepository.create(createCoordinatesDto);
-    // Establece imageURL a null si no se proporciona ninguna imagen
+
     coordinates.imageURL = image ? `coordinates/${image.filename}` : null;
-    await this.coordinatesRepository.save(coordinates);
-    return coordinates;
+    try {
+      await this.coordinatesRepository.save(coordinates);
+      return coordinates;
+    } catch (error) {
+      throw new BadRequestException('Error al crear la entidad de coordenadas.');
+    }
   }
 
   findAll(): Promise<Coordinates[]> {
@@ -27,7 +31,7 @@ export class CoordinatesService {
   async findOne(id: string): Promise<Coordinates> {
     const coordinates = await this.coordinatesRepository.findOneBy({ id });
     if (!coordinates) {
-      throw new NotFoundException(`Coordinates with ID ${id} not found`);
+      throw new NotFoundException(`Coordenadas con ID ${id} no encontradas`);
     }
     return coordinates;
   }
@@ -38,13 +42,21 @@ export class CoordinatesService {
       ...updateCoordinatesDto,
     });
     if (!coordinates) {
-      throw new NotFoundException(`Coordinates with ID ${id} not found`);
+      throw new NotFoundException(`Coordenadas con ID ${id} no encontradas`);
     }
-    return this.coordinatesRepository.save(coordinates);
+    try {
+      return await this.coordinatesRepository.save(coordinates);
+    } catch (error) {
+      throw new BadRequestException('Error al actualizar la entidad de coordenadas.');
+    }
   }
 
   async remove(id: string): Promise<void> {
     const coordinates = await this.findOne(id);
-    await this.coordinatesRepository.remove(coordinates);
+    try {
+      await this.coordinatesRepository.remove(coordinates);
+    } catch (error) {
+      throw new BadRequestException('Error al eliminar la entidad de coordenadas.');
+    }
   }
 }
