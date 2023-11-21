@@ -10,13 +10,21 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
 
+  // Actualizar el estado de autenticación basado en userToken y userId
+  useEffect(() => {
+    setIsAuthenticated(!!userToken && !!userId);
+  }, [userToken, userId]);
+
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = await AsyncStorage.getItem('userToken');
-      const userId = await AsyncStorage.getItem('userId');
-      if (token) {
-        setIsAuthenticated(true);
-        setUserId(JSON.parse(userId));
+      const id = await AsyncStorage.getItem('userId');
+
+      if (token && id) {
+        setUserToken(token);
+        setUserId(JSON.parse(id));
+      } else {
+        logOut();
       }
     };
 
@@ -24,30 +32,28 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logIn = async (token, id) => {
+    await AsyncStorage.setItem('userToken', token);
+    await AsyncStorage.setItem('userId', JSON.stringify(id));
     setUserToken(token);
     setUserId(id);
-    await AsyncStorage.setItem('userToken', token);
-    await AsyncStorage.setItem('userId', JSON.stringify(userId));
-    setIsAuthenticated(true); // Establecer isAuthenticated en true después del inicio de sesión
   };
 
   const logOut = async () => {
-    setUserToken(null);
-    setUserId(null)
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userId');
-    setIsAuthenticated(false);
+    setUserToken(null);
+    setUserId(null);
   };
 
   const getUserId = () => userId;
 
   return (
-    <AuthContext.Provider value={{ 
+    <AuthContext.Provider value={{
       userToken, 
       logIn, 
-      logOut,
-      isAuthenticated,
-      setIsAuthenticated,
+      logOut, 
+      isAuthenticated, 
+      setIsAuthenticated, 
       getUserId
     }}>
       {children}
@@ -55,3 +61,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+export default AuthProvider;
