@@ -1,97 +1,179 @@
-import React from "react";
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import LikeButton from "./LikeButton";
 import SaveButton from "./SaveButton";
 import ShareButton from "./ShareButton";
 
-const PostCard = ({post}) => {
-    const { navigate } = useNavigation();
-    
-    return(
-        <View style={styles.cardContainer}>
-            <Pressable style={styles.container}
-            onPress={() => {
-                navigate("PostDetailScreen", { post });
-            }}
-            >
-                <Image src={post.user.image} style={styles.userImage} />
-                <View style={styles.mainContainer}>
-                    <View style={{ flexDirection: 'row' }}>
-                        <Text style={styles.name}>{post.user.name}</Text>
-                        <Text style={styles.username}>{post.user.username} · 6h</Text>
-                    </View>
+import config from '../../config';
 
-                    <Text style={styles.content}>{post.content}</Text>
+const apiUrl = config.API_URL;
 
-                    {post.image && <Image src={post.image} style={styles.image} />}
-                </View>
-            </Pressable>
-            <View style={styles.footer}>
-                <View style={{flexDirection: 'row'}}>
-                    <View style={styles.buttonContainer}>
-                        <LikeButton/>
-                    </View>
-                    <View style={styles.buttonContainer}>
-                        <SaveButton/>
-                    </View>
-                    <View style={styles.buttonContainer}>
-                        <ShareButton/>
-                    </View>
-                </View>
+const PostCard = ({ post, navigation }) => {
+    const images = post?.images?.map(img => `${apiUrl}/api/${img}`) || [];
+
+    const [userInfo, setUserInfo] = useState(null);
+
+    useEffect(() => {
+      const fetchUserInfo = async () => {
+        const url = `${apiUrl}/api/users/${post.authorID}`;
+        console.log(url);
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          console.log(data);
+          setUserInfo(data);
+        } catch (error) {
+          console.error('Error fetching user info:', error);
+        }
+      };
+  
+      fetchUserInfo();
+    }, [post.authorId]);
+
+    const navigateToDetailScreen = () => {
+      let screenName = "PostDetailScreen"; // Pantalla por defecto
+      if (post.type === 'adopt') {
+          screenName = "PostDetailAdopt";
+      } else if (post.type === 'lost') {
+          screenName = "PostDetailLost";
+      } else if (post.type === 'informative') {
+          screenName = "PostDetailInformative";
+      }
+
+      navigation.navigate(screenName, { post, userInfo });
+    };
+
+    // Renderiza las imágenes basadas en la cantidad
+    const renderImages = () => {
+      if (images.length === 1) {
+        return <Image source={{ uri: images[0] }} style={styles.fullImage} />;
+      } else if (images.length === 2) {
+        return (
+          <View style={styles.imageContainer}>
+            {images.map((img) => (
+              <Image key={img} source={{ uri: img }} style={styles.halfImage} />
+            ))}
+          </View>
+        );
+      } else if (images.length >= 3) {
+          return (
+              <View style={styles.imageContainer}>
+                  <Image source={{ uri: images[0] }} style={styles.halfImage} />
+                  <View style={styles.quarterImageContainer}>
+                      <Image source={{ uri: images[1] }} style={styles.quarterImage} />
+                      <Image source={{ uri: images[2] }} style={styles.quarterImage} />
+                  </View>
+              </View>
+          );
+      }
+    };
+
+    // URL de la imagen del perfil del usuario o un placeholder
+    const userProfileImage = userInfo && userInfo.profile_img
+      ? `${apiUrl}/api/${userInfo.profile_img}`
+      : 'https://example.com/default-profile-pic.jpg';
+
+    return (
+      <View style={styles.cardContainer}>
+        <Pressable
+          style={styles.container}
+          onPress={navigateToDetailScreen}>
+          <View style={styles.profileContainer}>
+            <Image 
+              source={{ uri: userProfileImage }}
+              style={styles.userImage}
+            />
+            <View style={styles.headerContainer}>
+              <Text style={styles.name}> @{userInfo ? userInfo.nickname : 'Loading...'}</Text>
+              <Text style={styles.username}>{post.age} years - {post.gender}</Text>
             </View>
-        </View>
-    )
-}
+          </View>
+          <Text style={styles.content}>{post.title}</Text>
+          {renderImages()}
+          <View style={styles.footer}>
+            <LikeButton />
+            <SaveButton />
+            <ShareButton />
+          </View>
+        </Pressable>
+      </View>
+    );
+};
 
 const styles = StyleSheet.create({
-    cardContainer: {
-        borderColor: 'lightgrey',
-        backgroundColor: 'white',
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        marginVertical: 1,
-    },
-    container: {
-        flexDirection: 'row',
-        marginVertical:5,
+  cardContainer: {
+      borderColor: 'lightgrey',
+      backgroundColor: 'white',
+      borderBottomWidth: StyleSheet.hairlineWidth,
       padding: 10,
-    },
-    userImage: {
+      marginVertical: 1,
+  },
+  container: {
+      flexDirection: 'column',
+  },
+  profileContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+  },
+  headerContainer: {
+      marginLeft: 10,
+  },
+  userImage: {
       width: 45,
       height: 45,
-      borderRadius: 50,
-    },
-    mainContainer: {
-      marginLeft: 10,
-      flex: 1,
-    },
-    name: {
-      fontWeight: '600',
-    },
-    username: {
-      color: 'gray',
-      marginLeft: 5,
-    },
-    content: {
-      lineHeight: 20,
+      borderRadius: 22.5,
+  },
+  name: {
+      fontWeight: 'bold',
+  },
+  username: {
+      color: 'grey',
+  },
+  content: {
       marginTop: 5,
-    },
-    image: {
-      width: '100%',
-      aspectRatio: 16 / 9,
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    borderRadius: 10, // Establece el radio de borde como desees
+    overflow: 'hidden'
+},
+fullImage: {
+    width: '100%',
+    height: 200, // o el alto que desees
+},
+halfImage: {
+    width: '49.5%', // Ligeramente menos de la mitad para considerar el espaciado
+    height: 200, // o el alto que desees
+    overflow: 'hidden'
+},
+quarterImageContainer: {
+    width: '49.5%',
+    justifyContent: 'space-between',
+},
+quarterImage: {
+    width: '100%',
+    height: 95, // La mitad del alto de halfImage menos algo de espaciado
+},
+  image: {
+      width: '32%', // Tres imágenes en una fila
+      aspectRatio: 1, // Imágenes cuadradas
+  },
+  footer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
       marginTop: 10,
-      borderRadius: 15,
-    },
-  
-    // footer
-    footer: {
-      flexDirection: 'row-reverse',
-      marginBottom: 5,
-      justifyContent: 'space-between',
-    },
-    buttonContainer: {
-        paddingHorizontal: 10,
-    }
-  });
+  },
+  // ...otros estilos que necesites
+});
 
 export default PostCard;
