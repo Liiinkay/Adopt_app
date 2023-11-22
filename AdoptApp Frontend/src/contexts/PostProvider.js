@@ -56,6 +56,8 @@ export const PostProvider = ({ children }) => {
     return handleResponse(response);
   };
 
+
+  
   const handleResponse = async (response) => {
     const responseData = await response.json();
     if (!response.ok) {

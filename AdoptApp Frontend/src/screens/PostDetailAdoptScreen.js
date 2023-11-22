@@ -12,18 +12,6 @@ import { useAuth } from '../contexts/AuthProvider';
 const ITEMS_PER_PAGE = 5;
 const apiUrl = config.API_URL;
 
-const fakeQuestions = [
-    { id: '1', question: '¿Cuánto tiempo necesita de ejercicio diario?', answer: 'Al menos una hora de ejercicio al día.' },
-    { id: '2', question: '¿Está Max vacunado?', answer: 'Sí, Max está completamente vacunado.' },
-    { id: '3', question: '¿Está Max vacunado?', answer: '' },
-    { id: '4', question: '¿Cuánto tiempo necesita de ejercicio diario?', answer: 'Al menos una hora de ejercicio al día.' },
-    { id: '5', question: '¿Está Max vacunado?', answer: 'Sí, Max está completamente vacunado.' },
-    { id: '6', question: '¿Está Max vacunado?', answer: '' },
-    { id: '7', question: '¿Cuánto tiempo necesita de ejercicio diario?', answer: 'Al menos una hora de ejercicio al día.' },
-    { id: '8', question: '¿Está Max vacunado?', answer: 'Sí, Max está completamente vacunado.' },
-    { id: '9', question: '¿Está Max vacunado?', answer: '' },
-    // Puedes agregar más preguntas y respuestas aquí
-];
 
 const QuestionItem = ({ item, isPostOwner, onAddAnswer }) => {
     const [answer, setAnswer] = useState('');
@@ -61,6 +49,9 @@ const QuestionItem = ({ item, isPostOwner, onAddAnswer }) => {
     );
 };
 
+
+
+
 const PostDetailAdoptScreen = ({ navigation }) => {
     const { getUserId } = useAuth();
     const [currentPage, setCurrentPage] = useState(1);
@@ -69,9 +60,9 @@ const PostDetailAdoptScreen = ({ navigation }) => {
     const route = useRoute(); 
     const { post, userInfo } = route.params;
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
-
+    const Questions = []
     const isPostOwner = getUserId() === post?.authorID;
-
+    console.log(post);
     const onAddAnswer = (questionId, answerText) => {
         // Lógica para añadir la respuesta
     };
@@ -115,7 +106,7 @@ const PostDetailAdoptScreen = ({ navigation }) => {
     useEffect(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
         const endIndex = startIndex + ITEMS_PER_PAGE;
-        setPaginatedQuestions(fakeQuestions.slice(startIndex, endIndex));
+        setPaginatedQuestions(Questions.slice(startIndex, endIndex));
     }, [currentPage]);
     
     // Funciones para cambiar de página
@@ -174,20 +165,20 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                         <LikeButton />
                     </View>
                     <Text style={styles.postTitle}>{post?.title}</Text>
-                    <Text style={styles.postDescription}>{post?.description}</Text>
-                    <View style={styles.petInfoContainer}>
-                        {/* Asumiendo que post.petInfo es un objeto con esta información */}
-                        <Text style={styles.petInfoText}>Edad: {post?.petInfo?.age}</Text>
-                        <Text style={styles.petInfoText}>Sexo: {post?.petInfo?.gender}</Text>
-                        <Text style={styles.petInfoText}>Color de pelo: {post?.petInfo?.hairColor}</Text>
-                        <Text style={styles.petInfoText}>Temperamento: {post?.petInfo?.temperament}</Text>
-                    </View>
-                    <TouchableOpacity
-                        style={styles.adoptButton}
-                        onPress={() => navigation.navigate('AdoptForm', { post })}
-                    >
-                        <Text style={styles.adoptButtonText}>Postular a adopción</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.postDescription}>{post?.description}</Text>
+                        <View style={styles.petInfoContainer}>
+                            {/* tabla de información */}
+                            <Text style={styles.petInfoText}>Edad: {post?.age}</Text>
+                            <Text style={styles.petInfoText}>Sexo: {post?.gender}</Text>
+                            <Text style={styles.petInfoText}>Temperamento: {post?.personality}</Text>
+                            <Text style={styles.petInfoText}>Información médica: {post?.medical_information}</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.adoptButton}
+                            onPress={() => navigation.navigate('AdoptForm', { post })}
+                        >
+                            <Text style={styles.adoptButtonText}>Postular a adopción</Text>
+                        </TouchableOpacity>
                     <Text style={styles.sectionTitle}>Preguntas y Respuestas</Text>
                 </View>
             </>
@@ -209,10 +200,10 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                 <Text style={styles.paginationIndicator}>{currentPage}</Text>
                 <TouchableOpacity 
                     onPress={goToNextPage} 
-                    disabled={currentPage * ITEMS_PER_PAGE >= fakeQuestions.length}
-                    style={[styles.paginationButton, (currentPage * ITEMS_PER_PAGE >= fakeQuestions.length) && styles.disabledButton]}
+                    disabled={currentPage * ITEMS_PER_PAGE >= Questions.length}
+                    style={[styles.paginationButton, (currentPage * ITEMS_PER_PAGE >= Questions.length) && styles.disabledButton]}
                 >
-                    <Ionicons name="arrow-forward" size={24} color={(currentPage * ITEMS_PER_PAGE >= fakeQuestions.length) ? 'grey' : '#F348A4'} />
+                    <Ionicons name="arrow-forward" size={24} color={(currentPage * ITEMS_PER_PAGE >= Questions.length) ? 'grey' : '#F348A4'} />
                 </TouchableOpacity>
             </View>
             </>

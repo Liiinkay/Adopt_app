@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import CreatePostsScreen from "../screens/CreatePostScreen";
 import DrawerGroup from "./DrawerNav";
+import AdminScreen from "../screens/AdminScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -37,6 +38,7 @@ const TabGroup = () => {
                 options={{ headerShown: false }}
             />
             <Tab.Screen name="Crear" component={CreatePostsScreen}/>
+            <Tab.Screen name="Admin" component={AdminScreen}/>
         </Tab.Navigator>
     )
 }

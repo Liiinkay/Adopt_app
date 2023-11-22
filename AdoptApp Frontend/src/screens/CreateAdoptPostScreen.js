@@ -31,12 +31,9 @@ const CreateAdoptPostScreen = ({ navigation }) => {
 
         try {
             const data = await createAdoptPost(formData, userId); // Usa createAdoptPost en lugar de fetch
-            console.log('Respuesta:', data);
-            // Manejo de la navegación o acciones después del envío exitoso
-            // navigation.navigate('OtraPantalla');
+            navigation.navigate('Tabs');
         } catch (error) {
             console.error('Error en la petición:', error);
-            // Manejo de errores
         } finally {
             setIsLoading(false);
         }

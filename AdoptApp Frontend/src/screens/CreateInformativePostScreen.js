@@ -25,7 +25,6 @@ const CreateInformativePostScreen = ({ navigation }) => {
 
         try {
             const data = await createInformativePost(formData, userId);
-            console.log('Respuesta:', data); 
             navigation.navigate('Tabs');
         } catch (error) {
             console.error('Error en la petición:', error);
