@@ -8,6 +8,7 @@ import LikeButton from "../components/LikeButton";
 import config from '../../config';
 import { useRoute } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthProvider';
+import { useQuestions } from '../contexts/QuestionProvider';
 
 const ITEMS_PER_PAGE = 5;
 const apiUrl = config.API_URL;
@@ -54,24 +55,36 @@ const QuestionItem = ({ item, isPostOwner, onAddAnswer }) => {
 
 const PostDetailAdoptScreen = ({ navigation }) => {
     const { getUserId } = useAuth();
+    const userId = getUserId();
+    const { createQuestion } = useQuestions();
     const [currentPage, setCurrentPage] = useState(1);
     const [paginatedQuestions, setPaginatedQuestions] = useState([]);
     const [newQuestion, setNewQuestion] = useState('');
     const route = useRoute(); 
     const { post, userInfo } = route.params;
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
-    const Questions = []
-    const isPostOwner = getUserId() === post?.authorID;
-    console.log(post);
+    const Questions = [];
+    const isPostOwner = userId === post?.authorID;
+    
     const onAddAnswer = (questionId, answerText) => {
         // Lógica para añadir la respuesta
     };
 
-    const handleAddQuestion = () => {
-        // Lógica para añadir la nueva pregunta
-        console.log('Nueva pregunta:', newQuestion);
-        // Resetear el campo de texto después de enviar la pregunta
-        setNewQuestion('');
+    const handleAddQuestion = async () => {
+/*         if (newQuestion.trim()) {
+            setIsLoading(true);
+            try {
+                const createQuestionDto = { question: newQuestion };
+                await createQuestion(post.id, createQuestionDto); // Envía la pregunta
+                console.log('Pregunta enviada:', newQuestion);
+                setNewQuestion(''); // Limpia el campo de entrada
+            } catch (error) {
+                console.error('Error al enviar la pregunta:', error);
+                // Manejar el error (por ejemplo, mostrar un mensaje al usuario)
+            } finally {
+                setIsLoading(false);
+            }
+        } */
     };
 
     const renderQuestionInput = () => {
@@ -129,14 +142,14 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Post</Text>
                     <Menu>
-                            <MenuTrigger>
-                                <Ionicons name="ellipsis-vertical" size={24} color="white" />
-                            </MenuTrigger>
-                            <MenuOptions>
-                                <MenuOption onSelect={() => alert('Opción 1')} text='Guardar' />
-                                <MenuOption onSelect={() => alert('Opción 2')} text='Reportar' />
-                            </MenuOptions>
-                        </Menu>
+                        <MenuTrigger>
+                            <Ionicons name="ellipsis-vertical" size={24} color="white" />
+                        </MenuTrigger>
+                        <MenuOptions>
+                            <MenuOption onSelect={() => alert('Opción 1')} text='Guardar' />
+                            <MenuOption onSelect={() => alert('Opción 2')} text='Reportar' />
+                        </MenuOptions>
+                    </Menu>
                 </View>
                 <View style={styles.postView}>
 
@@ -175,7 +188,7 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                         </View>
                         <TouchableOpacity
                             style={styles.adoptButton}
-                            onPress={() => navigation.navigate('AdoptForm', { post })}
+                            onPress={() => navigation.navigate('AdoptForm', { post, userId })}
                         >
                             <Text style={styles.adoptButtonText}>Postular a adopción</Text>
                         </TouchableOpacity>

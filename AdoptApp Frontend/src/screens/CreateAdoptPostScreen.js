@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     disabledButton: {
         backgroundColor: 'grey', // O cualquier otro color que indique que está desactivado
     },
-        publishButtonText: {
+    publishButtonText: {
         color: '#FFFFFF',
         fontSize: 15, // Ajusta el tamaño de la fuente según necesites
         fontWeight: '400',

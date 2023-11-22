@@ -57,6 +57,28 @@ export const PostProvider = ({ children }) => {
   };
 
 
+  const createFormAdopt = async (idPost, idApplicant, formData) => {
+    const url = `${API_URL}/api/posts/adopt/${idPost}/form/${idApplicant}`;
+    const response = await fetch(url, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    return handleResponse(response);
+  };
+
+  const getFormsByPostId = async (idPost) => {
+    const url = `${API_URL}/api/posts/forms/${idPost}`;
+    const response = await fetch(url, { method: 'GET' });
+    return handleResponse(response);
+  };
+
+  const getPostsAppliedByUserId = async (idUser) => {
+    const url = `${API_URL}/api/posts/userAppliedPosts/${idUser}`;
+    const response = await fetch(url, { method: 'GET' });
+    return handleResponse(response);
+  };
+
   
   const handleResponse = async (response) => {
     const responseData = await response.json();
@@ -76,6 +98,9 @@ export const PostProvider = ({ children }) => {
       getPostById,
       getPostsByType,
       getUserPostsJson,
+      createFormAdopt,
+      getFormsByPostId,
+      getPostsAppliedByUserId,
       // Agrega aquí los demás métodos
     }}>
       {children}

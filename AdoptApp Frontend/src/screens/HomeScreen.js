@@ -30,8 +30,6 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    // Construye la URL con el valor de filtro mapeado
-    const url = `${apiUrl}/api/posts/type/${getFilterValueForUrl(filtro)}`;
 
     useLayoutEffect(() => {
         navigation.setOptions({

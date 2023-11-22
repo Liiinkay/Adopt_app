@@ -16,7 +16,6 @@ const PostCard = ({ post, navigation }) => {
     useEffect(() => {
       const fetchUserInfo = async () => {
         const url = `${apiUrl}/api/users/${post.authorID}`;
-        console.log(url);
         try {
           const response = await fetch(url, {
             method: 'GET',
@@ -28,7 +27,6 @@ const PostCard = ({ post, navigation }) => {
             throw new Error('Network response was not ok');
           }
           const data = await response.json();
-          console.log(data);
           setUserInfo(data);
         } catch (error) {
           console.error('Error fetching user info:', error);

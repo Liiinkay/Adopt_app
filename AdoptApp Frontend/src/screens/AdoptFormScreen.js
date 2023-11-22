@@ -1,234 +1,389 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, Button, ScrollView, SafeAreaView, StatusBar, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import { Ionicons } from '@expo/vector-icons';
+import { usePosts } from '../contexts/PostProvider';
+import { useRoute } from '@react-navigation/native';
 
-const AdoptionForm = ({navigation}) => {
+// Esquema de validación con Yup
+const validationSchema = Yup.object().shape({
+  reason: Yup.string().required('Este campo es obligatorio'),
+  otherAnimals: Yup.boolean().required('Este campo es obligatorio'),
+  otherAnimalsSpayed: Yup.boolean().required('Este campo es obligatorio'),
+  previousAnimals: Yup.string().required('Este campo es obligatorio'),
+  previousAnimalsDescription: Yup.string().required('Este campo es obligatorio'),
+  numPeopleInHouse: Yup.number().required('Este campo es obligatorio').typeError('Debe ser un número'),
+  peopleAgreeToAdopt: Yup.boolean().required('Este campo es obligatorio'),
+  hasChildren: Yup.boolean().required('Este campo es obligatorio'),
+  rentalPermission: Yup.boolean().required('Este campo es obligatorio'),
+});
 
-  const [formData, setFormData] = useState({
-    reason: '',
-    otherAnimals: '',
-    otherAnimalsSpayed: '',
-    previousAnimals: '',
-    previousAnimalsDescription: '',
-    numPeopleInHouse: '',
-    peopleAgreeToAdopt: '',
-    hasChildren: '',
-    rentalPermission: '',
-  });
+const RadioButton = ({ label, value, onSelect, selectedValue }) => {
+  return (
+    <TouchableOpacity
+      style={styles.radioButtonContainer}
+      onPress={() => onSelect(value)}>
+      <View style={styles.radioButton}>
+        {selectedValue === value && <View style={styles.radioButtonSelected} />}
+      </View>
+      <Text style={styles.radioButtonLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+};
 
-  const [formSubmitted, setFormSubmitted] = useState(false);
+const AdoptFormScreen = ({ navigation }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionMessage, setSubmissionMessage] = useState('');
+  const { createFormAdopt } = usePosts();
+  const route = useRoute(); 
+  const { post, userId } = route.params;
 
-  const handleFormSubmit = () => {
-    // Verificar que todas las preguntas hayan sido respondidas
-    for (const key in formData) {
-      if (!formData[key]) {
-        alert('Por favor, responda todas las preguntas antes de enviar el formulario.');
-        return;
-      }
+  const handleSubmitForm = async (values) => {
+    setIsSubmitting(true);
+    try {
+      await createFormAdopt(post.Id, userId, values);
+      setSubmissionMessage('Enviado');
+      setTimeout(() => {
+        // Aquí puedes decidir si deseas limpiar el mensaje o hacer algo más después de un tiempo.
+        setSubmissionMessage('');
+        setIsSubmitting(false);
+      }, 5000); // 5 segundos para mostrar el mensaje de enviado
+    } catch (error) {
+      console.error('Error al enviar el formulario:', error);
+      setSubmissionMessage('Error al enviar. Intenta nuevamente.');
+      setIsSubmitting(false);
     }
-
-    // Mostrar una alerta de confirmación antes de redireccionar
-    Alert.alert(
-      'Confirmación',
-      '¿Estás seguro de que quieres volver? Perderás el progreso hecho en este formulario.',
-      [
-        {
-          text: 'Sí',
-          onPress: () => {
-            // Cambiar el estado para mostrar el mensaje de agradecimiento y redireccionar
-            setFormSubmitted(true);
-            // Redirigir a la página principal
-            navigation.goBack();
-          },
-        },
-        { text: 'No', onPress: () => {} },
-      ]
-    );
   };
 
-  // Agregar un efecto para controlar la alerta de confirmación
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (!formSubmitted) {
-        e.preventDefault();
-        Alert.alert(
-          'Confirmación',
-          '¿Estás seguro de que quieres volver? Perderás el progreso hecho en este formulario.',
-          [
-            {
-              text: 'Si',
-              onPress: () => {
-                // Redirigir a la página principal
-                navigation.dispatch(e.data.action);
-              },
-            },
-            { text: 'No', onPress: () => {} },
-          ]
-        );
-      }
-    });
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="black" />
+      {/* Encabezado */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Adoptar</Text>
+        <View style={styles.backButton} />
+      </View>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Formik
+          initialValues={{
+            reason: '',
+            otherAnimals: false,
+            otherAnimalsSpayed: false,
+            previousAnimals: '',
+            previousAnimalsDescription: '',
+            numPeopleInHouse: '',
+            peopleAgreeToAdopt: false,
+            hasChildren: false,
+            rentalPermission: false,
+          }}
+          validationSchema={validationSchema}
+          onSubmit={(values) => { handleSubmitForm(values) }}
+        >
+          {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue, isValid, dirty }) => (
+            <>
+              <Text style={styles.mainTitle}>Formulario de Adopción</Text>
 
-    return unsubscribe;
-  }, [navigation, formSubmitted]);
+              {/* Campos del formulario */}
+              <View style={styles.questionContainer}>
 
-  const renderForm = () => (
-    <SafeAreaView style={{flex:1}}>
-      <StatusBar/>
-      <ScrollView>
-        <View style={styles.header}>
-          <Button
-            title="← Volver"
-            onPress={() => {
-              // Mostrar la alerta de confirmación
-              Alert.alert(
-                'Confirmación',
-                '¿Estás seguro de que quieres volver? Perderás el progreso hecho en este formulario.',
-                [
-                  {
-                    text: 'Sí',
-                    onPress: () => {
-                      // Redirigir a la página principal
-                      navigation.goBack();
-                    },
-                  },
-                  { text: 'No', onPress: () => {} },
-                ]
-              );
-            }}
-          />
-        </View>
-        <View style={styles.container}>
+                  {/* 1. Razón para adoptar */}
+                  <Text style={styles.inputLabel}>¿Por qué desea adoptar una mascota?</Text>
+                  <TextInput
+                    style={styles.input}
+                    onChangeText={handleChange('reason')}
+                    onBlur={handleBlur('reason')}
+                    value={values.reason}
+                    placeholder="Respuesta..."
+                    multiline
+                  />
+                  {touched.reason && errors.reason && <Text style={styles.errorText}>{errors.reason}</Text>}
+              </View>
 
-          <Text style={styles.question}>1. ¿Por qué desea adoptar una mascota?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, reason: text })}
-            value={formData.reason}
-            placeholder="Respuesta..."
-            multiline
-          />
+              {/* 2. Otros animales */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>¿Actualmente cuenta con otros animales?</Text>
+                <RadioButton
+                  label="Sí"
+                  value={true}
+                  selectedValue={values.otherAnimals}
+                  onSelect={(value) => setFieldValue('otherAnimals', value)}
+                />
+                <RadioButton
+                  label="No"
+                  value={false}
+                  selectedValue={values.otherAnimals}
+                  onSelect={(value) => setFieldValue('otherAnimals', value)}
+                />
+                {touched.otherAnimals && errors.otherAnimals && <Text style={styles.errorText}>{errors.otherAnimals}</Text>}
+              </View>
 
-          <Text style={styles.question}>2. ¿Actualmente cuenta con otros animales?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, otherAnimals: text })}
-            value={formData.otherAnimals}
-            placeholder="Respuesta..."
-          />
+              {/* 3. Animales esterilizados */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>¿Estos se encuentran esterilizados?</Text>
+                <RadioButton
+                  label="Sí"
+                  value={true}
+                  selectedValue={values.otherAnimalsSpayed}
+                  onSelect={(value) => setFieldValue('otherAnimalsSpayed', value)}
+                />
+                <RadioButton
+                  label="No"
+                  value={false}
+                  selectedValue={values.otherAnimalsSpayed}
+                  onSelect={(value) => setFieldValue('otherAnimalsSpayed', value)}
+                />
+                {touched.otherAnimalsSpayed && errors.otherAnimalsSpayed && <Text style={styles.errorText}>{errors.otherAnimalsSpayed}</Text>}
+              </View>
 
-          <Text style={styles.question}>3. ¿Estos se encuentran esterilizados?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, otherAnimalsSpayed: text })}
-            value={formData.otherAnimalsSpayed}
-            placeholder="Respuesta..."
-          />
+              {/* 4. Animales anteriores */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>¿Anteriormente ha tenido otros animales?</Text>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={handleChange('previousAnimals')}
+                  onBlur={handleBlur('previousAnimals')}
+                  value={values.previousAnimals}
+                  placeholder="Respuesta..."
+                />
+                {touched.previousAnimals && errors.previousAnimals && <Text style={styles.errorText}>{errors.previousAnimals}</Text>}
+              </View>
 
-          <Text style={styles.question}>4. ¿Anteriormente ha tenido otros animales?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, previousAnimals: text })}
-            value={formData.previousAnimals}
-            placeholder="Respuesta..."
-          />
+              {/* 5. Descripción de animales anteriores */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>¿Qué fue lo que pasó con ellos?</Text>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={handleChange('previousAnimalsDescription')}
+                  onBlur={handleBlur('previousAnimalsDescription')}
+                  value={values.previousAnimalsDescription}
+                  placeholder="Respuesta..."
+                  maxLength={500}
+                  multiline
+                />
+                {touched.previousAnimalsDescription && errors.previousAnimalsDescription && <Text style={styles.errorText}>{errors.previousAnimalsDescription}</Text>}
+              </View>
 
-          <Text style={styles.question}>5. ¿Qué fue lo que pasó con ellos?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, previousAnimalsDescription: text })}
-            value={formData.previousAnimalsDescription}
-            placeholder="Respuesta..."
-            multiline
-          />
+              {/* 6. Número de personas en casa */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>¿Cuántas personas viven en su casa?</Text>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={handleChange('numPeopleInHouse')}
+                  onBlur={handleBlur('numPeopleInHouse')}
+                  value={values.numPeopleInHouse}
+                  placeholder="Respuesta..."
+                  keyboardType="numeric"
+                />
+                {touched.numPeopleInHouse && errors.numPeopleInHouse && <Text style={styles.errorText}>{errors.numPeopleInHouse}</Text>}
+              </View>
 
-          <Text style={styles.question}>6. ¿Cuántas personas viven en su casa?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, numPeopleInHouse: text })}
-            value={formData.numPeopleInHouse}
-            keyboardType="numeric"
-            placeholder="Respuesta..."
-          />
+              {/* 7. Acuerdo para adoptar */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>¿Todos los miembros de la casa están de acuerdo con la adopción?</Text>
+                <RadioButton
+                  label="Sí"
+                  value={true}
+                  selectedValue={values.peopleAgreeToAdopt}
+                  onSelect={(value) => setFieldValue('peopleAgreeToAdopt', value)}
+                />
+                <RadioButton
+                  label="No"
+                  value={false}
+                  selectedValue={values.peopleAgreeToAdopt}
+                  onSelect={(value) => setFieldValue('peopleAgreeToAdopt', value)}
+                />
+              </View>
+              {touched.peopleAgreeToAdopt && errors.peopleAgreeToAdopt && <Text style={styles.errorText}>{errors.peopleAgreeToAdopt}</Text>}
 
-          <Text style={styles.question}>7. ¿Estos se encuentran de acuerdo en adoptar?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, peopleAgreeToAdopt: text })}
-            value={formData.peopleAgreeToAdopt}
-            placeholder="Respuesta..."
-          />
+              {/* 8. Niños en casa */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>¿Hay niños en casa?</Text>
+                <RadioButton
+                  label="Sí"
+                  value={true}
+                  selectedValue={values.hasChildren}
+                  onSelect={(value) => setFieldValue('hasChildren', value)}
+                />
+                <RadioButton
+                  label="No"
+                  value={false}
+                  selectedValue={values.hasChildren}
+                  onSelect={(value) => setFieldValue('hasChildren', value)}
+                />
+              </View>
+              {touched.hasChildren && errors.hasChildren && <Text style={styles.errorText}>{errors.hasChildren}</Text>}
 
-          <Text style={styles.question}>8. ¿Hay niños en casa?</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, hasChildren: text })}
-            value={formData.hasChildren}
-            placeholder="Respuesta..."
-          />
+              {/* 9. Permiso de alquiler */}
+              <View style={styles.questionContainer}>
+                <Text style={styles.inputLabel}>En caso de alquiler, ¿tiene permiso para tener mascotas?</Text>
+                <RadioButton
+                  label="Sí"
+                  value={true}
+                  selectedValue={values.rentalPermission}
+                  onSelect={(value) => setFieldValue('rentalPermission', value)}
+                />
+                <RadioButton
+                  label="No"
+                  value={false}
+                  selectedValue={values.rentalPermission}
+                  onSelect={(value) => setFieldValue('rentalPermission', value)}
+                />
+              </View>
+              {touched.rentalPermission && errors.rentalPermission && <Text style={styles.errorText}>{errors.rentalPermission}</Text>}
 
-          <Text style={styles.question}>
-            9. En caso de que viva en alquiler, ¿se le permite tener mascotas?
-          </Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={(text) => setFormData({ ...formData, rentalPermission: text })}
-            value={formData.rentalPermission}
-            placeholder="Respuesta..."
-          />
-          <View style={{margin: 20}}>
-            <Button color={'#F348A4'} title="Enviar Formulario" onPress={handleFormSubmit} />
-          </View>
-        </View>
+              {/* Botón de envío */}
+              {submissionMessage !== '' && (
+                <Text style={styles.submissionMessage}>{submissionMessage}</Text>
+              )}
+
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  isSubmitting || !(isValid && dirty) ? styles.submitButtonDisabled : {},
+                  submissionMessage === 'Enviado' ? styles.submitButtonSuccess : {},
+                ]}
+                onPress={handleSubmit}
+                disabled={isSubmitting || !(isValid && dirty)}
+              >
+                {submissionMessage === 'Enviado' ? (
+                  <View style={styles.buttonContainer}>
+                    <Text style={styles.submitButtonText}>Enviado</Text>
+                    <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                  </View>
+                ) : isSubmitting ? (
+                  <ActivityIndicator size={20} color="#fff" />
+                ) : (
+                  <View style={styles.buttonContainer}>
+                    <Text style={styles.submitButtonText}>Enviar Formulario</Text>
+                    <Ionicons name="send" size={20} color="#FFFFFF" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
+        </Formik>
       </ScrollView>
     </SafeAreaView>
-  );
-
-  const renderThankYouMessage = () => (
-    <View style={styles.thankYouContainer}>
-      <Text style={styles.thankYouText}>¡Gracias por enviar el formulario!</Text>
-      <Button
-        title="Volver a la página principal"
-        onPress={() => navigation.navigate('HomeScreen')}
-      />
-    </View>
-  );
-
-  return (
-<View style={styles.container}>
-      {formSubmitted ? renderThankYouMessage() : renderForm()}
-    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
   },
-  question: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#F348A4',
+  },
+  headerTitle: {
+    fontWeight: 'bold',
+    fontSize: 20,
+    color: 'white',
+    textAlign: 'center',
+    flex: 1,
+  },
+  backButton: {
+    width: 24, 
+  },
+  contentContainer: {
+    padding: 20,
+  },
+  mainTitle: {
     fontSize: 18,
-    marginVertical: 8,
+    fontWeight: 'bold',
+    paddingVertical: 10,
+    textAlign: 'center',
+    backgroundColor: '#F8F8F8', 
+    borderRadius: 10,
+    marginHorizontal: 20, 
+    overflow: 'hidden', 
+  },
+  inputLabel: {
+    fontSize: 16,
+    marginTop: 8,
   },
   input: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderColor: '#D3D3D3',
+    backgroundColor: '#FFFFFF',
+    marginVertical: 10,
+    borderRadius: 10,
+  },
+  errorText: {
+    fontSize: 10,
+    color: 'red',
+    paddingHorizontal: 15,
+  },
+  questionContainer: {
+    marginBottom: 20, // Ajusta el margen como sea necesario
+    padding: 10,
+    backgroundColor: '#FFFFFF', // o cualquier otro color que coincida con tu diseño
+    borderRadius: 10, // opcional: para bordes redondeados
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 16,
+    borderColor: '#D3D3D3', // color del borde similar al de las otras preguntas
   },
-  thankYouContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  radioButtonContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginVertical: 5, // Espaciado vertical para separar los radio buttons
   },
-  thankYouText: {
-    fontSize: 24,
-    marginBottom: 16,
+
+  radioButton: {
+    height: 24,
+    width: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E2E2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
-  sendButton: {
+  radioButtonSelected: {
+    height: 12,
+    width: 12,
+    borderRadius: 6,
+    backgroundColor: '#F348A4', // Asumiendo que el rosa es el color seleccionado
+  },
+  radioButtonLabel: {
+    fontSize: 16,
+    color: 'black', // Cambia al color que corresponda
+  },
+  submitButton: {
     backgroundColor: '#F348A4',
-    marginBottom: 16
+    padding: 10,
+    borderRadius: 20,
+    marginTop: 10,
+    alignItems: 'center', // Centrar el texto en el botón
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15, // Ajusta el tamaño de la fuente según necesites
+    fontWeight: '400',
+    marginRight: 8, // Añade un margen a la derecha para separarlo del icono
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#CCCCCC', // Un color que indique que el botón está deshabilitado
+  },
+  submissionMessage: {
+    textAlign: 'center',
+    color: 'green', // o el color que prefieras
+    fontSize: 16,
+    padding: 10,
+  },
+  submitButtonSuccess: {
+    backgroundColor: 'green', // o el color de éxito que prefieras
+  },
+  buttonContainer: {
+    flexDirection: 'row',
   }
 });
 
-export default AdoptionForm;
+export default AdoptFormScreen;
