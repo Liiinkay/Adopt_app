@@ -47,6 +47,16 @@ export class UsersController {
     return { message: 'Logout successful' };
   }
 
+  @Get('all')
+  getAllUsers() {
+    return this.usersService.findAllUsers();
+  }
+
+  @Get('nickname/:nickname')
+  findByNickname(@Param('nickname') nickname: string) {
+    return this.usersService.findByNickname(nickname);
+  }
+
   //calificar a usuario
   @Post(':userId/rate')
   @Auth( ValidRoles.user )
@@ -152,4 +162,5 @@ export class UsersController {
     const followerId = req.user.id;
     return this.usersService.unfollowUser(followerId, followingId);
   }
+
 }

@@ -122,6 +122,35 @@ export class UsersService {
     return users;
   }
 
+  async findAllUsers() {
+    const users = await this.userRepository.find({
+      select: ['id', 'name', 'last_name']
+    });
+
+    if (!users.length) {
+      throw new NotFoundException('No se encontraron usuarios');
+    }
+
+    return users.map(user => ({
+      id: user.id,
+      fullName: `${user.name} ${user.last_name}`
+    }));
+  }
+
+  async findByNickname(nickname: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: {
+        nickname: nickname.toLowerCase().trim(),
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Usuario con nickname '${nickname}' no encontrado`);
+    }
+
+    return user;
+  }
+
   async findOne(id: string) {
     let user: User;
 

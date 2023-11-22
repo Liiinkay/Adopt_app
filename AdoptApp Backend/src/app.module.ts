@@ -8,6 +8,7 @@ import { CommentsModule } from './comments/comments.module';
 import { QuestionModule } from './question/question.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CoordinateModule } from './coordinate/coordinate.module';
 
 @Module({
   imports: [
@@ -35,18 +36,20 @@ import { join } from 'path';
     QuestionModule,
     
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que la ruta sea correcta
+      rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/api/uploads',
     },
     {
-      rootPath: join(__dirname, '..', 'img/profile'), // sirve las imágenes de perfil de usuario
+      rootPath: join(__dirname, '..', 'img/profile'),
       serveRoot: '/api/img/profile',
     },
     {
-      rootPath: join(__dirname, '..', 'img/banner'), // sirve las imágenes de banner de usuario
+      rootPath: join(__dirname, '..', 'img/banner'), 
       serveRoot: '/api/img/banner',
     },
     ),
+    
+    CoordinateModule,
   ],
 })
 export class AppModule {}
