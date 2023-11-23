@@ -7,6 +7,12 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { Form } from './entities/form.entity';
 import { Auth } from 'src/users/decorators/auth.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { UpdateAdoptDto } from './dto/update-adopt.dto';
+import { UpdateLostDto } from './dto/update-lost.dto';
+import { UpdateInformativeDto } from './dto/update-informative.dto';
+import { Informative } from './entities/typepost-entitys/informative-post.entity';
+import { Lost } from './entities/typepost-entitys/lost-post.entity';
+import { Adopt } from './entities/typepost-entitys/adopt-post.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -22,7 +28,7 @@ export class PostsController {
     @Body() createAdoptDto: CreateAdoptDto,
     @UploadedFiles() files: { images?: Express.Multer.File[] }
   ) {
-    const mediaUrls = files.images.map(file => `uploads/${file.filename}`);
+    const mediaUrls = files.images ? files.images.map(file => `uploads/${file.filename}`) : [];
     return this.postsService.createAdoptPost(id, createAdoptDto, mediaUrls);
   }
 
@@ -35,8 +41,8 @@ export class PostsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createLostDto: CreateLostDto,
     @UploadedFiles() files: { images?: Express.Multer.File[] }
-  ) {
-    const mediaUrls = files.images.map(file => `uploads/${file.filename}`);
+  ) { 
+    const mediaUrls = files.images ? files.images.map(file => `uploads/${file.filename}`) : [];
     return this.postsService.createLostPost(id, createLostDto, mediaUrls);
   }
 
@@ -50,14 +56,32 @@ export class PostsController {
     @Body() createInformativeDto: createInformativeDto,
     @UploadedFiles() files: { images?: Express.Multer.File[] }
   ) {
-    const mediaUrls = files.images.map(file => `uploads/${file.filename}`);
+    const mediaUrls = files.images ? files.images.map(file => `uploads/${file.filename}`) : [];
     return this.postsService.createInformativePost(createInformativeDto, id, mediaUrls);
   }
 
-  //actualizar informacion de un post
-  @Patch(':id')
-  async updatePost(@Param('id', ParseUUIDPipe) id: string, @Body() updatePostDto: any): Promise<any> {
-    return await this.postsService.updatePost(id, updatePostDto);
+  @Patch('adopt/:id')
+  async updateAdoptPost(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateAdoptDto: UpdateAdoptDto
+  ): Promise<Adopt> {
+    return this.postsService.updateAdoptPost(id, updateAdoptDto);
+  }
+  
+  @Patch('lost/:id')
+  async updateLostPost(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateLostDto: UpdateLostDto
+  ): Promise<Lost> {
+    return this.postsService.updateLostPost(id, updateLostDto);
+  }
+  
+  @Patch('informative/:id')
+  async updateInformativePost(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateInformativeDto: UpdateInformativeDto
+  ): Promise<Informative> {
+    return this.postsService.updateInformativePost(id, updateInformativeDto);
   }
 
   //eliminar Post
