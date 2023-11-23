@@ -4,4 +4,7 @@ export class CreateQuestionDto {
     @IsString()
     @IsNotEmpty()
     text: string;
+
+    @IsString()
+    authorId: string
   }
