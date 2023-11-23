@@ -17,4 +17,7 @@ export class Question {
 
   @ManyToOne(() => Adopt, adoptPost => adoptPost.questions, { onDelete: 'CASCADE' })
   adoptPost: Adopt;
+
+  @Column()
+  author: string;
 }

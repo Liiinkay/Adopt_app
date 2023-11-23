@@ -22,7 +22,8 @@ export class QuestionService {
         }
         const question = this.questionRepository.create({
             ...createQuestionDto,
-            adoptPost: post
+            adoptPost: post,
+            author: createQuestionDto.authorId
         });
         return this.questionRepository.save(question);
     }
