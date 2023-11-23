@@ -29,11 +29,10 @@ export class CreateUserDto {
     @IsString()
     @IsOptional()
     rut: string;
-
-    @IsNumber()
-    @IsPositive()
+    
+    @IsString()
     @IsOptional()
-    phone_number: number;
+    phone_number: string;
 
     @IsString()
     @IsOptional()
