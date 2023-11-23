@@ -101,6 +101,11 @@ export class PostsController {
       return this.postsService.unlikePost(postId, userId);
   }
 
+  @Get(':postId/likes')
+  async obtenerLikesDePost(@Param('postId', ParseUUIDPipe) postId: string): Promise<string[]> {
+    return this.postsService.obtenerUsuariosQueDieronLikeAPost(postId);
+  }
+
   ////////////////////////
   // Seccion Formulario //
   ////////////////////////
