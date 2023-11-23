@@ -29,8 +29,9 @@ export class UsersController {
     @Body() createUserDto: CreateUserDto,
     @UploadedFiles() files: { profile_img?: Express.Multer.File[], banner_multimedia?: Express.Multer.File[] }
   ) {
-    const profileImagePath = files.profile_img && files.profile_img[0] ? `img/${files.profile_img[0].filename}` : null;
-    const bannerImagePath = files.banner_multimedia && files.banner_multimedia[0] ? `img/${files.banner_multimedia[0].filename}` : null;
+    const profileImagePath = files?.profile_img?.[0] ? `img/${files.profile_img[0].filename}` : null;
+    const bannerImagePath = files?.banner_multimedia?.[0] ? `img/${files.banner_multimedia[0].filename}` : null;
+    
     return this.usersService.create(createUserDto, profileImagePath, bannerImagePath);
   }
 
