@@ -153,7 +153,7 @@ export class UsersController {
   @Post('follow')
   @Auth( ValidRoles.user )
   followUser(@Req() req, @Body() saveFollowDto: SaveFollowDto) {
-    const followerId = req.user.id; // Asegúrate de obtener el ID del usuario actual
+    const followerId = req.user.id;
     return this.usersService.followUser(followerId, saveFollowDto.followingId);
   }
 

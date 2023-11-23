@@ -407,13 +407,19 @@ export class UsersService {
     });
   }
 
-  async getFollowers(userId: string): Promise<User[]> {
-    const follows = await this.followsRepository.find({
+  async getFollowers(userId: string): Promise<any[]> {
+    const followers = await this.followsRepository.find({
       where: { followingId: userId },
-      relations: ['author']
+      relations: ['author'] 
     });
-
-    return follows.map(follow => follow.author);
+  
+    return followers.map(follow => {
+      return {
+        id: follow.author.id,
+        nickname: follow.author.nickname,
+        profile_img: follow.author.profile_img
+      };
+    });
   }
 
   async incrementFollowersCount(userId: string): Promise<void> {
