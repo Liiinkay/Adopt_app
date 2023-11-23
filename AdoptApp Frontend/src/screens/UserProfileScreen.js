@@ -1,181 +1,130 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, StatusBar, ScrollView, TouchableOpacity } from 'react-native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRoute } from "@react-navigation/native";
 
-import SettingsScreen from './SettingsScreen';
+const UserProfileScreen = ({ navigation }) => {
+  // Ejemplo de datos del usuario
+  const userInfo = {
+    name: 'Juan Andrés Soto',
+    username: '@JuanitoMola23',
+    followers: 15,
+    following: 21,
+    posts: 4,
+    bio: 'Que onda chavales, soy un ser que le fascinan los animales...',
+    // Agrega más datos según necesites
+  };
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { findOne } = useContext(UserContext); // Asegúrate de que findOne es parte de tu UserContext
 
-const Tab = createMaterialTopTabNavigator();
-const description = "Tengo 28 años y soy diseñadora gráfica. Actualmente, vivo en la vibrante Ciudad de México, México. Mi mayor pasión es el diseño gráfico y la ilustración. Disfruto enormemente plasmando ideas en imágenes y creando diseños visuales que impacten y cuenten historias. Cuando no estoy trabajando en proyectos creativos, me encontrarás dibujando en mi cuaderno o explorando las últimas tendencias de diseño. Soy una amante de la música indie y los conciertos en vivo son mi plan favorito para las noches de fin de semana. La música tiene una forma única de inspirarme y estimular mi creatividad. Una de mis mayores pasiones además del diseño es viajar. Siempre estoy planeando mi próxima aventura. Me encanta explorar nuevos lugares, conocer personas de diferentes culturas y probar comidas auténticas de todo el mundo. Mantenerme activa es fundamental para mí. Practico yoga de forma regular para mantener mi mente y cuerpo en equilibrio. Es una actividad que me ayuda a concentrarme y afrontar los desafíos con serenidad"
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      setIsLoading(true);
+      try {
+        const userId = 'id_del_usuario'; // Asegúrate de tener el ID del usuario que deseas cargar
+        const userData = await findOne(userId);
+        setUser(userData);
+      } catch (error) {
+        console.error("Error al cargar el perfil del usuario:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-const AboutUser = () => {
-  return(
-    <View style={{flex:1}}>
-      <Text>AAAAAAAAAAA</Text>
-    </View>
-  )
-}
+    loadUserProfile();
+  }, []);
 
-function ProfileTab() {
   return (
-    <Tab.Navigator
-      screenOptions={{
-        tabBarIndicatorStyle: {backgroundColor:'#F348A4'}
-      }}
-    >
-      <Tab.Screen name="Información" component={AboutUser} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
-    </Tab.Navigator>
- );
-}
-
-const UserProfile = ({ navigation }) => {
-  const {
-    params: { user },
-  } = useRoute(); 
-  return (
-    <SafeAreaView>
-        <StatusBar/>
-        <ScrollView>
-          <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                  <Ionicons name="arrow-back-outline" size={30} color={'#1E1E1E'} />
-              </TouchableOpacity>
-              <View style={styles.headerTextContainer}>
-                <Text style={styles.headerText}>{user.name}</Text>
-              </View>
-              <View style={{ flex: 1, flexDirection: 'row-reverse' }}>
-                <Ionicons name='ellipsis-vertical' size={25}/>
-              </View>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#F348A4" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{userInfo.name}</Text>
+          <TouchableOpacity>
+            <Ionicons name="ellipsis-vertical" size={24} color="#F348A4" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.profileSection}>
+          
+          <Text style={styles.username}>{userInfo.username}</Text>
+          <View style={styles.statsContainer}>
+            <Text style={styles.statNumber}>{userInfo.followers} Seguidores</Text>
+            <Text style={styles.statNumber}>{userInfo.following} Siguiendo</Text>
+            <Text style={styles.statNumber}>{userInfo.posts} Posts</Text>
           </View>
-          <View style={styles.bannerContainer}>
-            <Image src={user.banner} style={styles.bannerImage}/>
+          <View style={styles.tabsContainer}>
+            {/* Implementa los tabs aquí */}
           </View>
-          <View style={styles.profileContainer}>
-            <Image src={user.image} style={styles.userProfile}/>
-          </View>
-          <View style={styles.userNameFollowContainer}>
-            <Text style={styles.userNameText}>@{user.username}</Text>
-            <View style={styles.followButton}>
-              <Ionicons name='person-add-outline' color={'white'} size={30}/>
-            </View>
-          </View>
-          <View style={{flex: 1, flexDirection: 'row'}}>
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontWeight:'bold'}}>{user.followers}</Text>
-              <Text>Seguidores</Text>
-            </View>
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontWeight:'bold'}}>{user.follows}</Text>
-              <Text>Siguiendo</Text>
-            </View>
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontWeight:'bold'}}>{user.posts}</Text>
-              <Text>Posts</Text>
-            </View>
-          </View>
-          <View style={styles.lineContainer}>
-            <View style={styles.line}></View>
-          </View>
-          <ProfileTab></ProfileTab>
-          <View style={{padding: 16}}>
-            <Text style={styles.titleText}>A cerca de mí</Text>
-            <Text style={styles.descriptionText}>{description}</Text>
-          </View>
-        </ScrollView>
+        </View>
+        <View style={styles.bioSection}>
+          <Text style={styles.bioText}>{userInfo.bio}</Text>
+        </View>
+        {/* Agrega más secciones según necesites */}
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5', // Fondo claro para mantener la consistencia
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: 15,
+    backgroundColor: '#F348A4', // Color rosa para la cabecera
   },
-  header:{
-    flexDirection: 'row',
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: '#AEFAFF',
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  backButton: {
-    marginLeft: 5,
-    flex: 1
-  },
-  bannerContainer: {
-    flex: 1
-  },
-  bannerImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover'
-  },
-  profileContainer: {
-    flex: 1,
-    alignItems: 'center'
-  },
-  userProfile: {
-    width: 135,
-    height: 135,
-    borderRadius: 999,
-    borderColor: '#F348A4',
-    marginTop: -90
-  },
-  userNameFollowContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 5
-  },
-  followButton: {
-    backgroundColor: '#F348A4',
-    borderRadius: 10,
-    padding: 5,
-    marginLeft: 15
-  },
-  userNameText: {
-    fontSize: 18,
+  headerTitle: {
     fontWeight: 'bold',
-    textAlign: 'center'
-  },
-  headerText: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1E1E1E', 
+    color: 'white',
+  },
+  profileSection: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingBottom: 20,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginTop: 20,
   },
   username: {
-    fontSize: 24,
+    color: '#333',
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginTop: 10,
   },
-  description: {
-    fontSize: 16,
-    color: 'gray',
-  },
-  line: {
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     width: '100%',
-    height: 2,
-    backgroundColor: '#B1B1B1'
+    marginTop: 20,
   },
-  lineContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 15
-  },
-  titleText: {
-    fontSize: 20,
+  statNumber: {
+    fontSize: 16,
     fontWeight: 'bold',
-    paddingBottom: 10,
+    color: '#333',
   },
-  descriptionText: {
-    color: '#3F3F3F',
-    textAlign: 'justify'
+  tabsContainer: {
+    // Estilos para tus tabs
   },
+  bioSection: {
+    padding: 20,
+    backgroundColor: 'white',
+    marginTop: 10,
+  },
+  bioText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  // Agrega más estilos según necesites
 });
 
-export default UserProfile;
+export default UserProfileScreen;
