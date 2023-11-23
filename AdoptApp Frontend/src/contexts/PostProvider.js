@@ -57,6 +57,27 @@ export const PostProvider = ({ children }) => {
   };
 
 
+  const likePost = async (postId, userId) => {
+    const url = `${API_URL}/api/posts/${postId}/like`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    return handleResponse(response);
+  };
+
+  const unlikePost = async (postId, userId) => {
+    const url = `${API_URL}/api/posts/${postId}/like`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    return handleResponse(response);
+  };
+
+
   const createFormAdopt = async (idPost, idApplicant, formData) => {
     const url = `${API_URL}/api/posts/adopt/${idPost}/form/${idApplicant}`;
     const response = await fetch(url, { 
@@ -101,7 +122,8 @@ export const PostProvider = ({ children }) => {
       createFormAdopt,
       getFormsByPostId,
       getPostsAppliedByUserId,
-      // Agrega aquí los demás métodos
+      likePost,
+      unlikePost
     }}>
       {children}
     </PostsContext.Provider>

@@ -86,14 +86,17 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                             <LikeButton />
                         </View>
                         <Text style={styles.postTitle}>{post?.title}</Text>
-                            <Text style={styles.postDescription}>{post?.description}</Text>
+                        <Text style={styles.postDescription}>{post?.description}</Text>
+                        <Text style={styles.sectionTitle}>Información adicional</Text>
+                            {/* tabla de información */}
                             <View style={styles.petInfoContainer}>
-                                {/* tabla de información */}
+                                
                                 <Text style={styles.petInfoText}>Edad: {post?.age}</Text>
                                 <Text style={styles.petInfoText}>Sexo: {post?.gender}</Text>
                                 <Text style={styles.petInfoText}>Temperamento: {post?.personality}</Text>
                                 <Text style={styles.petInfoText}>Información médica: {post?.medical_information}</Text>
                             </View>
+                            <Text style={styles.sectionTitle}>Formulario</Text>
                             {
                                 hasSubmitted ? (
                                     <View style={styles.thankYouMessage}>
@@ -109,8 +112,8 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                                 )
                             }
                         <Text style={styles.sectionTitle}>Preguntas y Respuestas</Text>
-                        <TouchableOpacity style={styles.commentsButton} onPress={() => navigation.navigate('Questions', { post })}>
-                            <Text style={styles.commentsButtonText}>Ver comentarios</Text>
+                        <TouchableOpacity style={styles.adoptButton} onPress={() => navigation.navigate('Questions', { post })}>
+                            <Text style={styles.adoptButtonText}>Ver comentarios</Text>
                         </TouchableOpacity>
                     </View>
                 </>

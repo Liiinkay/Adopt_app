@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import config from '../../config';
+import { useAuth } from './AuthProvider';
 
 const API_URL = config.API_URL;
 const UsersContext = createContext();
@@ -7,6 +8,8 @@ const UsersContext = createContext();
 export const useUsers = () => useContext(UsersContext);
 
 export const UserProvider = ({ children }) => {
+  const { userToken } = useAuth();
+
   const handleResponse = async (response) => {
     const responseData = await response.json();
     if (!response.ok) {
@@ -79,7 +82,13 @@ export const UserProvider = ({ children }) => {
 
   const getFollowing = async (followerId) => {
     const url = `${API_URL}/api/users/following?followerId=${followerId}`;
-    const response = await fetch(url, { method: 'GET' });
+    const token = userToken;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`, 
+      },
+    });
     return handleResponse(response);
   };
 

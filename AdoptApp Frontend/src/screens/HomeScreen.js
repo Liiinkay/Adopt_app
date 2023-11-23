@@ -58,7 +58,9 @@ const HomeScreen = ({ navigation }) => {
             const type = getFilterValueForUrl(filtro);
             const response = await getPostsByType(type);
             if (response && Array.isArray(response)) {
-              setPosts(response);
+              // Ordena los posts por fecha de creación (más reciente primero)
+              const sortedPosts = response.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+              setPosts(sortedPosts);
             } else {
               console.error("Respuesta inesperada:", response);
             }
@@ -68,7 +70,8 @@ const HomeScreen = ({ navigation }) => {
         };
       
         fetchPosts();
-      }, [filtro]);
+    }, [filtro]);
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="black" />

@@ -28,7 +28,7 @@ const CreateAdoptPostScreen = ({ navigation }) => {
         setIsLoading(true);
         const formData = transformData(values);
         const userId = getUserId();
-
+        
         try {
             const data = await createAdoptPost(formData, userId); // Usa createAdoptPost en lugar de fetch
             navigation.navigate('Tabs');

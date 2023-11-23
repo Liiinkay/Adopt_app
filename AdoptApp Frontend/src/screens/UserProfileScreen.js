@@ -1,130 +1,257 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useUsers } from '../contexts/UserProvider';
+import { useAuth } from '../contexts/AuthProvider';
+import config from '../../config';
 
-const UserProfileScreen = ({ navigation }) => {
-  // Ejemplo de datos del usuario
-  const userInfo = {
-    name: 'Juan Andrés Soto',
-    username: '@JuanitoMola23',
-    followers: 15,
-    following: 21,
-    posts: 4,
-    bio: 'Que onda chavales, soy un ser que le fascinan los animales...',
-    // Agrega más datos según necesites
-  };
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { findOne } = useContext(UserContext); // Asegúrate de que findOne es parte de tu UserContext
+const apiUrl = config.API_URL;
+
+const StarRating = ({ rating, onRating }) => {
+  const maxRating = [1, 2, 3, 4, 5];
+
+  return (
+    <View style={styles.starContainer}>
+      {maxRating.map((item, index) => (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          key={item}
+          onPress={() => onRating(index + 1)}
+        >
+          <Ionicons
+            name={item <= rating ? 'md-star' : 'md-star-outline'}
+            size={30}
+            color={item <= rating ? '#F348A4' : 'grey'}
+          />
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+const UserProfileScreen = ({ route, navigation }) => {
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isUserConnectedProfile, setIsUserConnectedProfile] = useState(false);
+  const { findOne, getFollowing } = useUsers(); 
+  const { getUserId, logout } = useAuth();
+  const connectedUserId = getUserId(); // El ID del usuario conectado
 
   useEffect(() => {
     const loadUserProfile = async () => {
+      const { userId: profileUserId } = route.params;
       setIsLoading(true);
       try {
-        const userId = 'id_del_usuario'; // Asegúrate de tener el ID del usuario que deseas cargar
-        const userData = await findOne(userId);
-        setUser(userData);
+        const userData = await findOne(profileUserId);
+        const userFollowing = await getFollowing(connectedUserId);
+        console.log(userData);
+        setUserProfile(userData);
+        setIsFollowing(userFollowing.includes(profileUserId)); 
+        setIsUserConnectedProfile(profileUserId === connectedUserId);
       } catch (error) {
         console.error("Error al cargar el perfil del usuario:", error);
+        if (error.message === 'Unauthorized') {
+          // Mostrar alerta y luego cerrar sesión
+          Alert.alert(
+            "Sesión Caducada",
+            "Tu sesión ha caducado, por favor vuelve a iniciar sesión.",
+            [
+              { text: "OK", onPress: () => logout() } // Asume que logout es la función para cerrar sesión
+            ]
+          );
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadUserProfile();
-  }, []);
+    if (route.params && route.params.userId) {
+      loadUserProfile();
+    }
+  }, [route, connectedUserId]);
+
+  if (!userProfile) {
+    return <Text>Cargando...</Text>; // Puedes poner un indicador de carga aquí
+  }
+
+  const handleFollowPress = () => {
+    setIsFollowing(!isFollowing);
+  };
+
+  const handleRating = (rate) => {
+    // Aquí puedes hacer una solicitud POST a tu API para actualizar la calificación del usuario
+    console.log(`Nueva valoración: ${rate}`);
+    // Actualiza el estado o realiza alguna acción después de la valoración
+  };
+
+  // Calcula el promedio de las valoraciones
+  const averageRating = userProfile.rating / userProfile.ratingCount;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="#F348A4" />
+    <ScrollView style={styles.container}>
+      {/* Banner y foto de perfil */}
+      <Image source={{ uri: `${apiUrl}/api/${userProfile.banner_multimedia}` }} style={styles.bannerImage} />
+      <View style={styles.profileInfo}>
+        <Image source={{ uri: `${apiUrl}/api/${userProfile.profile_img}` }} style={styles.profileImage} />
+        <Text style={styles.profileName}>{userProfile.name} {userProfile.last_name}</Text>
+        <Text style={styles.profileNickname}>@{userProfile.nickname}</Text>
+        <View style={styles.followStats}>
+          <Text style={styles.stat}>{userProfile.followersCount} Seguidores</Text>
+          <Text style={styles.stat}>{userProfile.followingCount} Siguiendo</Text>
+          <Text style={styles.stat}>{userProfile.postsCount || 0} Posts</Text>
+        </View>
+        {/* Mostrar botón de seguir solo si no es el perfil del usuario conectado */}
+        {!isUserConnectedProfile && (
+          <TouchableOpacity style={[styles.followButton, isFollowing && styles.followingButton]} onPress={handleFollowPress}>
+            <Ionicons name={isFollowing ? 'md-checkmark' : 'md-person-add'} size={20} color="#fff" style={styles.followIcon} />
+            <Text style={styles.followButtonText}>{isFollowing ? 'Siguiendo' : 'Seguir'}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{userInfo.name}</Text>
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={24} color="#F348A4" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.profileSection}>
-          
-          <Text style={styles.username}>{userInfo.username}</Text>
-          <View style={styles.statsContainer}>
-            <Text style={styles.statNumber}>{userInfo.followers} Seguidores</Text>
-            <Text style={styles.statNumber}>{userInfo.following} Siguiendo</Text>
-            <Text style={styles.statNumber}>{userInfo.posts} Posts</Text>
-          </View>
-          <View style={styles.tabsContainer}>
-            {/* Implementa los tabs aquí */}
-          </View>
-        </View>
-        <View style={styles.bioSection}>
-          <Text style={styles.bioText}>{userInfo.bio}</Text>
-        </View>
-        {/* Agrega más secciones según necesites */}
-      </ScrollView>
-    </SafeAreaView>
+        )}
+      </View>
+
+      {/* Sección de tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity style={styles.tab}>
+          <Text>Información</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tab}>
+          <Text>Interacciones</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Acerca de mí */}
+      <View style={styles.aboutSection}>
+        <Text style={styles.aboutTitle}>Acerca de mí</Text>
+        <Text style={styles.aboutText}>
+          {/* Asegúrate de tener una propiedad bio en tus datos, si no es así, ajusta según tu modelo de datos */}
+          {userProfile.bio || 'No hay información disponible.'}
+        </Text>
+      </View>
+      
+      {/* Sección de valoración */}
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingTitle}>Valoración del Usuario</Text>
+        <StarRating rating={averageRating} onRating={handleRating} />
+        <Text style={styles.ratingPercentage}>{(averageRating / 5 * 100).toFixed(0)}%</Text>
+      </View>
+
+      {/* Agrega aquí más secciones como valoraciones, fotos, etc. */}
+    </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Fondo claro para mantener la consistencia
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  bannerImage: {
+    width: '100%',
+    height: 200, // Ajusta la altura según sea necesario
+  },
+  profileInfo: {
     alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#F348A4', // Color rosa para la cabecera
-  },
-  headerTitle: {
-    fontWeight: 'bold',
-    fontSize: 20,
-    color: 'white',
-  },
-  profileSection: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    paddingBottom: 20,
+    marginVertical: 10,
   },
   profileImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginTop: 20,
+    borderWidth: 3,
+    borderColor: '#fff',
+    marginTop: -50, // Ajuste para que la imagen se sobreponga al banner
   },
-  username: {
-    color: '#333',
-    fontSize: 18,
+  profileName: {
     fontWeight: 'bold',
-    marginTop: 10,
+    fontSize: 20,
   },
-  statsContainer: {
+  profileNickname: {
+    color: 'grey',
+  },
+  followStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginTop: 20,
+    marginVertical: 10,
   },
-  statNumber: {
+  stat: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
   },
-  tabsContainer: {
-    // Estilos para tus tabs
-  },
-  bioSection: {
-    padding: 20,
-    backgroundColor: 'white',
+  followButton: {
+    flexDirection: 'row',
+    backgroundColor: '#F348A4', // Color rosa para el botón seguir
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
   },
-  bioText: {
-    fontSize: 16,
-    color: '#666',
+  followingButton: {
+    backgroundColor: 'lightgrey', // Un color diferente para el botón 'Siguiendo'
   },
-  // Agrega más estilos según necesites
+  followIcon: {
+    marginRight: 5,
+  },
+  followButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  tabSection: {
+    // Estilos para la sección de tabs
+  },
+  aboutSection: {
+    padding: 10,
+  },
+  aboutTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  aboutText: {
+    fontSize: 16,
+    color: 'grey',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+  },
+  tab: {
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: '#000',
+  },
+  ratingsSection: {
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  ratingsTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  starContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingContainer: {
+    padding: 10,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  ratingTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  ratingPercentage: {
+    marginTop: 10,
+    fontSize: 16,
+    color: 'grey',
+  },
 });
+
 
 export default UserProfileScreen;

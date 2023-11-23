@@ -6,9 +6,26 @@ import HomeScreen from '../screens/HomeScreen';
 import { useAuth } from '../contexts/AuthProvider';
 
 import config from '../../config';
+import EditProfileScreen from '../screens/EditProfileScreen';
 
 const apiUrl = config.API_URL;
 const Drawer = createDrawerNavigator();
+
+const drawerScreens = [
+    {
+        name: 'Home',
+        label: 'Inicio',
+        iconName: 'home',
+        component: HomeScreen
+    },
+    {
+        name: 'Account',
+        label: 'Mi cuenta',
+        iconName: 'person',
+        component: EditProfileScreen
+    },
+    // ... Añade más pantallas aquí según necesites
+];
 
 const CustomDrawerItem = ({ label, onPress, iconName }) => (
     <DrawerItem 
@@ -71,7 +88,14 @@ const DrawerContent = (props) => {
                 />
                 <Text style={styles.nickname}>{userInfo ? userInfo.nickname : 'Nombre de usuario'}</Text>
             </View>
-            <DrawerItemList {...props} />
+            {drawerScreens.map((screen, index) => (
+                <CustomDrawerItem
+                    key={index}
+                    label={screen.label}
+                    onPress={() => props.navigation.navigate(screen.name)}
+                    iconName={screen.iconName}
+                />
+            ))}
             <CustomDrawerItem 
                 label="Cerrar sesión"
                 onPress={logOut}
@@ -84,16 +108,17 @@ const DrawerContent = (props) => {
 const DrawerGroup = () => {
     return (
         <Drawer.Navigator drawerContent={(props) => <DrawerContent {...props} />}>
-            <Drawer.Screen         
-                name="Home" 
-                component={HomeScreen}
-                options={{
-                    drawerLabel: 'Inicio',
-                    drawerIcon: () => <Ionicons name="home" size={22} color="black" />,
-                }}
-            />
-            {/* Aquí puedes agregar más pantallas si necesitas que estén en el Drawer */}
-            {/* Otras opciones del Drawer aquí */}
+            {drawerScreens.map((screen, index) => (
+                <Drawer.Screen
+                    key={index}
+                    name={screen.name}
+                    component={screen.component}
+                    options={{
+                        drawerLabel: screen.label,
+                        drawerIcon: () => <Ionicons name={screen.iconName} size={22} color="black" />,
+                    }}
+                />
+            ))}
         </Drawer.Navigator>
     );
 };
@@ -115,10 +140,10 @@ const styles = StyleSheet.create({
     },
     drawerLabel: {
         fontWeight: 'bold',
-        // Añade más estilos si necesitas
     },
     drawerItem: {
-        // Añade más estilos si necesitas
+        borderBottomWidth: 1, // Ancho del borde
+        borderBottomColor: '#E0E0E0'
     },
 });
 

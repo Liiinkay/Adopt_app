@@ -10,8 +10,34 @@ const apiUrl = config.API_URL;
 
 const PostCard = ({ post, navigation }) => {
     const images = post?.images?.map(img => `${apiUrl}/api/${img}`) || [];
-
+    console.log(post);
     const [userInfo, setUserInfo] = useState(null);
+
+    const timeSince = (date) => {
+      const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+      let interval = seconds / 31536000; // Años
+  
+      if (interval > 1) {
+          return Math.floor(interval) + " años";
+      }
+      interval = seconds / 2592000; // Meses
+      if (interval > 1) {
+          return Math.floor(interval) + " meses";
+      }
+      interval = seconds / 86400; // Días
+      if (interval > 1) {
+          return Math.floor(interval) + " días";
+      }
+      interval = seconds / 3600; // Horas
+      if (interval > 1) {
+          return Math.floor(interval) + " horas";
+      }
+      interval = seconds / 60; // Minutos
+      if (interval > 1) {
+          return Math.floor(interval) + " minutos";
+      }
+      return Math.floor(seconds) + " segundos";
+    };
 
     useEffect(() => {
       const fetchUserInfo = async () => {
@@ -47,6 +73,10 @@ const PostCard = ({ post, navigation }) => {
       }
 
       navigation.navigate(screenName, { post, userInfo });
+    };
+
+    const navigateToUserProfile = () => {
+      navigation.navigate('UserProfile', { userId: post.authorID });
     };
 
     // Renderiza las imágenes basadas en la cantidad
@@ -94,22 +124,19 @@ const PostCard = ({ post, navigation }) => {
 
     return (
       <View style={styles.cardContainer}>
-        <Pressable
-          style={styles.container}
-          onPress={navigateToDetailScreen}>
-
           {/* Header del post con imagen de usuario, nombre y botón de menú */}
           <View style={styles.header}>
-            <View style={styles.profileContainer}>
+            {/* Envuelve la sección del nombre e imagen de perfil con Pressable */}
+            <Pressable style={styles.profileContainer} onPress={navigateToUserProfile}>
               <Image 
                 source={{ uri: userProfileImage }}
                 style={styles.userImage}
               />
               <View style={styles.headerContainer}>
                 <Text style={styles.name}> @{userInfo ? userInfo.nickname : 'Loading...'}</Text>
-                <Text style={styles.username}>{post.age} years - {post.gender}</Text>
+                <Text style={styles.username}>Hace {timeSince(post.createdDate)}</Text>
               </View>
-            </View>
+            </Pressable>
             <Menu>
               <MenuTrigger>
                 <Ionicons name="ellipsis-vertical" size={24} color="black" />
@@ -119,22 +146,23 @@ const PostCard = ({ post, navigation }) => {
                 <MenuOption onSelect={() => alert('Reportar')} text='Reportar' />
               </MenuOptions>
             </Menu>
-          </View>
+            </View>
 
-          {/* Descripción del post */}
-          <Text style={styles.content}>{post.title}</Text>
+            {/* Pressable para el resto del contenido del PostCard */}
+            <Pressable onPress={navigateToDetailScreen}>
+              {/* Descripción del post */}
+              <Text style={styles.content}>{post.title}</Text>
 
-          {/* Imágenes del post */}
-          {renderImages()}
+              {/* Imágenes del post */}
+              {renderImages()}
 
-          {/* Footer del post con botón de 'me gusta' y contador de 'likes' */}
-          <View style={styles.footer}>
-            <Text style={styles.likesCount}>{post.likesCount}</Text>
-            <LikeButton style={styles.likeButton} />
-          </View>
-
-        </Pressable>
-      </View>
+              {/* Footer del post con botón de 'me gusta' y contador de 'likes' */}
+              <View style={styles.footer}>
+                <Text style={styles.likesCount}>{post.likesCount}</Text>
+                <LikeButton style={styles.likeButton} />
+              </View>
+            </Pressable>
+            </View>
     );
 };
 
@@ -198,11 +226,11 @@ const styles = StyleSheet.create({
   quarterImage: {
     width: '100%',
     height: 95,
-    marginBottom: 5, // Añade margen en la parte inferior para el espaciado entre las imágenes
+    marginBottom: 5,
   },
   image: {
-        width: '32%', // Tres imágenes en una fila
-        aspectRatio: 1, // Imágenes cuadradas
+      width: '32%',
+      aspectRatio: 1,
   },
   likesCount: {
     fontSize: 14,
