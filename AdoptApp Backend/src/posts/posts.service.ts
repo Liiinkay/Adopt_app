@@ -13,6 +13,9 @@ import { PostLikes } from './entities/post-like.entity';
 import { Informative } from './entities/typepost-entitys/informative-post.entity';
 import { createInformativeDto } from './dto/informative-post.dto';
 import { PostMultimedia } from './entities/multimedia-post.entity';
+import { UpdateLostDto } from './dto/update-lost.dto';
+import { UpdateInformativeDto } from './dto/update-informative.dto';
+import { UpdateAdoptDto } from './dto/update-adopt.dto';
 
 type PostType = Adopt | Lost | Informative;
 
@@ -116,13 +119,40 @@ export class PostsService {
 
     const savedPost = await this.informativeRepository.save(newPost);
 
-    // Guardar cada entidad multimedia en la base de datos
+    // Guarda cada entidad multimedia en la base de datos
     for (const url of mediaUrls) {
       const multimedia = this.postMultimediaRepository.create({ url, informativePost: savedPost });
       await this.postMultimediaRepository.save(multimedia);
     }
 
     return savedPost;
+  }
+
+  async updateAdoptPost(id: string, updateAdoptDto: UpdateAdoptDto): Promise<Adopt> {
+    const adoptPost = await this.adoptRepository.findOneBy({ id });
+    if (!adoptPost) throw new NotFoundException(`Post de adopción con ID ${id} no encontrado`);
+
+    Object.assign(adoptPost, updateAdoptDto);
+
+    return this.adoptRepository.save(adoptPost);
+  }
+
+  async updateLostPost(id: string, updateLostDto: UpdateLostDto): Promise<Lost> {
+    const lostPost = await this.lostRepository.findOneBy({ id });
+    if (!lostPost) throw new NotFoundException(`Post perdido con ID ${id} no encontrado`);
+
+    Object.assign(lostPost, updateLostDto);
+
+    return this.lostRepository.save(lostPost);
+  }
+
+  async updateInformativePost(id: string, updateInformativeDto: UpdateInformativeDto): Promise<Informative> {
+    const informativePost = await this.informativeRepository.findOneBy({ id });
+    if (!informativePost) throw new NotFoundException(`Post informativo con ID ${id} no encontrado`);
+
+    Object.assign(informativePost, updateInformativeDto);
+
+    return this.informativeRepository.save(informativePost);
   }
 
   async getPostsByType(type: string) {
@@ -394,6 +424,26 @@ export class PostsService {
           await this.informativeRepository.save(post);
       }
     }
+  }
+
+  async obtenerUsuariosQueDieronLikeAPost(postId: string): Promise<string[]> {
+    let postLikes;
+  
+    postLikes = await this.postLikesRepository.find({ where: { adoptPost: { id: postId } }, relations: ['user'] });
+    
+    if(postLikes.length === 0) {
+      postLikes = await this.postLikesRepository.find({ where: { lostPost: { id: postId } }, relations: ['user'] });
+    }
+    
+    if(postLikes.length === 0) {
+      postLikes = await this.postLikesRepository.find({ where: { informativePost: { id: postId } }, relations: ['user'] });
+    }
+  
+    if(postLikes.length === 0) {
+      throw new NotFoundException(`No se encontraron likes para el post con ID ${postId}`);
+    }
+  
+    return postLikes.map(like => like.user.id);
   }
 
   private async findPost(postId: string): Promise<Post | Informative | Adopt | Lost | undefined> {
