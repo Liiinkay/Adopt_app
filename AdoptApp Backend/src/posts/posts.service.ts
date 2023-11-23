@@ -396,6 +396,26 @@ export class PostsService {
     }
   }
 
+  async obtenerUsuariosQueDieronLikeAPost(postId: string): Promise<string[]> {
+    let postLikes;
+  
+    postLikes = await this.postLikesRepository.find({ where: { adoptPost: { id: postId } }, relations: ['user'] });
+    
+    if(postLikes.length === 0) {
+      postLikes = await this.postLikesRepository.find({ where: { lostPost: { id: postId } }, relations: ['user'] });
+    }
+    
+    if(postLikes.length === 0) {
+      postLikes = await this.postLikesRepository.find({ where: { informativePost: { id: postId } }, relations: ['user'] });
+    }
+  
+    if(postLikes.length === 0) {
+      throw new NotFoundException(`No se encontraron likes para el post con ID ${postId}`);
+    }
+  
+    return postLikes.map(like => like.user.id);
+  }
+
   private async findPost(postId: string): Promise<Post | Informative | Adopt | Lost | undefined> {
     return await this.informativeRepository.findOne({ where: { id: postId } }) || 
            await this.adoptRepository.findOne({ where: { id: postId } }) ||
