@@ -6,6 +6,7 @@ import { AuthProvider } from './src/contexts/AuthProvider';
 import { PostProvider } from './src/contexts/PostProvider';
 import { UserProvider } from './src/contexts/UserProvider';
 import { QuestionProvider } from './src/contexts/QuestionProvider';
+import { CommentsProvider } from './src/contexts/CommentProvider';
 import RootNavigator from './src/navigation/RootNav';
 
 export default function App() {
@@ -15,9 +16,11 @@ export default function App() {
         <PostProvider>
           <UserProvider>
             <QuestionProvider>
-              <NavigationContainer>
-                  <RootNavigator />
-              </NavigationContainer>
+              <CommentsProvider>
+                <NavigationContainer>
+                    <RootNavigator />
+                </NavigationContainer>
+              </CommentsProvider>
             </QuestionProvider>
           </UserProvider>
         </PostProvider>
