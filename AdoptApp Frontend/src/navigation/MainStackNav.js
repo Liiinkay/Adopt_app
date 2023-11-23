@@ -14,6 +14,8 @@ import AdoptFormScreen from "../screens/AdoptFormScreen";
 import CommentsScreen from "../screens/CommentsScreen";
 import PostDetailInformativeScreen from "../screens/PostDetailInformativeScreen";
 import QuestionsScreen from "../screens/QuestionsScreens";
+import ManageHelpCentersScreen from "../screens/ManageHelpCenters";
+import CreateHelpCenterScreen from "../screens/CreateHelpCenterScreen";
 
 const MainStack = createNativeStackNavigator();
 
@@ -28,10 +30,12 @@ const MainStackGroup = () => (
     <MainStack.Screen name="CreateSearchPost" component={CreateSearchPostScreen} options={{ headerShown: false }}/>
     <MainStack.Screen name="CreateInformativePost" component={CreateInformativePostScreen} options={{ headerShown: false }}/>
     <MainStack.Screen name="AdoptForm" component={AdoptFormScreen} options={{ headerShown: false }}/>
-    <MainStack.Screen name="Admin" component={AdminScreen}/>
-    <MainStack.Screen name="ManageUsers" component={ManageUsersScreen}/>
     <MainStack.Screen name="Comments" component={CommentsScreen} options={{ headerTitle: 'Comentarios' }}/>
     <MainStack.Screen name="Questions" component={QuestionsScreen} options={{ headerTitle: 'Preguntas y respuestas' }}/>
+    <MainStack.Screen name="Admin" component={AdminScreen}/>
+    <MainStack.Screen name="ManageUsers" component={ManageUsersScreen}/>
+    <MainStack.Screen name="ManageHelpCenters" component={ManageHelpCentersScreen}/>
+    <MainStack.Screen name="CreateHelpCenter" component={CreateHelpCenterScreen} options={{ headerShown: false }}/>
   </MainStack.Navigator>
 );
 

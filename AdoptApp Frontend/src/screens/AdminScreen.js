@@ -18,7 +18,7 @@ const AdminScreen = ({ navigation }) => {
 
             <TouchableOpacity 
                 style={styles.button}
-                onPress={() => navigation.navigate('ManageCenters')}>
+                onPress={() => navigation.navigate('ManageHelpCenters')}>
                 <Text style={styles.buttonText}>Gestionar Centros</Text>
             </TouchableOpacity>
 

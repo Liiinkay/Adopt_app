@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
+import { Ionicons } from '@expo/vector-icons';
 import LikeButton from "./LikeButton";
-import SaveButton from "./SaveButton";
-import ShareButton from "./ShareButton";
 
 import config from '../../config';
 
@@ -52,25 +52,38 @@ const PostCard = ({ post, navigation }) => {
     // Renderiza las imágenes basadas en la cantidad
     const renderImages = () => {
       if (images.length === 1) {
-        return <Image source={{ uri: images[0] }} style={styles.fullImage} />;
+        return (
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: images[0] }} style={styles.fullImage} />
+          </View>
+        );
       } else if (images.length === 2) {
         return (
           <View style={styles.imageContainer}>
-            {images.map((img) => (
-              <Image key={img} source={{ uri: img }} style={styles.halfImage} />
+            {images.map((img, index) => (
+              <Image
+                key={img}
+                source={{ uri: img }}
+                style={[styles.halfImage, index !== 0 && { marginLeft: 5 }]} // Añade margen izquierdo a la segunda imagen
+              />
             ))}
           </View>
         );
       } else if (images.length >= 3) {
-          return (
-              <View style={styles.imageContainer}>
-                  <Image source={{ uri: images[0] }} style={styles.halfImage} />
-                  <View style={styles.quarterImageContainer}>
-                      <Image source={{ uri: images[1] }} style={styles.quarterImage} />
-                      <Image source={{ uri: images[2] }} style={styles.quarterImage} />
-                  </View>
-              </View>
-          );
+        return (
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: images[0] }} style={styles.halfImage} />
+            <View style={styles.quarterImageContainer}>
+              {images.slice(1).map((img, index) => (
+                <Image
+                  key={img}
+                  source={{ uri: img }}
+                  style={[styles.quarterImage, index !== 0 && { marginTop: 5 }]} // Añade margen superior a partir de la segunda imagen
+                />
+              ))}
+            </View>
+          </View>
+        );
       }
     };
 
@@ -84,23 +97,42 @@ const PostCard = ({ post, navigation }) => {
         <Pressable
           style={styles.container}
           onPress={navigateToDetailScreen}>
-          <View style={styles.profileContainer}>
-            <Image 
-              source={{ uri: userProfileImage }}
-              style={styles.userImage}
-            />
-            <View style={styles.headerContainer}>
-              <Text style={styles.name}> @{userInfo ? userInfo.nickname : 'Loading...'}</Text>
-              <Text style={styles.username}>{post.age} years - {post.gender}</Text>
+
+          {/* Header del post con imagen de usuario, nombre y botón de menú */}
+          <View style={styles.header}>
+            <View style={styles.profileContainer}>
+              <Image 
+                source={{ uri: userProfileImage }}
+                style={styles.userImage}
+              />
+              <View style={styles.headerContainer}>
+                <Text style={styles.name}> @{userInfo ? userInfo.nickname : 'Loading...'}</Text>
+                <Text style={styles.username}>{post.age} years - {post.gender}</Text>
+              </View>
             </View>
+            <Menu>
+              <MenuTrigger>
+                <Ionicons name="ellipsis-vertical" size={24} color="black" />
+              </MenuTrigger>
+              <MenuOptions>
+                <MenuOption onSelect={() => alert('Guardar')} text='Guardar' />
+                <MenuOption onSelect={() => alert('Reportar')} text='Reportar' />
+              </MenuOptions>
+            </Menu>
           </View>
+
+          {/* Descripción del post */}
           <Text style={styles.content}>{post.title}</Text>
+
+          {/* Imágenes del post */}
           {renderImages()}
+
+          {/* Footer del post con botón de 'me gusta' y contador de 'likes' */}
           <View style={styles.footer}>
-            <LikeButton />
-            <SaveButton />
-            <ShareButton />
+            <Text style={styles.likesCount}>{post.likesCount}</Text>
+            <LikeButton style={styles.likeButton} />
           </View>
+
         </Pressable>
       </View>
     );
@@ -121,6 +153,11 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerContainer: {
       marginLeft: 10,
   },
@@ -138,40 +175,52 @@ const styles = StyleSheet.create({
   content: {
       marginTop: 5,
   },
+
   imageContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  fullImage: {
     width: '100%',
-    borderRadius: 10, // Establece el radio de borde como desees
-    overflow: 'hidden'
-},
-fullImage: {
-    width: '100%',
-    height: 200, // o el alto que desees
-},
-halfImage: {
-    width: '49.5%', // Ligeramente menos de la mitad para considerar el espaciado
-    height: 200, // o el alto que desees
-    overflow: 'hidden'
-},
-quarterImageContainer: {
+    height: 200,
+  },
+  halfImage: {
+    width: '49.5%',
+    height: 200,
+  },
+  quarterImageContainer: {
     width: '49.5%',
     justifyContent: 'space-between',
-},
-quarterImage: {
+  },
+  quarterImage: {
     width: '100%',
-    height: 95, // La mitad del alto de halfImage menos algo de espaciado
-},
+    height: 95,
+    marginBottom: 5, // Añade margen en la parte inferior para el espaciado entre las imágenes
+  },
   image: {
-      width: '32%', // Tres imágenes en una fila
-      aspectRatio: 1, // Imágenes cuadradas
+        width: '32%', // Tres imágenes en una fila
+        aspectRatio: 1, // Imágenes cuadradas
+  },
+  likesCount: {
+    fontSize: 14,
+    color: 'grey',
+    marginRight: 8,
+  },
+  likeButton: {
+    marginLeft: 'auto', 
+    padding: 8,
   },
   footer: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingVertical: 5,
   },
-  // ...otros estilos que necesites
+
 });
 
 export default PostCard;

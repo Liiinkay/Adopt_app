@@ -4,20 +4,50 @@ import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity, Image } 
 import { useQuestions } from '../contexts/QuestionProvider'; // Asumiendo que este contexto existe y es correcto
 import { useAuth } from '../contexts/AuthProvider';
 import { useUsers } from '../contexts/UserProvider';
+import { Ionicons } from '@expo/vector-icons';
+import config from '../../config';
+// <Ionicons name="send" size={24} color="#FFFFFF" />
 
+const API_URL = config.API_URL;
 const QUESTIONS_PER_PAGE = 8; // Ajusta esto según tus necesidades
 
-const QuestionItem = ({ question }) => {
+const QuestionItem = ({ question, isAuthor }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const { findOne } = useUsers();
     console.log(question);
+    const [hasAnswered, setHasAnswered] = useState(question.answer ? true : false);
+    const [answer, setAnswer] = useState(question.answer || '');
+    
+    const { answerQuestion } = useQuestions(); // Asegúrate de que este método esté definido y disponible en tu contexto
+
+    const submitAnswer = async () => {
+      if (answer.trim() === '') {
+        console.log('No se puede enviar una respuesta vacía');
+        return;
+      }
+      if (!isAuthor) {
+        console.log('Solo el autor del post puede responder');
+        return;
+      }
+  
+      try {
+        // Llama a answerQuestion en lugar de createAnswer
+        const newAnswerResponse = await answerQuestion(question.id, answer);
+        console.log('Respuesta creada:', newAnswerResponse);
+        setHasAnswered(true);
+        setAnswer(answer); // Aquí guardamos la respuesta en el estado
+      } catch (error) {
+        console.error('Error al crear la respuesta:', error);
+      }
+    };
+
     useEffect(() => {
       const fetchUser = async () => {
         try {
           setLoading(true);
-          const userDetails = await findOne(question.authorId);
+          const userDetails = await findOne(question.author);
           setUser(userDetails);
         } catch (error) {
           console.error('Error al obtener detalles del usuario:', error);
@@ -39,14 +69,37 @@ const QuestionItem = ({ question }) => {
     }
   
     return (
-      <View style={styles.questionContainer}>
+        <View style={styles.questionContainer}>
+        {/* Detalles del usuario que hizo la pregunta */}
         {user && (
-          <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
+          <Image source={{ uri: `${API_URL}/api/${user.profile_img}` }} style={styles.profileImage} />
         )}
         <View style={styles.questionContent}>
           <Text style={styles.nickname}>{user ? user.nickname : 'Usuario desconocido'}</Text>
           <Text style={styles.questionText}>{question.text}</Text>
         </View>
+
+        {/* Muestra la respuesta si existe */}
+        {hasAnswered && (
+            <Text style={styles.answerText}>R: {answer}</Text>
+        )} 
+
+        {/* Campo para escribir la respuesta, ahora siempre visible */}
+        {!hasAnswered && isAuthor && (
+            <View style={styles.answerSection}>
+            <TextInput
+                style={styles.answerInput}
+                onChangeText={setAnswer}
+                value={answer}
+                placeholder="Escribe tu respuesta aquí..."
+                multiline={true} // Importante para que el TextInput crezca verticalmente
+                maxLength={200}
+            />
+            <TouchableOpacity onPress={submitAnswer} style={styles.sendAnswerButton}>
+                <Ionicons name="send" size={20} color="#fff" />
+            </TouchableOpacity>
+            </View>
+        )}
       </View>
     );
   };
@@ -59,13 +112,13 @@ const QuestionsScreen = ({ navigation }) => {
   const [questions, setQuestions] = useState([]);
   const [newQuestion, setNewQuestion] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const isAuthor = getUserId() === post.authorID;
 
   useEffect(() => {
     const loadQuestions = async () => {
       try {
         const loadedQuestions = await getQuestionsByPostId(post.id);
         setQuestions(loadedQuestions);
-        console.log(questions);
       } catch (error) {
         console.error('Error al cargar las preguntas:', error);
       }
@@ -82,6 +135,7 @@ const QuestionsScreen = ({ navigation }) => {
     try {
       const questionData = {
         text: newQuestion,
+        authorId: getUserId(),
       };
       const newQuestionResponse = await createQuestion(post.id, questionData);
       console.log('Pregunta creada:', newQuestionResponse);
@@ -104,7 +158,7 @@ const QuestionsScreen = ({ navigation }) => {
       <FlatList
         data={currentQuestions} // Cambiado de currentComments a currentQuestions
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <QuestionItem question={item} />} // Cambiado de CommentItem a QuestionItem
+        renderItem={({ item }) => <QuestionItem question={item} isAuthor={isAuthor}/>} // Cambiado de CommentItem a QuestionItem
         ListHeaderComponent={(
           <View>
             <View>
@@ -113,6 +167,7 @@ const QuestionsScreen = ({ navigation }) => {
                 onChangeText={setNewQuestion} // Cambiado de setNewComment a setNewQuestion
                 value={newQuestion} // Cambiado de newComment a newQuestion
                 placeholder="Escribe tu pregunta aquí..." // Cambiado de comentario a pregunta
+                maxLength={200}
               />
               <TouchableOpacity style={styles.sendButton} onPress={addQuestion}>
                 <Text style={styles.sendButtonText}>Agregar Pregunta</Text>
@@ -159,8 +214,8 @@ const styles = StyleSheet.create({
       padding: 10,
       backgroundColor: '#fff', // Fondo blanco para el input
     },
-    commentContainer: {
-      flexDirection: 'row',
+    questionContainer: {
+      flexDirection: 'col',
       padding: 10,
       borderBottomWidth: 1,
       borderBottomColor: '#ccc',
@@ -174,14 +229,14 @@ const styles = StyleSheet.create({
       borderRadius: 20,
       marginRight: 10,
     },
-    commentContent: {
+    questionContent: {
       flex: 1,
     },
     nickname: {
       fontWeight: 'bold',
       color: '#333', // Color de texto para el nickname
     },
-    commentText: {
+    questionText: {
       fontSize: 16,
       color: '#424242', // Color de texto para el comentario
     },
@@ -220,6 +275,52 @@ const styles = StyleSheet.create({
     sendButtonText: {
       color: '#fff', // Texto blanco
       fontWeight: 'bold', // Texto en negrita
+    },
+    replyButton: {
+        backgroundColor: '#F348A4', // Utiliza los colores y estilos que ya tienes
+        padding: 8,
+        borderRadius: 4,
+        marginTop: 5,
+    },
+    replyButtonText: {
+        color: '#fff',
+        textAlign: 'center',
+    },
+    // Estilos para la respuesta
+    answerContainer: {
+        marginTop: 10,
+    },
+    answerSection: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginTop: 5,
+    },
+    answerText: {
+        fontSize: 14,
+        color: '#4a4a4a',
+        backgroundColor: '#e8e8e8', // Un fondo ligeramente diferente para la respuesta
+        padding: 8,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#dedede',
+        marginTop: 5, // Espacio por encima de la respuesta
+        marginBottom: 5, // Espacio por debajo de la respuesta
+  },
+    answerInput: {
+        flex: 1,
+        padding: 10,
+        borderColor: 'gray',
+        borderWidth: 1,
+        borderRadius: 10,
+        marginRight: 5,
+        maxHeight: 200,  // Asegúrate de dejar espacio para el botón de enviar
+    },
+    sendAnswerButton: {
+        padding: 6,
+        backgroundColor: '#F348A4', // Tu color de la app
+        borderRadius: 5, // Hace que sea circular
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
   

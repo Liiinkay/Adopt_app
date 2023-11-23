@@ -122,6 +122,7 @@ const CommentsScreen = ({ navigation }) => {
                 onChangeText={setNewComment}
                 value={newComment}
                 placeholder="Escribe tu comentario aquí..."
+                maxLength={100}
               />
               <TouchableOpacity style={styles.sendButton} onPress={addComment}>
                 <Text style={styles.sendButtonText}>Agregar Comentario</Text>

@@ -7,6 +7,7 @@ import { PostProvider } from './src/contexts/PostProvider';
 import { UserProvider } from './src/contexts/UserProvider';
 import { QuestionProvider } from './src/contexts/QuestionProvider';
 import { CommentsProvider } from './src/contexts/CommentProvider';
+import { HelpCenterProvider } from './src/contexts/HelpCenterProvider';
 import RootNavigator from './src/navigation/RootNav';
 
 export default function App() {
@@ -17,9 +18,11 @@ export default function App() {
           <UserProvider>
             <QuestionProvider>
               <CommentsProvider>
-                <NavigationContainer>
-                    <RootNavigator />
-                </NavigationContainer>
+                <HelpCenterProvider>
+                  <NavigationContainer>
+                      <RootNavigator />
+                  </NavigationContainer>
+                </HelpCenterProvider>
               </CommentsProvider>
             </QuestionProvider>
           </UserProvider>
