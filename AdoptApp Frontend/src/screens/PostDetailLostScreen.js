@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, StatusBar, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet, StatusBar, ScrollView, Alert } from "react-native";
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from "@expo/vector-icons";
@@ -8,6 +8,7 @@ import { useRoute } from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
 import LikeButton from "../components/LikeButton";
 import config from '../../config';
+import { useUsers } from "../contexts/UserProvider";
 
 const apiUrl = config.API_URL;
 
@@ -16,6 +17,20 @@ const PostDetailLostScreen = ({ navigation }) => {
     const { post, userInfo } = route.params;
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
     console.log(post);
+    const { savePost } = useUsers();
+
+    const onSaved = async () => {
+        try {
+          const result = await savePost({
+            idPost: post.id,
+          });
+  
+          console.log("Post guardado: ", result);
+          Alert.alert('El post se ha guardado correctamente 😊');
+        } catch (error) {
+          console.error('Error saving post:', error);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -33,8 +48,7 @@ const PostDetailLostScreen = ({ navigation }) => {
                                     <Ionicons name="ellipsis-vertical" size={24} color="white" />
                                 </MenuTrigger>
                                 <MenuOptions>
-                                    <MenuOption onSelect={() => alert('Opción 1')} text='Guardar' />
-                                    <MenuOption onSelect={() => alert('Opción 2')} text='Reportar' />
+                                    <MenuOption text='Guardar' onSelect={onSaved} />
                                 </MenuOptions>
                             </Menu>
                     </View>

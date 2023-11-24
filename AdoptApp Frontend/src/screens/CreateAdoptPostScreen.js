@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Formik } from 'formik';
@@ -18,11 +18,12 @@ const validationSchema = Yup.object().shape({
     informacionMedica: Yup.string().max(300, 'La información médica no puede exceder los 300 caracteres'),
 });
 
-const CreateAdoptPostScreen = ({ navigation }) => {
+const CreateAdoptPostScreen = ({ navigation, route }) => {
     const [imagenes, setImagenes] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const { getUserId } = useAuth();
-    const { createAdoptPost } = usePosts();
+    const { createAdoptPost, updatePostAdopt } = usePosts();
+    const { post } = route.params || {};
 
     const handleFormSubmit = async (values) => {
         setIsLoading(true);
@@ -30,10 +31,36 @@ const CreateAdoptPostScreen = ({ navigation }) => {
         const userId = getUserId();
         
         try {
-            const data = await createAdoptPost(formData, userId); // Usa createAdoptPost en lugar de fetch
+            const data = await createAdoptPost(formData, userId);
+            Alert.alert('Publicación creada', 'Tu publicación ha sido creada correctamente.');
             navigation.navigate('Tabs');
         } catch (error) {
             console.error('Error en la petición:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFormSubmitEdit = async (values) => {
+        setIsLoading(true);
+        const jsonData = {
+            title: values.titulo,
+            description: values.descripcion,
+            gender: values.genero,
+            personality: values.personalidad,
+            medical_information: values.informacionMedica,
+            age: values.edad,
+            type: 'adopt',
+            state: 'open',
+        }
+
+        try {
+            const data = await updatePostAdopt(post.id, jsonData); // Usa createAdoptPost en lugar de fetch
+            Alert.alert('Publicación editada', 'Tu publicación ha sido editada correctamente.');
+            navigation.navigate('Tabs');
+        } catch (error) {
+            console.error('Error en la petición:', error);
+            Alert.alert('Error', 'Ha ocurrido un error al editar la publicación.');
         } finally {
             setIsLoading(false);
         }
@@ -45,12 +72,11 @@ const CreateAdoptPostScreen = ({ navigation }) => {
         formData.append('title', values.titulo);
         formData.append('description', values.descripcion);
         formData.append('gender', values.genero);
-        //formData.append('age', values.edad);
         formData.append('personality', values.personalidad);
         formData.append('medical_information', values.informacionMedica);
         formData.append('state', 'open');
         formData.append('type', 'adopt');
-        formData.append('age', 9);
+        formData.append('age', values.edad);
     
         // Agregar imágenes al formData
         imagenes.forEach((img, index) => {
@@ -97,18 +123,18 @@ const CreateAdoptPostScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Crear</Text>
+                <Text style={styles.headerTitle}>{post ? 'Editar publicación' : 'Nueva publicación'}</Text>
                 <Ionicons name="paw" size={24} color="white" style={{ marginRight: 16 }} />
             </View>
             <ScrollView contentContainerStyle={styles.contentContainer}>
                 <Formik
                     initialValues={{
-                        titulo: '',
-                        descripcion: '',
-                        genero: '',
-                        edad: '',
-                        personalidad: '',
-                        informacionMedica: '',
+                        titulo: post ? post.title : '',
+                        descripcion: post ? post.description : '',
+                        genero: post ? post.gender : '',
+                        edad: post ? post.age : '',
+                        personalidad: post ? post.personality : '',
+                        informacionMedica: post ? post.medical_information : '',
                     }}
                     validationSchema={validationSchema}
                     onSubmit={handleFormSubmit}
@@ -204,14 +230,14 @@ const CreateAdoptPostScreen = ({ navigation }) => {
 
                             <TouchableOpacity
                                 style={[styles.publishButton, !(isValid && dirty) && styles.disabledButton]}
-                                onPress={handleSubmit}
+                                onPress={() => (post ? handleFormSubmitEdit(values) : handleSubmit())}
                                 disabled={!(isValid && dirty)}
                             >
                                 {isLoading ? (
                                     <ActivityIndicator size="small" color="#fff" />
                                 ) : (
                                     <View style={{ flexDirection: 'row' }}>
-                                        <Text style={styles.publishButtonText}>Publicar</Text>
+                                        <Text style={styles.publishButtonText}>{post ? 'Guardar cambios' : 'Publicar'}</Text>
                                         <Ionicons name="send" size={24} color="#FFFFFF" />
                                     </View>    
                                 )}

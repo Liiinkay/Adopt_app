@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, Alert } from 'react-native';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { Ionicons } from '@expo/vector-icons';
 import LikeButton from "./LikeButton";
+import { useAuth } from "../contexts/AuthProvider";
 
 import config from '../../config';
+import { useUsers } from "../contexts/UserProvider";
 
 const apiUrl = config.API_URL;
 
@@ -12,6 +14,8 @@ const PostCard = ({ post, navigation }) => {
     const images = post?.images?.map(img => `${apiUrl}/api/${img}`) || [];
     console.log(post);
     const [userInfo, setUserInfo] = useState(null);
+    const { getUserId } = useAuth();
+    const { savePost } = useUsers()
 
     const timeSince = (date) => {
       const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -61,6 +65,23 @@ const PostCard = ({ post, navigation }) => {
   
       fetchUserInfo();
     }, [post.authorId]);
+
+    const onSaved = async () => {
+      try {
+        const result = await savePost({
+          idPost: post.id,
+        });
+
+        console.log("Post guardado: ", result);
+        Alert.alert('El post se ha guardado correctamente 😊');
+      } catch (error) {
+        console.error('Error saving post:', error);
+      }
+    };
+
+    const onReported = () => {
+      console.log('Reported');
+    };
 
     const navigateToDetailScreen = () => {
       let screenName = "PostDetailScreen"; // Pantalla por defecto
@@ -122,12 +143,16 @@ const PostCard = ({ post, navigation }) => {
       ? `${apiUrl}/api/${userInfo.profile_img}`
       : 'https://example.com/default-profile-pic.jpg';
 
+    const editPost = () => {
+      navigation.navigate('EditPost', { post });
+    };
+
     return (
       <View style={styles.cardContainer}>
           {/* Header del post con imagen de usuario, nombre y botón de menú */}
           <View style={styles.header}>
             {/* Envuelve la sección del nombre e imagen de perfil con Pressable */}
-            <Pressable style={styles.profileContainer} onPress={navigateToUserProfile}>
+            <Pressable style={styles.profileContainer} onPress={navigateToUserProfile} onLongPress={editPost}>
               <Image 
                 source={{ uri: userProfileImage }}
                 style={styles.userImage}
@@ -142,14 +167,14 @@ const PostCard = ({ post, navigation }) => {
                 <Ionicons name="ellipsis-vertical" size={24} color="black" />
               </MenuTrigger>
               <MenuOptions>
-                <MenuOption onSelect={() => alert('Guardar')} text='Guardar' />
-                <MenuOption onSelect={() => alert('Reportar')} text='Reportar' />
+                <MenuOption onSelect={onSaved} text='Guardar' />
+                {/* <MenuOption onSelect={onReported} text='Reportar' /> */}
               </MenuOptions>
             </Menu>
             </View>
 
             {/* Pressable para el resto del contenido del PostCard */}
-            <Pressable onPress={navigateToDetailScreen}>
+            <Pressable onPress={navigateToDetailScreen} onLongPress={editPost}>
               {/* Descripción del post */}
               <Text style={styles.content}>{post.title}</Text>
 
@@ -158,7 +183,6 @@ const PostCard = ({ post, navigation }) => {
 
               {/* Footer del post con botón de 'me gusta' y contador de 'likes' */}
               <View style={styles.footer}>
-                <Text style={styles.likesCount}>{post.likesCount}</Text>
                 <LikeButton postId={post.id} />
               </View>
             </Pressable>

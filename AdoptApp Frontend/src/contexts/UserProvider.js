@@ -105,8 +105,16 @@ export const UserProvider = ({ children }) => {
   };
 
   const update = async (id, data) => {
-    const url = `${API_URL}/api/users/${id}`;
-    const response = await fetch(url, { method: 'PATCH', body: data});
+    const url = `${API_URL}/api/users/update/${id}`;
+    console.log(data);
+    const response = await fetch(url, { method: 'PATCH', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+    return handleResponse(response);
+  };
+
+  const updateImages = async (id, data) => {
+    const url = `${API_URL}/api/users/update-images/${id}`;
+    console.log(data);
+    const response = await fetch(url, { method: 'PATCH', body: data, headers: { 'Content-Type': 'multipart/form-data' } });
     return handleResponse(response);
   };
 
@@ -120,8 +128,8 @@ export const UserProvider = ({ children }) => {
     const url = `${API_URL}/api/users/saved-post`;
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...savePostDto, userId }),
+      headers: { 'Content-Type': 'application/json', authorization: `Bearer ${userToken}` },
+      body: JSON.stringify({ ...savePostDto }),
     });
     return handleResponse(response);
   };
@@ -164,6 +172,7 @@ export const UserProvider = ({ children }) => {
         getSavedPosts,
         followUser,
         unfollowUser,
+        updateImages,
     }}>
       {children}
     </UsersContext.Provider>

@@ -26,6 +26,12 @@ export const PostProvider = ({ children }) => {
     return handleResponse(response);
   };
 
+  const updatePostAdopt = async (id, updatePostDto) => {
+    const url = `${API_URL}/api/posts/adopt/${id}`;
+    const response = await fetch(url, { method: 'PATCH', body: JSON.stringify(updatePostDto), headers: { 'Content-Type': 'application/json' } });
+    return handleResponse(response);
+  };
+
   const updatePost = async (id, updatePostDto) => {
     const url = `${API_URL}/${id}`;
     const response = await fetch(url, { method: 'PATCH', body: JSON.stringify(updatePostDto), headers: { 'Content-Type': 'application/json' } });
@@ -129,7 +135,8 @@ export const PostProvider = ({ children }) => {
       getPostsAppliedByUserId,
       likePost,
       unlikePost,
-      getLikesByPostId
+      getLikesByPostId,
+      updatePostAdopt,
     }}>
       {children}
     </PostsContext.Provider>

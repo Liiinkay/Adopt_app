@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, StatusBar, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet, StatusBar, ScrollView, Alert } from "react-native";
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Swiper from 'react-native-swiper';
@@ -9,6 +9,7 @@ import config from '../../config';
 import { useRoute } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthProvider';
 import { usePosts } from "../contexts/PostProvider";
+import { useUsers } from "../contexts/UserProvider";
 
 
 const apiUrl = config.API_URL;
@@ -22,6 +23,7 @@ const PostDetailAdoptScreen = ({ navigation }) => {
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
     const [hasSubmitted, setHasSubmitted] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likesCount);
+    const { savePost } = useUsers();
 
     useEffect(() => {
         const checkIfUserSubmittedForm = async () => {
@@ -64,6 +66,19 @@ const PostDetailAdoptScreen = ({ navigation }) => {
         return Math.floor(seconds) + " segundos";
     };
 
+    const onSaved = async () => {
+        try {
+          const result = await savePost({
+            idPost: post.id,
+          });
+  
+          console.log("Post guardado: ", result);
+          Alert.alert('El post se ha guardado correctamente 😊');
+        } catch (error) {
+          console.error('Error saving post:', error);
+        }
+    };
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <ScrollView>
@@ -80,8 +95,7 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                                 <Ionicons name="ellipsis-vertical" size={24} color="white" />
                             </MenuTrigger>
                             <MenuOptions>
-                                <MenuOption onSelect={() => alert('Opción 1')} text='Guardar' />
-                                <MenuOption onSelect={() => alert('Opción 2')} text='Reportar' />
+                                <MenuOption text='Guardar' onSelect={onSaved} />
                             </MenuOptions>
                         </Menu>
                     </View>
@@ -109,7 +123,6 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                                 <Text style={styles.userName}>{userInfo.nickname}</Text>
                                 <Text style={styles.timeSince}>{`Hace ${timeSince(post.createdDate)}`}</Text>
                             </View>
-                            <Text style={styles.likesCount}>{`${likesCount}`}</Text>
                             <LikeButton postId={post.id} userId={userId} />
                         </View>
                         <Text style={styles.postTitle}>{post?.title}</Text>

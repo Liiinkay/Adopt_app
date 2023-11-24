@@ -34,37 +34,12 @@ const validationSchema = Yup.object().shape({
     phone_number: Yup.string()
       .matches(/^[0-9]{9}$/, 'El número de teléfono debe tener exactamente 9 dígitos')
       .required('Escribe tu número de contacto'),
-    rut: Yup.string()
-      .test('valid-rut', 'El RUT no es válido', value => validateRut(value)), // Asumiendo que tienes una función para validar el RUT
+    rut: Yup.string(), // Asumiendo que tienes una función para validar el RUT
     instagram: Yup.string(),
     facebook: Yup.string(),
     region: Yup.string(),
     city: Yup.string()
 });
-
-const validateRut = (rut) => {
-    // Eliminar puntos y guion
-    let valor = rut.replace(/\./g, '').replace('-', '');
-  
-    // Extraer dígito verificador e invertir orden de los números
-    let cuerpo = valor.slice(0, -1).split('').reverse();
-    let dv = valor.slice(-1).toUpperCase();
-  
-    // Calcular suma según el algoritmo del módulo 11
-    let suma = 0;
-    let multiplo = 2;
-    for (let i = 0; i < cuerpo.length; i++) {
-      suma += parseInt(cuerpo[i]) * multiplo;
-      multiplo = multiplo === 7 ? 2 : multiplo + 1;
-    }
-  
-    // Calcular dígito verificador
-    let dvEsperado = 11 - (suma % 11);
-    dvEsperado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
-  
-    // Comparar el DV esperado con el ingresado
-    return dv === dvEsperado;
-};
 
 const EditProfileScreen = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -83,7 +58,7 @@ const EditProfileScreen = ({ navigation }) => {
     const [ profileImage, setProfileImage ] = useState(null);
     const [ bannerImage, setBannerImage ] = useState(null);
     const { getUserId } = useAuth();
-    const { findOne, update } = useUsers();
+    const { findOne, update, updateImages } = useUsers();
   
     useEffect(() => {
         const loadUserProfile = async () => {
@@ -129,51 +104,54 @@ const EditProfileScreen = ({ navigation }) => {
 
   const handleSave = async (values) => {
     setIsLoading(true);
-    const formData = transformDataToFormData(values, profileImage, bannerImage);
-    console.log(formData);
+    const updatedFields = getUpdatedFields(values, initialProfileData);
+    const imageFormData = new FormData();
+    // Agrega las imágenes si han cambiado
+    if (values.profile_img !== initialProfileData.profile_img) {
+      imageFormData.append('profile_img', {
+        uri: values.profile_img,
+        name: `profile_${getUserId()}.jpg`, // Nombre único para la imagen de perfil: `profile_${userId}.jpg
+        type: 'image/jpg',
+      });
+    }
+    if (values.banner_multimedia !== initialProfileData.banner_multimedia) {
+      imageFormData.append('banner_multimedia', {
+        uri: values.banner_multimedia,
+        name: `banner_${getUserId()}.jpg`, // Nombre único para el banner: `banner_${userId}.jpg
+        type: 'image/jpg',
+      });
+    }
     try {
-      await update(getUserId(), formData); // Asegúrate de que tu función 'update' maneje FormData apropiadamente
+      const result = await update(getUserId(), JSON.parse(JSON.stringify(updatedFields)));
+      setInitialProfileData({ ...initialProfileData, ...updatedFields });
+      if (imageFormData._parts.length > 0) {
+        const imageResult = await updateImages(getUserId(), imageFormData);
+        const updatedImages = {};
+        if (imageResult.profile_img) {
+          updatedImages.profile_img = imageResult.profile_img;
+        }
+        if (imageResult.banner_multimedia) {
+          updatedImages.banner_multimedia = imageResult.banner_multimedia;
+        }
+      }
+      console.log("Perfil actualizado:", result);
       setIsLoading(false);
       Alert.alert('Perfil Actualizado', 'Tu perfil ha sido actualizado con éxito.');
     } catch (error) {
-      console.error("Error al actualizar el perfil:", error);
-      Alert.alert('Error', 'No se pudo actualizar el perfil.');
+      console.log("Error al actualizar el perfil:", error);
+      Alert.alert('Error', error.message || 'Ocurrió un error al actualizar tu perfil.');
       setIsLoading(false);
     }
   };
   
-  const transformDataToFormData = (values, profileImage, bannerImage) => {
-    const formData = new FormData();
-  
-    // Agregar campos de texto al FormData
-    for (const key in values) {
-      if (values.hasOwnProperty(key)) {
-        formData.append(key, values[key]);
+  const getUpdatedFields = (currentValues, initialValues) => {
+    const updatedFields = {};
+    Object.keys(currentValues).forEach(key => {
+      if (currentValues[key] !== initialValues[key] && key !== 'roles') {
+        updatedFields[key] = currentValues[key];
       }
-    }
-  
-    // Función para agregar imagen al FormData
-    const appendImage = (image, fieldName) => {
-      const uriParts = image.uri.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-  
-      formData.append(fieldName, {
-        uri: image.uri,
-        name: `photo.${fileType}`, // Puedes personalizar el nombre del archivo
-        type: `image/${fileType}` // Inferir el tipo MIME
-      });
-    }
-  
-    // Agregar imágenes al FormData
-    if (profileImage) {
-      appendImage(profileImage, 'profile_img');
-    }
-  
-    if (bannerImage) {
-      appendImage(bannerImage, 'banner_multimedia');
-    }
-  
-    return formData;
+    });
+    return updatedFields;
   };
 
   return (
@@ -292,6 +270,7 @@ const styles = StyleSheet.create({
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
   },
   bannerImage: {
     width: '100%',

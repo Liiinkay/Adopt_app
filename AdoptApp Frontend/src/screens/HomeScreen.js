@@ -72,6 +72,22 @@ const HomeScreen = ({ navigation }) => {
         fetchPosts();
     }, [filtro]);
 
+    const refreshPosts = async () => {
+        try {
+            const type = getFilterValueForUrl(filtro);
+            const response = await getPostsByType(type);
+            if (response && Array.isArray(response)) {
+                // Ordena los posts por fecha de creación (más reciente primero)
+                const sortedPosts = response.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+                setPosts(sortedPosts);
+            } else {
+                console.error("Respuesta inesperada:", response);
+            }
+        } catch (error) {
+            console.error("Error al obtener los posts:", error);
+        }
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="black" />
@@ -82,6 +98,11 @@ const HomeScreen = ({ navigation }) => {
             ) : (
                 <FlatList
                 data={posts}
+                onRefresh={() => {
+                    console.log('refreshing');
+                    refreshPosts();
+                }}
+                refreshing={false}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => <PostCard post={item} navigation={navigation}/>}
                 />
@@ -93,6 +114,8 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        flexDirection: 'column',
+        backgroundColor: '#fff',
     },
     noPostsContainer: {
         flex: 1,

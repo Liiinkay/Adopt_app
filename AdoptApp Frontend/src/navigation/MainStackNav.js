@@ -36,6 +36,7 @@ const MainStackGroup = () => (
     <MainStack.Screen name="ManageUsers" component={ManageUsersScreen}/>
     <MainStack.Screen name="ManageHelpCenters" component={ManageHelpCentersScreen}/>
     <MainStack.Screen name="CreateHelpCenter" component={CreateHelpCenterScreen} options={{ headerShown: false }}/>
+    <MainStack.Screen name="EditPost" component={CreateAdoptPostScreen} options={{ headerShown: false }}/>
   </MainStack.Navigator>
 );
 
