@@ -75,7 +75,6 @@ export class UsersController {
 
   //calificar a usuario
   @Post(':userId/rate')
-  @Auth( ValidRoles.user )
   async rateUser(@Param('userId') userId: string, @Body('rating') rating: number) {
       return this.usersService.rateUser(userId, rating);
   }
@@ -94,18 +93,14 @@ export class UsersController {
   }
 
   //obtener seguidos del usuario
-  @Get('following')
-  @Auth( ValidRoles.user )
-  getFollowing(@Req() req) {
-    const followerId = req.user.id;
-    return this.usersService.getFollowing(followerId);
+  @Get('following/:id')
+  getFollowing(@Param('userId') userId: string) {
+    return this.usersService.getFollowing(userId);
   }
 
   //obtener seguidores del usuario
-  @Get('followers')
-  @Auth(ValidRoles.user)
-  getFollowers(@Req() req) {
-    const userId = req.user.id;
+  @Get('followers/:id')
+  getFollowers(@Param('userId') userId: string) {
     return this.usersService.getFollowers(userId);
   }
 
