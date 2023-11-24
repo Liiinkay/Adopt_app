@@ -12,26 +12,26 @@ const Tab = createBottomTabNavigator();
 const TabGroup = () => {
     return( 
         <Tab.Navigator
-        screenOptions={({ route }) => ({
-            tabBarIcon: ({ focused, color, size }) => {
-                let iconName;
-                let iconColor;
-                if (route.name === 'Posts') {
-                    iconName = focused ? 'home' : 'home-outline';
-                    iconColor = focused ? 'white' : 'grey'; // Cambiar color cuando está activo o inactivo
-                } else if (route.name === 'Crear') {
-                    iconName = focused ? 'add-circle' : 'add-circle-outline';
-                    iconColor = focused ? 'white' : 'grey'; // Cambiar color cuando está activo o inactivo
-                } else if (route.name === 'Cuenta') {
-                    iconName = focused ? 'person-circle' : 'person-circle-outline';
-                    iconColor = focused ? 'white' : 'grey'; // Cambiar color cuando está activo o inactivo
-                }
-                return <Ionicons name={iconName} size={size} color={iconColor} />;
-            },
-            tabBarActiveTintColor: 'white',
-            tabBarInactiveTintColor: 'gray',
-            tabBarStyle: { backgroundColor: 'black' }
-        })}
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
+                    let iconColor;
+                    if (route.name === 'Posts') {
+                        iconName = focused ? 'home' : 'home-outline';
+                    } else if (route.name === 'Crear') {
+                        iconName = focused ? 'add-circle' : 'add-circle-outline';
+                    } else if (route.name === 'Cuenta') {
+                        iconName = focused ? 'person-circle' : 'person-circle-outline';
+                    } else if (route.name === 'Centros y ayuda') {
+                        iconName = focused ? 'information-circle' : 'information-circle-outline';
+                    }
+                    iconColor = focused ? 'white' : 'grey'; // Color uniforme para todos los íconos
+                    return <Ionicons name={iconName} size={size} color={iconColor} />;
+                },
+                tabBarActiveTintColor: 'white',
+                tabBarInactiveTintColor: 'gray',
+                tabBarStyle: { backgroundColor: 'black' }
+            })}
         >
             <Tab.Screen 
                 name="Posts" 

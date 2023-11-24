@@ -21,6 +21,7 @@ const PostDetailAdoptScreen = ({ navigation }) => {
     const { post, userInfo } = route.params;
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
     const [hasSubmitted, setHasSubmitted] = useState(false);
+    const [likesCount, setLikesCount] = useState(post.likesCount);
 
     useEffect(() => {
         const checkIfUserSubmittedForm = async () => {
@@ -105,11 +106,11 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                         <View style={styles.userInfoContainer}>
                             <Image source={{ uri: userInfo ? `${apiUrl}/api/${userInfo.profile_img}` : 'url_por_defecto' }} style={styles.userImage} />
                             <View style={styles.userInfoText}>
-                                <Text style={styles.userName}>{userInfo.n}</Text>
+                                <Text style={styles.userName}>{userInfo.nickname}</Text>
                                 <Text style={styles.timeSince}>{`Hace ${timeSince(post.createdDate)}`}</Text>
                             </View>
-                            <Text style={styles.likesCount}>{`${post.likesCount}`}</Text>
-                            <LikeButton />
+                            <Text style={styles.likesCount}>{`${likesCount}`}</Text>
+                            <LikeButton postId={post.id} userId={userId} />
                         </View>
                         <Text style={styles.postTitle}>{post?.title}</Text>
                         <Text style={styles.postDescription}>{post?.description}</Text>
@@ -285,11 +286,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'grey',
     },
-    likesCount: {
-        fontSize: 14,
-        color: 'grey',
-        marginRight: 8,
-        // Ajusta estos estilos según sea necesario
+    likeButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+    },
+    likesCountText: {
+        marginLeft: 8,
+        fontSize: 16,
     },
 });
 
