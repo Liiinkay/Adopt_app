@@ -1,62 +1,64 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsString, IsOptional } from 'class-validator';
 
 
 export class FormDto {
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     id: string;
   
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     name: string;
   
-    @IsNotEmpty()
-    createdDate: Date;
-  
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     city: string;
   
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     rut: string;
   
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     address: string;
   
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     phone: number;
   
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     question1: string;
   
     @IsBoolean()
+    @IsOptional()
     question2: boolean;
   
     @IsBoolean()
+    @IsOptional()
     question4: boolean;
   
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     question5: string;
   
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     question6: string;
   
     @IsBoolean()
+    @IsOptional()
     question7: boolean;
   
     @IsBoolean()
+    @IsOptional()
     question8: boolean;
   
     @IsBoolean()
+    @IsOptional()
     question9: boolean;
   
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     question10: string;
 }
