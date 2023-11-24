@@ -87,6 +87,36 @@ export class UsersService {
     }
   }
 
+    async createAdmin(createUserDto: CreateUserDto, profileImagePath?: string, bannerImagePath?: string) {
+    try {
+      const { password, ...userData } = createUserDto;
+  
+      // Se establecen imágenes predeterminadas si no se proporcionan
+      const defaultProfileImg = 'img/profile/profile_default.jpg';
+      const defaultBannerImg = 'img/banner/banner_default.jpg';
+  
+      const user = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+        profile_img: profileImagePath || defaultProfileImg,
+        banner_multimedia: bannerImagePath || defaultBannerImg,
+        roles: [ 'admin' ]
+      });
+  
+      await this.userRepository.save(user);
+      delete user.password;
+  
+      return {
+        ...user,
+        token: this.getJwtToken({ id: user.id }),
+        message: 'Usuario creado con éxito'
+      };
+  
+    } catch (error) {
+      this.hadleDBExceptions(error);
+    }
+  }
+
   async login( loginUserDto: LoginUserDto){
     const { password, nickname } = loginUserDto;
 
