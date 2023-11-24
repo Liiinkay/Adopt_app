@@ -9,11 +9,15 @@ import Swiper from 'react-native-swiper';
 import LikeButton from "../components/LikeButton";
 import config from '../../config';
 import { useUsers } from "../contexts/UserProvider";
+import { useAuth } from "../contexts/AuthProvider";
+
 
 const apiUrl = config.API_URL;
 
 const PostDetailInformativeScreen = ({ navigation }) => {
     const  route  = useRoute();
+    const { getUserId } = useAuth();
+    const userId = getUserId();
     const { post, userInfo } = route.params;
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
     const { savePost } = useUsers();
@@ -62,7 +66,6 @@ const PostDetailInformativeScreen = ({ navigation }) => {
                                 {images?.map((imageUri, index) => (
                                     <TouchableOpacity
                                         key={index}
-                                        onPress={() => navigateToFullScreenImage(imageUri)}
                                     >
                                         <Image source={{ uri: imageUri }} style={styles.postImage} />
                                     </TouchableOpacity>
@@ -76,7 +79,7 @@ const PostDetailInformativeScreen = ({ navigation }) => {
                                 <Text style={styles.userName}>{userInfo.name}</Text>
                                 <Text style={styles.userDescription}>{userInfo.nickname}</Text>
                             </View>
-                            <LikeButton />
+                            <LikeButton postId={post.id} userId={userId} />
                         </View>
                         <Text style={styles.postTitle}>{post?.title}</Text>
                         <Text style={styles.postDescription}>{post?.description}</Text>

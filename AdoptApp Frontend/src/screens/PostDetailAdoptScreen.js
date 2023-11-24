@@ -16,8 +16,8 @@ const apiUrl = config.API_URL;
 
 const PostDetailAdoptScreen = ({ navigation }) => {
     const { getUserId } = useAuth();
-    const { getFormsByPostId } = usePosts();
     const userId = getUserId();
+    const { getFormsByPostId } = usePosts();
     const route = useRoute(); 
     const { post, userInfo } = route.params;
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
@@ -109,7 +109,6 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                                 {images?.map((imageUri, index) => (
                                     <TouchableOpacity
                                         key={index}
-                                        onPress={() => navigateToFullScreenImage(imageUri)}
                                     >
                                         <Image source={{ uri: imageUri }} style={styles.postImage} />
                                     </TouchableOpacity>
@@ -122,7 +121,6 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                                 <Text style={styles.userName}>{userInfo.nickname}</Text>
                                 <Text style={styles.timeSince}>{`Hace ${timeSince(post.createdDate)}`}</Text>
                             </View>
-                            <Text style={styles.likesCount}>{`${likesCount}`}</Text>
                             <LikeButton postId={post.id} userId={userId} />
                         </View>
                         <Text style={styles.postTitle}>{post?.title}</Text>
