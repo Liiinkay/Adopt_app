@@ -13,12 +13,12 @@ export class PostMultimedia {
     @Column('text')
     url: string
 
-    @ManyToOne(() => Adopt, adopt => adopt.multimedia, { nullable: true })
+    @ManyToOne(() => Adopt, adopt => adopt.multimedia, { nullable: true, onDelete: 'CASCADE'})
     adoptPost: Adopt;
 
-    @ManyToOne(() => Informative, informative => informative.multimedia, { nullable: true })
+    @ManyToOne(() => Informative, informative => informative.multimedia, { nullable: true, onDelete: 'CASCADE'})
     informativePost: Informative;
 
-    @ManyToOne(() => Lost, lost => lost.multimedia, { nullable: true })
+    @ManyToOne(() => Lost, lost => lost.multimedia, { nullable: true, onDelete: 'CASCADE'})
     lostPost: Lost;
 }
