@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthProvider';
 import { useUsers } from '../contexts/UserProvider';
 import { Ionicons } from '@expo/vector-icons';
 import config from '../../config';
-// <Ionicons name="send" size={24} color="#FFFFFF" />
+
 
 const API_URL = config.API_URL;
 const QUESTIONS_PER_PAGE = 8; // Ajusta esto según tus necesidades
@@ -16,7 +16,6 @@ const QuestionItem = ({ question, isAuthor }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const { findOne } = useUsers();
-    console.log(question);
     const [hasAnswered, setHasAnswered] = useState(question.answer ? true : false);
     const [answer, setAnswer] = useState(question.answer || '');
     

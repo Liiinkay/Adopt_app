@@ -37,6 +37,31 @@ const PostDetailAdoptScreen = ({ navigation }) => {
         checkIfUserSubmittedForm();
     }, [post.id, userId, getFormsByPostId]);
 
+    const timeSince = (date) => {
+        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+        let interval = seconds / 31536000; // Años
+    
+        if (interval > 1) {
+            return Math.floor(interval) + " años";
+        }
+        interval = seconds / 2592000; // Meses
+        if (interval > 1) {
+            return Math.floor(interval) + " meses";
+        }
+        interval = seconds / 86400; // Días
+        if (interval > 1) {
+            return Math.floor(interval) + " días";
+        }
+        interval = seconds / 3600; // Horas
+        if (interval > 1) {
+            return Math.floor(interval) + " horas";
+        }
+        interval = seconds / 60; // Minutos
+        if (interval > 1) {
+            return Math.floor(interval) + " minutos";
+        }
+        return Math.floor(seconds) + " segundos";
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -80,9 +105,10 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                         <View style={styles.userInfoContainer}>
                             <Image source={{ uri: userInfo ? `${apiUrl}/api/${userInfo.profile_img}` : 'url_por_defecto' }} style={styles.userImage} />
                             <View style={styles.userInfoText}>
-                                <Text style={styles.userName}>{userInfo.name}</Text>
-                                <Text style={styles.userDescription}>{userInfo.nickname}</Text>
+                                <Text style={styles.userName}>{userInfo.n}</Text>
+                                <Text style={styles.timeSince}>{`Hace ${timeSince(post.createdDate)}`}</Text>
                             </View>
+                            <Text style={styles.likesCount}>{`${post.likesCount}`}</Text>
                             <LikeButton />
                         </View>
                         <Text style={styles.postTitle}>{post?.title}</Text>
@@ -145,7 +171,7 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     postView: {
-        margin: 15,
+        margin: 10,
         backgroundColor: 'white',
         borderRadius: 10,
         padding: 15,
@@ -196,16 +222,32 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 10,
     },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        padding: 10,
+        textAlign: 'center',
+        marginBottom: 10,
+        borderBottomWidth: 1, // Línea de separación
+        borderBottomColor: '#e0e0e0', // Color de la línea
+    },
     petInfoContainer: {
-        padding: 15,
-        backgroundColor: '#f0f0f0',
+        flexDirection: 'row', // Hace que los elementos se dispongan en fila
+        flexWrap: 'wrap', // Permite el ajuste de elementos en líneas múltiples
+        justifyContent: 'space-between', // Espacia los elementos uniformemente
+        backgroundColor: 'white', // Fondo blanco para la tabla
         borderRadius: 10,
+        padding: 15,
         marginTop: 10,
         marginBottom: 20,
+        borderWidth: 1, // Borde ligero para la tabla
+        borderColor: '#e0e0e0', // Color del borde
     },
     petInfoText: {
         fontSize: 14,
         marginBottom: 5,
+        width: '48%', // Ancho para cada elemento, dos por fila
+        textAlign: 'left', // Alineación del texto
     },
     adoptButton: {
         backgroundColor: '#F348A4',
@@ -220,15 +262,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        backgroundColor: '#eaeaea',
-        padding: 10,
-        borderRadius: 5,
-        textAlign: 'center',
-        marginBottom: 10,
     },
     // Mensaje de agradecimiento
     thankYouMessage: {
@@ -247,6 +280,16 @@ const styles = StyleSheet.create({
         fontSize: 18, // Tamaño de fuente aumentado
         fontWeight: 'bold',
         textAlign: 'center', // Asegura que el texto esté centrado
+    },
+    timeSince: {
+        fontSize: 14,
+        color: 'grey',
+    },
+    likesCount: {
+        fontSize: 14,
+        color: 'grey',
+        marginRight: 8,
+        // Ajusta estos estilos según sea necesario
     },
 });
 

@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5', // Fondo claro para contraste
     },
     postView: {
-        margin: 15,
+        margin: 10,
         backgroundColor: 'white',
         borderRadius: 10,
         padding: 15,
@@ -151,12 +151,11 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        backgroundColor: '#eaeaea',
         padding: 10,
-        borderRadius: 5,
         textAlign: 'center',
-        marginTop: 15,
         marginBottom: 10,
+        borderBottomWidth: 1, // Línea de separación
+        borderBottomColor: '#e0e0e0', // Color de la línea
     },
     map: {
         width: '100%',

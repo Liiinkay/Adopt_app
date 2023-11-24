@@ -39,7 +39,7 @@ export const PostProvider = ({ children }) => {
   };
 
   const getPostById = async (id) => {
-    const url = `${API_URL}/${id}`;
+    const url = `${API_URL}/api/posts/${id}`;
     const response = await fetch(url, { method: 'GET' });
     return handleResponse(response);
   };
@@ -56,13 +56,18 @@ export const PostProvider = ({ children }) => {
     return handleResponse(response);
   };
 
+  const getLikesByPostId = async (postId) => {
+    const url = `${API_URL}/api/posts/${postId}/likes`;
+    const response = await fetch(url, { method: 'GET' });
+    return handleResponse(response);
+  };
 
   const likePost = async (postId, userId) => {
     const url = `${API_URL}/api/posts/${postId}/like`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ userId: userId }),
     });
     return handleResponse(response);
   };
@@ -72,7 +77,7 @@ export const PostProvider = ({ children }) => {
     const response = await fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ userId: userId }),
     });
     return handleResponse(response);
   };
@@ -123,7 +128,8 @@ export const PostProvider = ({ children }) => {
       getFormsByPostId,
       getPostsAppliedByUserId,
       likePost,
-      unlikePost
+      unlikePost,
+      getLikesByPostId
     }}>
       {children}
     </PostsContext.Provider>
