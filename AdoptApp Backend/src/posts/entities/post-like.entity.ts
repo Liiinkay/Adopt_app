@@ -16,12 +16,12 @@ export class PostLikes {
     )
     user: User;
 
-    @ManyToOne(() => Adopt, adoptPost => adoptPost.postLikes, { nullable: true })
+    @ManyToOne(() => Adopt, adoptPost => adoptPost.postLikes, { nullable: true, onDelete: 'CASCADE'})
     adoptPost: Adopt;
 
-    @ManyToOne(() => Lost, lostPost => lostPost.postLikes, { nullable: true })
+    @ManyToOne(() => Lost, lostPost => lostPost.postLikes, { nullable: true, onDelete: 'CASCADE'})
     lostPost: Lost;
 
-    @ManyToOne(() => Informative, informativePost => informativePost.postLikes, { nullable: true })
+    @ManyToOne(() => Informative, informativePost => informativePost.postLikes, { nullable: true, onDelete: 'CASCADE'})
     informativePost: Informative;
 }
