@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,6 +40,8 @@ const SignupSchema = Yup.object().shape({
   profile_img: '',
   instagram: '',
   facebook: '',
+  region: '',
+  city: ''
 });
 
 const validateRut = (rut) => {
@@ -67,10 +69,11 @@ const validateRut = (rut) => {
 };
 
 
-const SignUpScreen = () => {
+const SignUpScreen = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const { logIn } = useAuth();
+  const [error, setError] = React.useState(null);
 
   // Función para determinar el estilo del borde en función del estado de error
   const getBorderStyle = (errors, touched, fieldName) => {
@@ -87,20 +90,27 @@ const SignUpScreen = () => {
 
   const handleFormSubmit = async (values) => {
     const url = apiUrl + '/api/users/register'
-    console.log(url);
-    const formattedValues = {
-      ...values,
-      phone_number: values.phone_number ? parseInt(values.phone_number, 10) : null,
-    };
+
+    const formData = new FormData();
+
+    formData.append('nickname', values.nickname);
+    formData.append('name', values.name);
+    formData.append('last_name', values.last_name);
+    formData.append('password', values.password);
+    formData.append('contact_email', values.contact_email);
+    formData.append('rut', values.rut);
+    formData.append('banner_multimedia', values.banner_multimedia);
+    formData.append('profile_img', values.profile_img);
+    formData.append('facebook', values.facebook);
+    formData.append('instagram', values.instagram);
+    formData.append('region', values.region);
+    formData.append('city', values.city);
+
     setIsLoading(true); // Activa el loader
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formattedValues),
+        body: formData,
       })
       
       const json = await response.json();
@@ -108,13 +118,24 @@ const SignUpScreen = () => {
       if (response.ok) {
         // Inicio de sesión exitoso
         logIn(json.token, json.id);
-        navigation.navigate('AppStackGroup');
       } else {
         // Manejo de errores, como credenciales incorrectas
         console.error('Error de creación de cuenta:', json.message);
+        const message = json.message || 'Ocurrió un error al crear la cuenta';
+        if (message.includes('nickname') && message.includes('already exists')) {
+          setError('El nombre de usuario ya está en uso');
+          Alert.alert('Error', 'El nombre de usuario ya está en uso');
+        }
+        if (message.includes('contact_email') && message.includes('already exists')) {
+          setError('El correo ya está en uso');
+          Alert.alert('Error', 'El correo ya está en uso');
+        }
       }
     } catch (error) {
       console.error('Error en la petición:', error);
+      const message = error.message || 'Ocurrió un error al crear la cuenta';
+      Alert.alert('Error', message);
+      setError(message);
     }
     setIsLoading(false); // Desactiva el loader
   };
@@ -137,6 +158,8 @@ const SignUpScreen = () => {
             profile_img: '',
             instagram: '',
             facebook: '',
+            region: '',
+            city: '',
           }}
           validationSchema={SignupSchema}
           onSubmit={handleFormSubmit}
@@ -267,6 +290,10 @@ const SignUpScreen = () => {
                   </TouchableOpacity>
                 </View>
                 {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+
+                <View style={styles.errorContainer}>
+                  {error && <Text style={styles.errorText}>{error}</Text>}
+                </View>
                 <TouchableOpacity
                   style={[styles.button, !(isValid && dirty) && styles.disabledButton]}
                   onPress={handleSubmit}
@@ -404,6 +431,12 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: '#ccc',
+  },
+  errorContainer: {
+    marginTop: 10,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

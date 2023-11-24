@@ -1,181 +1,246 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, StatusBar, ScrollView, TouchableOpacity } from 'react-native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRoute } from "@react-navigation/native";
+import { useUsers } from '../contexts/UserProvider';
+import { useAuth } from '../contexts/AuthProvider';
+import config from '../../config';
 
-import SettingsScreen from './SettingsScreen';
+const apiUrl = config.API_URL;
 
-const Tab = createMaterialTopTabNavigator();
-const description = "Tengo 28 años y soy diseñadora gráfica. Actualmente, vivo en la vibrante Ciudad de México, México. Mi mayor pasión es el diseño gráfico y la ilustración. Disfruto enormemente plasmando ideas en imágenes y creando diseños visuales que impacten y cuenten historias. Cuando no estoy trabajando en proyectos creativos, me encontrarás dibujando en mi cuaderno o explorando las últimas tendencias de diseño. Soy una amante de la música indie y los conciertos en vivo son mi plan favorito para las noches de fin de semana. La música tiene una forma única de inspirarme y estimular mi creatividad. Una de mis mayores pasiones además del diseño es viajar. Siempre estoy planeando mi próxima aventura. Me encanta explorar nuevos lugares, conocer personas de diferentes culturas y probar comidas auténticas de todo el mundo. Mantenerme activa es fundamental para mí. Practico yoga de forma regular para mantener mi mente y cuerpo en equilibrio. Es una actividad que me ayuda a concentrarme y afrontar los desafíos con serenidad"
+const StarRating = ({ rating, onRating }) => {
+  const maxRating = [1, 2, 3, 4, 5];
 
-const AboutUser = () => {
-  return(
-    <View style={{flex:1}}>
-      <Text>AAAAAAAAAAA</Text>
+  return (
+    <View style={styles.starContainer}>
+      {maxRating.map((item, index) => (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          key={item}
+          onPress={() => onRating(index + 1)}
+        >
+          <Ionicons
+            name={item <= rating ? 'md-star' : 'md-star-outline'}
+            size={30}
+            color={item <= rating ? '#F348A4' : 'grey'}
+          />
+        </TouchableOpacity>
+      ))}
     </View>
-  )
-}
-
-function ProfileTab() {
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        tabBarIndicatorStyle: {backgroundColor:'#F348A4'}
-      }}
-    >
-      <Tab.Screen name="Información" component={AboutUser} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
-    </Tab.Navigator>
- );
-}
-
-const UserProfile = ({ navigation }) => {
-  const {
-    params: { user },
-  } = useRoute(); 
-  return (
-    <SafeAreaView>
-        <StatusBar/>
-        <ScrollView>
-          <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                  <Ionicons name="arrow-back-outline" size={30} color={'#1E1E1E'} />
-              </TouchableOpacity>
-              <View style={styles.headerTextContainer}>
-                <Text style={styles.headerText}>{user.name}</Text>
-              </View>
-              <View style={{ flex: 1, flexDirection: 'row-reverse' }}>
-                <Ionicons name='ellipsis-vertical' size={25}/>
-              </View>
-          </View>
-          <View style={styles.bannerContainer}>
-            <Image src={user.banner} style={styles.bannerImage}/>
-          </View>
-          <View style={styles.profileContainer}>
-            <Image src={user.image} style={styles.userProfile}/>
-          </View>
-          <View style={styles.userNameFollowContainer}>
-            <Text style={styles.userNameText}>@{user.username}</Text>
-            <View style={styles.followButton}>
-              <Ionicons name='person-add-outline' color={'white'} size={30}/>
-            </View>
-          </View>
-          <View style={{flex: 1, flexDirection: 'row'}}>
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontWeight:'bold'}}>{user.followers}</Text>
-              <Text>Seguidores</Text>
-            </View>
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontWeight:'bold'}}>{user.follows}</Text>
-              <Text>Siguiendo</Text>
-            </View>
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontWeight:'bold'}}>{user.posts}</Text>
-              <Text>Posts</Text>
-            </View>
-          </View>
-          <View style={styles.lineContainer}>
-            <View style={styles.line}></View>
-          </View>
-          <ProfileTab></ProfileTab>
-          <View style={{padding: 16}}>
-            <Text style={styles.titleText}>A cerca de mí</Text>
-            <Text style={styles.descriptionText}>{description}</Text>
-          </View>
-        </ScrollView>
-    </SafeAreaView>
   );
 };
 
+const UserProfileScreen = ({ route, navigation }) => {
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isUserConnectedProfile, setIsUserConnectedProfile] = useState(false);
+  const { findOne, getFollowing } = useUsers(); 
+  const { getUserId, logOut } = useAuth();
+  const connectedUserId = getUserId(); // El ID del usuario conectado
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      const { userId: profileUserId } = route.params;
+      setIsLoading(true);
+      try {
+        const userData = await findOne(profileUserId);
+        const userFollowing = await getFollowing(connectedUserId);
+        console.log(userData);
+        setUserProfile(userData);
+        setIsFollowing(userFollowing.includes(profileUserId)); 
+        setIsUserConnectedProfile(profileUserId === connectedUserId);
+      } catch (error) {
+        console.log("Error al cargar el perfil del usuario:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (route.params && route.params.userId) {
+      loadUserProfile();
+    }
+  }, [route, connectedUserId]);
+
+  if (!userProfile) {
+    return <Text>Cargando...</Text>; // Puedes poner un indicador de carga aquí
+  }
+
+  const handleFollowPress = () => {
+    setIsFollowing(!isFollowing);
+  };
+
+  const handleRating = (rate) => {
+    // Aquí puedes hacer una solicitud POST a tu API para actualizar la calificación del usuario
+    console.log(`Nueva valoración: ${rate}`);
+    // Actualiza el estado o realiza alguna acción después de la valoración
+  };
+
+  // Calcula el promedio de las valoraciones
+  const averageRating = userProfile.rating / userProfile.ratingCount;
+
+  return (
+    <ScrollView style={styles.container}>
+      {/* Banner y foto de perfil */}
+      <Image source={{ uri: `${apiUrl}/api/${userProfile.banner_multimedia}` }} style={styles.bannerImage} />
+      <View style={styles.profileInfo}>
+        <Image source={{ uri: `${apiUrl}/api/${userProfile.profile_img}` }} style={styles.profileImage} />
+        <Text style={styles.profileName}>{userProfile.name} {userProfile.last_name}</Text>
+        <Text style={styles.profileNickname}>@{userProfile.nickname}</Text>
+        <View style={styles.followStats}>
+          <Text style={styles.stat}>{userProfile.followersCount} Seguidores</Text>
+          <Text style={styles.stat}>{userProfile.followingCount} Siguiendo</Text>
+          <Text style={styles.stat}>{userProfile.postsCount || 0} Posts</Text>
+        </View>
+        {/* Mostrar botón de seguir solo si no es el perfil del usuario conectado */}
+        {!isUserConnectedProfile && (
+          <TouchableOpacity style={[styles.followButton, isFollowing && styles.followingButton]} onPress={handleFollowPress}>
+            <Ionicons name={isFollowing ? 'md-checkmark' : 'md-person-add'} size={20} color="#fff" style={styles.followIcon} />
+            <Text style={styles.followButtonText}>{isFollowing ? 'Siguiendo' : 'Seguir'}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Sección de tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity style={styles.tab}>
+          <Text>Información</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tab}>
+          <Text>Interacciones</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Acerca de mí */}
+      <View style={styles.aboutSection}>
+        <Text style={styles.aboutTitle}>Acerca de mí</Text>
+        <Text style={styles.aboutText}>
+          {/* Asegúrate de tener una propiedad bio en tus datos, si no es así, ajusta según tu modelo de datos */}
+          {userProfile.bio || 'No hay información disponible.'}
+        </Text>
+      </View>
+      
+      {/* Sección de valoración */}
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingTitle}>Valoración del Usuario</Text>
+        <StarRating rating={averageRating} onRating={handleRating} />
+      </View>
+
+      {/* Agrega aquí más secciones como valoraciones, fotos, etc. */}
+    </ScrollView>
+  );
+};
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    padding: 20,
-  },
-  header:{
-    flexDirection: 'row',
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: '#AEFAFF',
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  backButton: {
-    marginLeft: 5,
-    flex: 1
-  },
-  bannerContainer: {
-    flex: 1
   },
   bannerImage: {
     width: '100%',
-    height: 200,
-    resizeMode: 'cover'
+    height: 200, // Ajusta la altura según sea necesario
   },
-  profileContainer: {
-    flex: 1,
-    alignItems: 'center'
+  profileInfo: {
+    alignItems: 'center',
+    marginVertical: 10,
   },
-  userProfile: {
-    width: 135,
-    height: 135,
-    borderRadius: 999,
-    borderColor: '#F348A4',
-    marginTop: -90
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
+    borderColor: '#fff',
+    marginTop: -50, // Ajuste para que la imagen se sobreponga al banner
   },
-  userNameFollowContainer: {
-    flex: 1,
+  profileName: {
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  profileNickname: {
+    color: 'grey',
+  },
+  followStats: {
     flexDirection: 'row',
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 5
+    justifyContent: 'space-around',
+    width: '100%',
+    marginVertical: 10,
+  },
+  stat: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   followButton: {
-    backgroundColor: '#F348A4',
-    borderRadius: 10,
-    padding: 5,
-    marginLeft: 15
+    flexDirection: 'row',
+    backgroundColor: '#F348A4', // Color rosa para el botón seguir
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
   },
-  userNameText: {
+  followingButton: {
+    backgroundColor: 'lightgrey', // Un color diferente para el botón 'Siguiendo'
+  },
+  followIcon: {
+    marginRight: 5,
+  },
+  followButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  tabSection: {
+    // Estilos para la sección de tabs
+  },
+  aboutSection: {
+    padding: 10,
+  },
+  aboutTitle: {
+    fontWeight: 'bold',
     fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center'
   },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1E1E1E', 
-  },
-  username: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  description: {
+  aboutText: {
     fontSize: 16,
-    color: 'gray',
+    color: 'grey',
   },
-  line: {
-    width: '100%',
-    height: 2,
-    backgroundColor: '#B1B1B1'
+  tabsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    backgroundColor: '#fff',
   },
-  lineContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 15
+  tab: {
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
-  titleText: {
-    fontSize: 20,
+  tabActive: {
+    borderBottomColor: '#000',
+  },
+  ratingsSection: {
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  ratingsTitle: {
     fontWeight: 'bold',
-    paddingBottom: 10,
+    fontSize: 18,
   },
-  descriptionText: {
-    color: '#3F3F3F',
-    textAlign: 'justify'
+  starContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingContainer: {
+    padding: 10,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  ratingTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  ratingPercentage: {
+    marginTop: 10,
+    fontSize: 16,
+    color: 'grey',
   },
 });
 
-export default UserProfile;
+
+export default UserProfileScreen;

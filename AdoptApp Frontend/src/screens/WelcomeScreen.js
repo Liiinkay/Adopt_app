@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, Alert } from 'react-native';
+import config from '../../config';
+
+const API_URL = config.API_URL;
 
 const WelcomeScreen = ({ navigation }) => {
   return (
@@ -21,6 +24,7 @@ const WelcomeScreen = ({ navigation }) => {
         <TouchableOpacity 
           style={styles.button}
           onPress={() => navigation.navigate('Login')}
+          onLongPress={() => Alert.alert("API_URL: ", API_URL)}
         >
           <Text style={styles.buttonText}>Iniciar Sesión</Text>
         </TouchableOpacity>

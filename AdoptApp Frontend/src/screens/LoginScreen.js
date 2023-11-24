@@ -21,6 +21,7 @@ const LoginScreen = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { logIn } = useAuth();
+  const [error, setError] = useState(null);
 
   const handleLogin = async (values) => {
     const url = apiUrl + '/api/users/login'
@@ -30,7 +31,7 @@ const LoginScreen = ({ navigation }) => {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*',
         },
         body: JSON.stringify({
           nickname: nickname,
@@ -43,13 +44,15 @@ const LoginScreen = ({ navigation }) => {
       if (response.ok) {
         // Inicio de sesión exitoso
         logIn(json.token, json.id);
-        navigation.navigate('AppStackGroup');
       } else {
-        // Manejo de errores, como credenciales incorrectas
-        console.error('Error de inicio de sesión:', json.message);
+        const message = json.message;
+        if (message.toLowerCase().includes('credenciales no válidas')) {
+          setError('Nombre de usuario o contraseña incorrectos');
+        }
       }
     } catch (error) {
-      console.error('Error en la petición:', error);
+      console.log('Error en la petición:', error);
+      setError('Error en la petición', JSON.stringify(error));
     }
   
     setIsLoading(false); // Desactivar el indicador de carga
@@ -116,9 +119,18 @@ const LoginScreen = ({ navigation }) => {
 
               {/* Enlace para ir al registro */}
               <View style={styles.registerSection}>
+                {error && <Text style={styles.errorText}>{error}</Text>}
+              </View>
+              <View style={styles.registerSection}>
                 <Text style={styles.registerText}>¿No tienes una cuenta? </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
                   <Text style={styles.registerLink}>Regístrate</Text>
+                </TouchableOpacity>
+              </View>
+              {/* Sección de Olvidaste tu contraseña */}
+              <View style={styles.forgotPasswordSection}>
+                <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                  <Text style={styles.forgotPasswordLink}>¿Olvidaste tu contraseña?</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -201,6 +213,16 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: 'red',
+  },
+  forgotPasswordSection: {
+    marginTop: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  forgotPasswordLink: {
+    color: '#F348A4',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

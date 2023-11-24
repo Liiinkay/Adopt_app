@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Ionicons } from '@expo/vector-icons';
-
-import Config from 'react-native-config';
-
-const apiUrl = Config.API_URL;
+import { useAuth } from '../contexts/AuthProvider';
+import { usePosts } from '../contexts/PostProvider';
 
 // Esquema de validación para el formulario completo
 const validationSchema = Yup.object().shape({
@@ -20,40 +18,80 @@ const validationSchema = Yup.object().shape({
     informacionMedica: Yup.string().max(300, 'La información médica no puede exceder los 300 caracteres'),
 });
 
-const CreateAdoptPostScreen = ({ navigation }) => {
+const CreateAdoptPostScreen = ({ navigation, route }) => {
     const [imagenes, setImagenes] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const { getUserId } = useAuth();
+    const { createAdoptPost, updatePostAdopt } = usePosts();
+    const { post } = route.params || {};
 
     const handleFormSubmit = async (values) => {
-        setIsLoading(true); // Activar el indicador de carga
-
+        setIsLoading(true);
+        const formData = transformData(values);
+        const userId = getUserId();
+        
         try {
-            const response = await fetch('URL_DEL_SERVIDOR/api/adopciones', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(values), // Aquí irían los valores del formulario
-            });
-
-            const json = await response.json();
-
-            if (response.ok) {
-                // Envío exitoso
-                console.log('Respuesta:', json); // Manejar la respuesta (ejemplo: mostrar mensaje de éxito)
-                // Navegar a otra pantalla o realizar otra acción
-            } else {
-                // Manejo de errores del servidor, como validación fallida
-                console.error('Error en el formulario:', json.message);
-                // Mostrar mensaje de error al usuario
-            }
+            const data = await createAdoptPost(formData, userId);
+            Alert.alert('Publicación creada', 'Tu publicación ha sido creada correctamente.');
+            navigation.navigate('Tabs');
         } catch (error) {
             console.error('Error en la petición:', error);
-            // Mostrar mensaje de error al usuario
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFormSubmitEdit = async (values) => {
+        setIsLoading(true);
+        const jsonData = {
+            title: values.titulo,
+            description: values.descripcion,
+            gender: values.genero,
+            personality: values.personalidad,
+            medical_information: values.informacionMedica,
+            age: values.edad,
+            type: 'adopt',
+            state: 'open',
         }
 
-        setIsLoading(false); // Desactivar el indicador de carga
+        try {
+            const data = await updatePostAdopt(post.id, jsonData); // Usa createAdoptPost en lugar de fetch
+            Alert.alert('Publicación editada', 'Tu publicación ha sido editada correctamente.');
+            navigation.navigate('Tabs');
+        } catch (error) {
+            console.error('Error en la petición:', error);
+            Alert.alert('Error', 'Ha ocurrido un error al editar la publicación.');
+        } finally {
+            setIsLoading(false);
+        }
     };
+
+    const transformData = (values) => {
+        const formData = new FormData();
+        // Agregar campos de texto al formData
+        formData.append('title', values.titulo);
+        formData.append('description', values.descripcion);
+        formData.append('gender', values.genero);
+        formData.append('personality', values.personalidad);
+        formData.append('medical_information', values.informacionMedica);
+        formData.append('state', 'open');
+        formData.append('type', 'adopt');
+        formData.append('age', values.edad);
+    
+        // Agregar imágenes al formData
+        imagenes.forEach((img, index) => {
+            // Aquí asumo que cada imagen en el array `imagenes` es un objeto con una propiedad `localUri`
+            const localUri = img.localUri;
+            const filename = localUri.split('/').pop();
+            // Inferir el tipo MIME de la imagen
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : `image`;
+            
+            // Agregar la imagen al formData
+            formData.append('images', { uri: localUri, name: filename, type });
+        });
+        return formData;
+    }
 
     const eliminarImagen = (index) => {
         setImagenes(imagenes.filter((_, idx) => idx !== index));
@@ -85,18 +123,18 @@ const CreateAdoptPostScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Crear</Text>
+                <Text style={styles.headerTitle}>{post ? 'Editar publicación' : 'Nueva publicación'}</Text>
                 <Ionicons name="paw" size={24} color="white" style={{ marginRight: 16 }} />
             </View>
             <ScrollView contentContainerStyle={styles.contentContainer}>
                 <Formik
                     initialValues={{
-                        titulo: '',
-                        descripcion: '',
-                        genero: '',
-                        edad: '',
-                        personalidad: '',
-                        informacionMedica: '',
+                        titulo: post ? post.title : '',
+                        descripcion: post ? post.description : '',
+                        genero: post ? post.gender : '',
+                        edad: post ? post.age : '',
+                        personalidad: post ? post.personality : '',
+                        informacionMedica: post ? post.medical_information : '',
                     }}
                     validationSchema={validationSchema}
                     onSubmit={handleFormSubmit}
@@ -154,6 +192,7 @@ const CreateAdoptPostScreen = ({ navigation }) => {
                                 onValueChange={handleChange('genero')}
                                 style={styles.picker}
                             >
+                                <Picker.Item label="Selecciona el género" value="" />
                                 <Picker.Item label="Macho" value="macho" />
                                 <Picker.Item label="Hembra" value="hembra" />
                             </Picker>
@@ -192,11 +231,17 @@ const CreateAdoptPostScreen = ({ navigation }) => {
 
                             <TouchableOpacity
                                 style={[styles.publishButton, !(isValid && dirty) && styles.disabledButton]}
-                                onPress={handleSubmit}
+                                onPress={() => (post ? handleFormSubmitEdit(values) : handleSubmit())}
                                 disabled={!(isValid && dirty)}
                             >
-                                <Text style={styles.publishButtonText}>Publicar</Text>
-                                <Ionicons name="send" size={24} color="#FFFFFF" />
+                                {isLoading ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <Text style={styles.publishButtonText}>{post ? 'Guardar cambios' : 'Publicar'}</Text>
+                                        <Ionicons name="send" size={24} color="#FFFFFF" />
+                                    </View>    
+                                )}
                             </TouchableOpacity>
                         </>
                     )}
@@ -237,7 +282,7 @@ const styles = StyleSheet.create({
     disabledButton: {
         backgroundColor: 'grey', // O cualquier otro color que indique que está desactivado
     },
-        publishButtonText: {
+    publishButtonText: {
         color: '#FFFFFF',
         fontSize: 15, // Ajusta el tamaño de la fuente según necesites
         fontWeight: '400',
