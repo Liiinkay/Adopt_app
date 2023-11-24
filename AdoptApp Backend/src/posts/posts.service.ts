@@ -326,6 +326,18 @@ export class PostsService {
     return forms;
   }
 
+  async deleteFormAdoption(formId: string): Promise<void> {
+    const form = await this.formRepository.findOneBy({ id: formId });
+  
+    if (!form) {
+      throw new NotFoundException(`Formulario con ID ${formId} no encontrado`);
+    }
+  
+    await this.formRepository.remove(form);
+  }
+
+
+
   //funcion de errores
   private hadleDBExceptions( error: any ){
     if ( error.code === '23505' )

@@ -158,6 +158,14 @@ export class PostsController {
       return posts;
   }
 
+  @Delete('form/:formId')
+  async deleteFormAdoption(
+  @Param('formId', ParseUUIDPipe) formId: string
+  ) {
+    await this.postsService.deleteFormAdoption(formId);
+    return { message: 'Formulario eliminado con éxito' };
+  }
+
   ////////////////////////
   // Seccion Imagenes   //
   ////////////////////////
