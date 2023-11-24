@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 import CreatePostsScreen from "../screens/CreatePostScreen";
 import DrawerGroup from "./DrawerNav";
-import AdminScreen from "../screens/AdminScreen";
 import HelpCenterScreen from "../screens/HelpCenterScreen";
+import { HeaderTitle } from "@react-navigation/elements";
 
 const Tab = createBottomTabNavigator();
 
@@ -23,7 +23,7 @@ const TabGroup = () => {
                     } else if (route.name === 'Cuenta') {
                         iconName = focused ? 'person-circle' : 'person-circle-outline';
                     } else if (route.name === 'Centros y ayuda') {
-                        iconName = focused ? 'information-circle' : 'information-circle-outline';
+                        iconName = focused ? 'location' : 'location-outline';
                     }
                     iconColor = focused ? 'white' : 'grey'; // Color uniforme para todos los íconos
                     return <Ionicons name={iconName} size={size} color={iconColor} />;
@@ -40,7 +40,6 @@ const TabGroup = () => {
             />
             <Tab.Screen name="Crear" component={CreatePostsScreen}/>
             <Tab.Screen name="Centros y ayuda" component={HelpCenterScreen}/>
-            <Tab.Screen name="Admin" component={AdminScreen}/>
         </Tab.Navigator>
     )
 }

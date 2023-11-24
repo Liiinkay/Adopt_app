@@ -9,6 +9,7 @@ import config from '../../config';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import MyPostsScreen from '../screens/MyPostsScreen';
 import ManageAdoptionsScreen from '../screens/ManageAdoptionsScreen';
+import AdminScreen from '../screens/AdminScreen';
 
 const apiUrl = config.API_URL;
 const Drawer = createDrawerNavigator();
@@ -21,19 +22,19 @@ const drawerScreens = [
         component: HomeScreen
     },
     {
-        name: 'Account',
+        name: 'Gestión de cuenta',
         label: 'Mi cuenta',
         iconName: 'person',
         component: EditProfileScreen
     },
     {
-        name: 'ManageAdopt',
+        name: 'Gestión de adopciones',
         label: 'Gestión de adopciones',
         iconName: 'paw',
         component: ManageAdoptionsScreen
     },
     {
-        name: 'MyPosts',
+        name: 'Gestionar mis posts',
         label: 'Mis Posts',
         iconName: 'podium',
         component: MyPostsScreen
@@ -74,6 +75,7 @@ const getUserInfo = async (userId, token) => {
 const DrawerContent = (props) => {
     const { logOut, getUserId, userToken } = useAuth();
     const [userInfo, setUserInfo] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false); // Inicializa isAdmin como false
 
     useEffect(() => {
         const loadUserInfo = async () => {
@@ -82,6 +84,7 @@ const DrawerContent = (props) => {
                 if (userId) {
                     const userData = await getUserInfo(userId, userToken);
                     setUserInfo(userData);
+                    setIsAdmin(userData && userData.roles && userData.roles.includes('admin')); // Actualiza isAdmin basado en la respuesta
                 }
             } catch (error) {
                 console.error("Error al cargar la información del usuario:", error);
@@ -109,6 +112,13 @@ const DrawerContent = (props) => {
                     iconName={screen.iconName}
                 />
             ))}
+            {isAdmin && (
+                <CustomDrawerItem
+                    label="Administración"
+                    onPress={() => props.navigation.navigate('Admin')}
+                    iconName="settings"
+                />
+            )}
             <CustomDrawerItem 
                 label="Cerrar sesión"
                 onPress={logOut}
@@ -119,6 +129,27 @@ const DrawerContent = (props) => {
 };
 
 const DrawerGroup = () => {
+    const { getUserId, userToken } = useAuth();
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const checkAdmin = async () => {
+            try {
+                const userId = getUserId(); // Usa getUserId para obtener el ID del usuario
+                if (userId) {
+                    const userData = await getUserInfo(userId, userToken);
+                    if (userData && userData.roles && userData.roles.includes('admin')) {
+                        setIsAdmin(true);
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking admin role:", error);
+            }
+        };
+    
+        checkAdmin();
+        console.log(isAdmin);
+    }, [userToken, getUserId]);
     return (
         <Drawer.Navigator drawerContent={(props) => <DrawerContent {...props} />}>
             {drawerScreens.map((screen, index) => (
@@ -132,6 +163,16 @@ const DrawerGroup = () => {
                     }}
                 />
             ))}
+            {isAdmin && (
+                <Drawer.Screen
+                    name="Admin"
+                    component={AdminScreen}
+                    options={{
+                        drawerLabel: 'Administración',
+                        drawerIcon: () => <Ionicons name="settings" size={22} color="black" />,
+                    }}
+                />
+            )}
         </Drawer.Navigator>
     );
 };

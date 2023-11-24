@@ -31,7 +31,7 @@ const LoginScreen = ({ navigation }) => {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*',
         },
         body: JSON.stringify({
           nickname: nickname,
@@ -52,7 +52,7 @@ const LoginScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error en la petición:', error);
-      setError('Error en la petición');
+      setError('Error en la petición', JSON.stringify(error));
     }
   
     setIsLoading(false); // Desactivar el indicador de carga

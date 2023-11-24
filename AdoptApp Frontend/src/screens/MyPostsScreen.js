@@ -35,7 +35,7 @@ const MyPostsScreen = ({ navigation }) => {
                 const data = await getUserPostsJson(getUserId()); // Obtiene posts del usuario
                 setPosts(data);
             } catch (error) {
-                console.error("Error al cargar los posts:", error);
+                console.log("Error al cargar los posts:", error);
             }
         };
 
@@ -54,14 +54,14 @@ const MyPostsScreen = ({ navigation }) => {
 
     const handleDelete = async (postId) => {
         if (!postId) {
-            console.error('El ID del post no está definido.');
+            console.log('El ID del post no está definido.');
             return;
         }
         try {
             await deletePost(postId);
             setPosts(posts.filter(post => post.id !== postId));
         } catch (error) {
-            console.error('Error al eliminar el post:', error);
+            console.log('Error al eliminar el post:', error);
         }
     };
 
