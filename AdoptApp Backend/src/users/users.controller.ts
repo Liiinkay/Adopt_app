@@ -145,22 +145,17 @@ export class UsersController {
   // Seccion SavedPost //
   ///////////////////////
 
-  @Post('saved-post')
-  @Auth( ValidRoles.user )
-    async savePost(@Body() savePostDto: SavePostDto, @Req() req) {
-    const userId = req.user.id;
+  @Post('saved-post/userId')
+    async savePost(@Body() savePostDto: SavePostDto, @Param('userId') userId: string) {
     return this.usersService.savePost(userId, savePostDto.idPost);
   }
 
-  @Delete('saved-post/:postId')
-  @Auth( ValidRoles.user )
-    async removeSavedPost(@Param('postId') postId: string, @Req() req) {
-    const userId = req.user.id;
+  @Delete('saved-post/:postId/:userId')
+    async removeSavedPost(@Param('postId') postId: string, @Param('userId') userId: string) {
     return this.usersService.removeSavedPost(userId, postId);
   }
 
   @Get('saved-post/:idUser')
-  @Auth( ValidRoles.user )
     async getSavedPosts(@Param('idUser', ParseUUIDPipe) idUser: string) {
     return this.usersService.getSavedPosts(idUser);
   }
