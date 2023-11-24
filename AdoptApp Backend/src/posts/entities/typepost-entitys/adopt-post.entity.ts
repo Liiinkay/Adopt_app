@@ -36,12 +36,12 @@ export class Adopt extends Post {
   })
   coment: string[]
 
-  @OneToMany(() => Report, report => report.adoptPost)
+  @OneToMany(() => Report, report => report.adoptPost, {cascade: true})
   reports: Report[];
 
-  @OneToMany(() => PostLikes, postLikes => postLikes.adoptPost)
+  @OneToMany(() => PostLikes, postLikes => postLikes.adoptPost, {cascade: true})
   postLikes: PostLikes[];
 
-  @OneToMany(() => PostMultimedia, multimedia => multimedia.adoptPost)
+  @OneToMany(() => PostMultimedia, multimedia => multimedia.adoptPost, {cascade: true})
   multimedia: PostMultimedia[];
 }
