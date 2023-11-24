@@ -16,12 +16,12 @@ export class Informative extends Post {
   )
   comments: Comment[];
 
-  @OneToMany(() => Report, report => report.informativePost)
+  @OneToMany(() => Report, report => report.informativePost, {cascade: true})
   reports: Report[];
   
-  @OneToMany(() => PostLikes, postLikes => postLikes.informativePost)
+  @OneToMany(() => PostLikes, postLikes => postLikes.informativePost, {cascade: true})
   postLikes: PostLikes[];
 
-  @OneToMany(() => PostMultimedia, multimedia => multimedia.informativePost)
+  @OneToMany(() => PostMultimedia, multimedia => multimedia.informativePost, {cascade: true})
   multimedia: PostMultimedia[];
 }
