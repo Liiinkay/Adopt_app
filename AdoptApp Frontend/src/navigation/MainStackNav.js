@@ -33,9 +33,9 @@ const MainStackGroup = () => (
     <MainStack.Screen name="AdoptForm" component={AdoptFormScreen} options={{ headerShown: false }}/>
     <MainStack.Screen name="Comments" component={CommentsScreen} options={{ headerTitle: 'Comentarios' }}/>
     <MainStack.Screen name="Questions" component={QuestionsScreen} options={{ headerTitle: 'Preguntas y respuestas' }}/>
-    <MainStack.Screen name="Admin" component={AdminScreen}/>
-    <MainStack.Screen name="ManageUsers" component={ManageUsersScreen}/>
-    <MainStack.Screen name="ManageHelpCenters" component={ManageHelpCentersScreen}/>
+    <MainStack.Screen name="Admin" component={AdminScreen} options={{ headerTitle: 'Administración' }}/>
+    <MainStack.Screen name="ManageUsers" component={ManageUsersScreen} options={{ headerTitle: 'Administrar usuarios' }}/>
+    <MainStack.Screen name="ManageHelpCenters" component={ManageHelpCentersScreen} options={{ headerTitle: 'Administrar centros' }}/>
     <MainStack.Screen name="CreateHelpCenter" component={CreateHelpCenterScreen} options={{ headerShown: false }}/>
     <MainStack.Screen name="EditPost" component={CreateAdoptPostScreen} options={{ headerShown: false }}/>
     <MainStack.Screen name="MyPosts" component={MyPostsScreen}/>
