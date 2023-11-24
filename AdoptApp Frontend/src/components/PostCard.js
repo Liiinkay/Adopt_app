@@ -233,6 +233,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 10,
     overflow: 'hidden',
+    marginTop: 5,
     marginBottom: 10,
   },
   fullImage: {
@@ -269,8 +270,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 10,
-    paddingVertical: 5,
+    marginTop: 5,
   },
 
 });

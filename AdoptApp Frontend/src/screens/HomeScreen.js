@@ -30,6 +30,18 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    const getIconName = (filtro) => {
+        switch(filtro) {
+            case 'Adopción':
+                return 'paw';
+            case 'Búsqueda':
+                return 'search';
+            case 'Informativa':
+                return 'information-circle';
+            default:
+                return 'alert';
+        }
+    };
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -49,6 +61,12 @@ const HomeScreen = ({ navigation }) => {
                 </View>
             ),
             headerTitleAlign: 'left',
+            headerStyle: {
+                backgroundColor: '#F348A4', // Color rosa para el header
+            },
+            headerRight: () => (
+                <Ionicons name={getIconName(filtro)} size={24} color="white" style={styles.headerRightIcon} />
+            ),
         });
     }, [navigation, filtro]);
 
@@ -129,6 +147,8 @@ const styles = StyleSheet.create({
     filterButtonContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        backgroundColor: '#fcfcfc',
+        borderRadius: 10,
     },
     filterButton: {
         flexDirection: 'row',
@@ -139,6 +159,9 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginRight: 5, // Añade espacio entre el texto y el icono
+    },
+    headerRightIcon: {
+        marginRight: 10, // Añade un margen a la derecha
     },
 });
 

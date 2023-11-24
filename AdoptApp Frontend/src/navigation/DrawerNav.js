@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthProvider';
 
 import config from '../../config';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import MyPostsScreen from '../screens/MyPostsScreen';
 
 const apiUrl = config.API_URL;
 const Drawer = createDrawerNavigator();
@@ -24,14 +25,19 @@ const drawerScreens = [
         iconName: 'person',
         component: EditProfileScreen
     },
-    // ... Añade más pantallas aquí según necesites
+    {
+        name: 'MyPosts',
+        label: 'Mis Posts',
+        iconName: 'podium',
+        component: MyPostsScreen
+    },
 ];
 
 const CustomDrawerItem = ({ label, onPress, iconName }) => (
     <DrawerItem 
         label={label}
         onPress={onPress}
-        icon={() => <Ionicons name={iconName} size={22} color="black" />}
+        icon={() => <Ionicons name={iconName} size={22} color="#F348A4" />}
         labelStyle={styles.drawerLabel}
         style={styles.drawerItem}
     />
@@ -41,9 +47,9 @@ const getUserInfo = async (userId, token) => {
       const response = await fetch(`${apiUrl}/api/users/${userId}`, {
         method: 'GET',
         headers: {
-          // Incluir headers si es necesario, como un token de autenticación
+
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Suponiendo que se necesite un token
+          'Authorization': `Bearer ${token}`,
         },
       });
   
@@ -52,7 +58,7 @@ const getUserInfo = async (userId, token) => {
       }
   
       const data = await response.json();
-      return data; // Retorna los datos del usuario
+      return data;
     } catch (error) {
       console.error("Could not fetch user data:", error);
     }

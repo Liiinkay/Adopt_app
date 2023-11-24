@@ -39,7 +39,7 @@ export const PostProvider = ({ children }) => {
   };
 
   const deletePost = async (id) => {
-    const url = `${API_URL}/${id}`;
+    const url = `${API_URL}/api/posts/${id}`;
     const response = await fetch(url, { method: 'DELETE' });
     return handleResponse(response);
   };
@@ -57,7 +57,7 @@ export const PostProvider = ({ children }) => {
   };
 
   const getUserPostsJson = async (id) => {
-    const url = `${API_URL}/user/${id}`;
+    const url = `${API_URL}/api/posts/user/${id}`;
     const response = await fetch(url, { method: 'GET' });
     return handleResponse(response);
   };
