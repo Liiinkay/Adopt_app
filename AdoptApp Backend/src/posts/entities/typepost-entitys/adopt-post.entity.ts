@@ -36,12 +36,12 @@ export class Adopt extends Post {
   })
   coment: string[]
 
-  @OneToMany(() => Report, report => report.adoptPost, {cascade: true})
+  @OneToMany(() => Report, report => report.adoptPost, {onDelete: 'CASCADE'})
   reports: Report[];
 
-  @OneToMany(() => PostLikes, postLikes => postLikes.adoptPost, {cascade: true})
+  @OneToMany(() => PostLikes, postLikes => postLikes.adoptPost, {onDelete: 'CASCADE'})
   postLikes: PostLikes[];
 
-  @OneToMany(() => PostMultimedia, multimedia => multimedia.adoptPost, {cascade: true})
+  @OneToMany(() => PostMultimedia, multimedia => multimedia.adoptPost, {onDelete: 'CASCADE'})
   multimedia: PostMultimedia[];
 }
