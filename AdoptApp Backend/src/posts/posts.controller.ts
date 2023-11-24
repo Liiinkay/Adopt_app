@@ -147,15 +147,31 @@ export class PostsController {
   //get de formularios x id del post
   @Get('forms/:idPost')
   async getFormsByPostId(@Param('idPost', ParseUUIDPipe) idPost: string) {
-      const forms = await this.postsService.getFormsByPostId(idPost);
-      return forms;
+    const forms = await this.postsService.getFormsByPostId(idPost);
+    return forms;
   }
 
   //get de formularios x id del usuario postulante
   @Get('userAppliedPosts/:idUser')
   async getPostsAppliedByUserId(@Param('idUser', ParseUUIDPipe) idUser: string) {
-      const posts = await this.postsService.getPostsAppliedByUserId(idUser);
-      return posts;
+    const posts = await this.postsService.getPostsAppliedByUserId(idUser);
+    return posts;
+  }
+
+  // Endpoint para aceptar formulario
+  @Patch('form/accept/:formId')
+  async acceptForm(
+  @Param('formId', ParseUUIDPipe) formId: string
+  ): Promise<Form> {
+    return this.postsService.updateFormStatus(formId, 'accepted');
+  }
+
+  // Endpoint para rechazar formulario
+  @Patch('form/decline/:formId')
+  async declineForm(
+  @Param('formId', ParseUUIDPipe) formId: string
+  ): Promise<Form> {
+    return this.postsService.updateFormStatus(formId, 'declined');
   }
 
   @Delete('form/:formId')
