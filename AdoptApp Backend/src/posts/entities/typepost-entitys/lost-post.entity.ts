@@ -35,12 +35,12 @@ export class Lost extends Post {
   )
   comments: Comment[];
 
-  @OneToMany(() => Report, report => report.lostPost)
+  @OneToMany(() => Report, report => report.lostPost, {cascade: true})
   reports: Report[];
 
-  @OneToMany(() => PostLikes, postLikes => postLikes.lostPost)
+  @OneToMany(() => PostLikes, postLikes => postLikes.lostPost, {cascade: true})
   postLikes: PostLikes[];
 
-  @OneToMany(() => PostMultimedia, multimedia => multimedia.lostPost)
+  @OneToMany(() => PostMultimedia, multimedia => multimedia.lostPost, {cascade: true})
   multimedia: PostMultimedia[];
 }

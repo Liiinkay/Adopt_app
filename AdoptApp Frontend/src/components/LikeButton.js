@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Asegúrate de importar los iconos de Ionicons desde tu fuente
+import { Ionicons } from '@expo/vector-icons'; // AsegÃºrate de importar los iconos de Ionicons desde tu fuente
 import { usePosts } from "../contexts/PostProvider";
 import { Text } from 'react-native';
 import { useAuth } from '../contexts/AuthProvider';
@@ -12,7 +12,7 @@ const LikeButton = ({ postId }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState( 0);
   const iconName = isLiked ? 'heart' : 'heart-outline'; // Cambia el icono dependiendo del estado
-  const iconColor = isLiked ? 'red' : 'black'; // Cambia el color del icono
+  const iconColor = isLiked ? '#F348A4' : 'black'; // Cambia el color del icono
 
   useEffect(() => {
     const checkIfLiked = async () => {
@@ -68,14 +68,15 @@ const LikeButton = ({ postId }) => {
 
 const styles = StyleSheet.create({
   likeButton: {
-      flexDirection: 'row',
+      flexDirection: 'row-reverse',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 10,
+      paddingBottom: 2
   },
   likesCountText: {
-      marginLeft: 8,
+      marginRight: 8,
       fontSize: 16,
+      color: '#8a8a8a'
   },
 });
 

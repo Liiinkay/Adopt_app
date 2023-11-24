@@ -23,7 +23,6 @@ const PostDetailAdoptScreen = ({ navigation }) => {
     const images = post.images.map(img => `${apiUrl}/api/${img}`);
     const [hasSubmitted, setHasSubmitted] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likesCount);
-    const { savePost } = useUsers();
 
     useEffect(() => {
         const checkIfUserSubmittedForm = async () => {
@@ -123,6 +122,7 @@ const PostDetailAdoptScreen = ({ navigation }) => {
                                 <Text style={styles.userName}>{userInfo.nickname}</Text>
                                 <Text style={styles.timeSince}>{`Hace ${timeSince(post.createdDate)}`}</Text>
                             </View>
+                            <Text style={styles.likesCount}>{`${likesCount}`}</Text>
                             <LikeButton postId={post.id} userId={userId} />
                         </View>
                         <Text style={styles.postTitle}>{post?.title}</Text>

@@ -339,7 +339,7 @@ export class PostsService {
   // Seccion LikePost //
   ///////////////////////
 
-  async unlikePost(postId: string, userId: string): Promise<void> {
+  async unlikePost(postId: string, userId: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
         throw new Error('Usuario no encontrado');
@@ -374,9 +374,11 @@ export class PostsService {
             await this.informativeRepository.save(post);
         }
     }
+
+    return { message: 'Like retirado con éxito de la publicación' };
   }
 
-  async likePost(postId: string, userId: string): Promise<void> {
+  async likePost(postId: string, userId: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
         throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
@@ -397,7 +399,7 @@ export class PostsService {
         existingLike = await this.postLikesRepository.findOne({ where: { informativePost: { id: postId }, user: { id: userId } } });
     }
     if (existingLike) {
-      throw new Error('Liked yet');
+      throw new BadRequestException('Ya has dado like a esta publicación');
     }
 
     if (!existingLike) {
@@ -424,6 +426,8 @@ export class PostsService {
           await this.informativeRepository.save(post);
       }
     }
+
+    return { message: 'Like dado con éxito a la publicación' };
   }
 
   async obtenerUsuariosQueDieronLikeAPost(postId: string): Promise<string[]> {
