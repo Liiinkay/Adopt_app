@@ -18,6 +18,12 @@ export const UserProvider = ({ children }) => {
     return responseData;
   };
 
+  const getAllUsers = async () => {
+    const url = `${API_URL}/api/users/all`;
+    const response = await fetch(url, { method: 'GET' });
+    return handleResponse(response);
+  };
+
   const register = async (data) => {
     const url = `${API_URL}/api/users/${id}`;
     const response = await fetch(url, { method: 'POST', body: data});
@@ -80,23 +86,19 @@ export const UserProvider = ({ children }) => {
     return handleResponse(response);
   };
 
-  const getFollowing = async (followerId) => {
-    const url = `${API_URL}/api/users/following?followerId=${followerId}`;
-    const token = userToken;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`, 
-      },
-    });
-    return handleResponse(response);
-  };
 
-  const getFollowers = async (userId) => {
-    const url = `${API_URL}/api/users/followers?userId=${userId}`;
+  const getFollowing = async (followerId) => {
+    const url = `${API_URL}/api/users/following/${followerId}`;
     const response = await fetch(url, { method: 'GET' });
     return handleResponse(response);
   };
+    
+
+  const getFollowers = async (userId) => {
+    const url = `${API_URL}/api/users/followers/${userId}`;
+    const response = await fetch(url, { method: 'GET' });
+    return handleResponse(response);
+  };  
 
   const findOne = async (id) => {
     const url = `${API_URL}/api/users/${id}`;
@@ -156,6 +158,7 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UsersContext.Provider value={{
+        getAllUsers,
         register,
         loginUser,
         logoutUser,

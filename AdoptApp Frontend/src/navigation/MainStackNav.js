@@ -16,6 +16,7 @@ import PostDetailInformativeScreen from "../screens/PostDetailInformativeScreen"
 import QuestionsScreen from "../screens/QuestionsScreens";
 import ManageHelpCentersScreen from "../screens/ManageHelpCenters";
 import CreateHelpCenterScreen from "../screens/CreateHelpCenterScreen";
+import MyPostsScreen from "../screens/MyPostsScreen";
 
 const MainStack = createNativeStackNavigator();
 
@@ -37,6 +38,7 @@ const MainStackGroup = () => (
     <MainStack.Screen name="ManageHelpCenters" component={ManageHelpCentersScreen}/>
     <MainStack.Screen name="CreateHelpCenter" component={CreateHelpCenterScreen} options={{ headerShown: false }}/>
     <MainStack.Screen name="EditPost" component={CreateAdoptPostScreen} options={{ headerShown: false }}/>
+    <MainStack.Screen name="MyPosts" component={MyPostsScreen}/>
   </MainStack.Navigator>
 );
 

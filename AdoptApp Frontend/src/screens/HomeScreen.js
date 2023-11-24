@@ -80,10 +80,10 @@ const HomeScreen = ({ navigation }) => {
               const sortedPosts = response.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
               setPosts(sortedPosts);
             } else {
-              console.error("Respuesta inesperada:", response);
+              console.log("Respuesta inesperada:", response);
             }
           } catch (error) {
-            console.error("Error al obtener los posts:", error);
+            console.log("Error al obtener los posts:", error);
           }
         };
       
@@ -99,10 +99,10 @@ const HomeScreen = ({ navigation }) => {
                 const sortedPosts = response.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
                 setPosts(sortedPosts);
             } else {
-                console.error("Respuesta inesperada:", response);
+                console.log("Respuesta inesperada:", response);
             }
         } catch (error) {
-            console.error("Error al obtener los posts:", error);
+            console.log("Error al obtener los posts:", error);
         }
     }
 

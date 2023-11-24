@@ -11,7 +11,7 @@ const PostItem = ({ post, onEdit, onDelete, onPress }) => (
             <Text style={styles.itemText}>{post?.title}</Text>
         </TouchableOpacity>
         <View style={styles.actionsContainer}>
-            <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={() => onEdit(post?.id)}>
+            <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={() => onEdit(post, post?.type)}>
                 <Ionicons name="pencil-outline" size={20} color="white" />
             </TouchableOpacity>
             <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => onDelete(post?.id)}>
@@ -47,9 +47,20 @@ const MyPostsScreen = ({ navigation }) => {
         // Implementa la lógica al presionar un post aquí
     };
 
-    const handleEdit = (postId) => {
-        console.log('Editar', postId);
-        // Implementa la lógica de edición aquí
+    const handleEdit = (post, postType) => {
+        switch(postType) {
+            case 'adopt':
+                navigation.navigate('CreateAdoptPost', { post });
+                break;
+            case 'lost':
+                navigation.navigate('CreateSearchPost', { post });
+                break;
+            case 'informative':
+                navigation.navigate('CreateInformativePost', { post });
+                break;
+            default:
+                console.log('Tipo de post no reconocido');
+        }
     };
 
     const handleDelete = async (postId) => {
@@ -64,6 +75,18 @@ const MyPostsScreen = ({ navigation }) => {
             console.log('Error al eliminar el post:', error);
         }
     };
+
+    const refreshPosts = async () => {
+        const loadUserPosts = async () => {
+            console.log(getUserId());
+            try {
+                const data = await getUserPostsJson(getUserId()); // Obtiene posts del usuario
+                setPosts(data);
+            } catch (error) {
+                console.log("Error al cargar los posts:", error);
+            }
+        };
+    }
 
     const filteredPosts = posts.filter(post => {
         return (filter === 'Todos' || post.type === filter) &&
@@ -99,6 +122,11 @@ const MyPostsScreen = ({ navigation }) => {
             ) : (
                 <FlatList
                     data={filteredPosts}
+                    onRefresh={() => {
+                        console.log('refreshing');
+                        refreshPosts();
+                    }}
+                    refreshing={false}
                     renderItem={({ item }) => (
                         <PostItem 
                             post={item}

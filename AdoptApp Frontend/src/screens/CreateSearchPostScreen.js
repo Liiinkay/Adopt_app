@@ -1,17 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    StyleSheet, 
-    SafeAreaView, 
-    StatusBar, 
-    Image, 
-    ScrollView, 
-    ActivityIndicator 
-} from 'react-native';
-
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -20,7 +8,6 @@ import * as Yup from 'yup';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthProvider';
 import { usePosts } from '../contexts/PostProvider';
-
 
 const validationSchema = Yup.object().shape({
     titulo: Yup.string().required('El título es obligatorio').max(30, 'El título no puede exceder los 30 caracteres'),
@@ -33,33 +20,40 @@ const defaultRegion = {
     longitude: -71.6197,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
-}
-;
-const CreateSearchPostScreen = ({ navigation }) => {
+};
+
+const CreateSearchPostScreen = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [imagenes, setImagenes] = useState([]);
     const [isMapVisible, setIsMapVisible] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState();
     const { getUserId } = useAuth();
-    const { createLostPost } = usePosts();
+    const { createLostPost, updateLostPost } = usePosts();
+    const { post } = route.params || {};
 
     useEffect(() => {
         obtenerUbicacion();
     }, []);
 
     const handleFormSubmit = async (values) => {
-        setIsLoading(true); // Activar el indicador de carga
+        setIsLoading(true);
         const formData = transformData(values);
-        const userId = getUserId(); // Asegúrate de que getUserId() devuelve el ID correcto
-    
+
         try {
-          const data = await createLostPost(formData, userId);
-          console.log('Respuesta:', data); 
-          navigation.navigate('Tabs');
+            if (post) {
+                // Actualizar un post existente
+                await updateLostPost(post.id, formData);
+                Alert.alert('Publicación actualizada', 'Tu publicación ha sido actualizada correctamente.');
+            } else {
+                // Crear un nuevo post
+                await createLostPost(formData, getUserId());
+                Alert.alert('Publicación creada', 'Tu publicación ha sido creada correctamente.');
+            }
+            navigation.navigate('Tabs');
         } catch (error) {
-          console.error('Error en la petición:', error);
+            console.error('Error en la petición:', error);
         } finally {
-          setIsLoading(false); // Desactivar el indicador de carga
+            setIsLoading(false);
         }
     };
     
@@ -158,9 +152,9 @@ const CreateSearchPostScreen = ({ navigation }) => {
             <ScrollView contentContainerStyle={styles.contentContainer}>
                 <Formik
                     initialValues={{
-                        titulo: '',
-                        descripcion: '',
-                        ultimoVisto: '',
+                        titulo: post ? post.title : '',
+                        descripcion: post ? post.description : '',
+                        ultimoVisto: post ? post.ultimoVisto : '',
                     }}
                     validationSchema={validationSchema}
                     onSubmit={handleFormSubmit}

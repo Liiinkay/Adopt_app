@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -12,11 +12,12 @@ const validationSchema = Yup.object().shape({
     descripcion: Yup.string().required('La descripción es obligatoria').max(500, 'La descripción no puede exceder los 500 caracteres'),
 });
 
-const CreateInformativePostScreen = ({ navigation }) => {
+const CreateInformativePostScreen = ({ navigation, route }) => {
     const [imagenes, setImagenes] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const { getUserId } = useAuth();
-    const { createInformativePost } = usePosts();
+    const { createInformativePost, updateInformativePost } = usePosts();
+    const { post } = route.params || {};
 
     const handleFormSubmit = async (values) => {
         setIsLoading(true);
@@ -24,7 +25,15 @@ const CreateInformativePostScreen = ({ navigation }) => {
         const userId = getUserId();
 
         try {
-            const data = await createInformativePost(formData, userId);
+            if (post) {
+                // Actualizar un post existente
+                await updateInformativePost(post.id, formData);
+                Alert.alert('Publicación actualizada', 'Tu publicación ha sido actualizada correctamente.');
+            } else {
+                // Crear un nuevo post
+                await createInformativePost(formData, userId);
+                Alert.alert('Publicación creada', 'Tu publicación ha sido creada correctamente.');
+            }
             navigation.navigate('Tabs');
         } catch (error) {
             console.error('Error en la petición:', error);
@@ -35,27 +44,18 @@ const CreateInformativePostScreen = ({ navigation }) => {
 
     const transformData = (values) => {
         const formData = new FormData();
-        // Agregar campos de texto al formData
         formData.append('title', values.titulo);
         formData.append('description', values.descripcion);
         formData.append('type', 'informative');
-    
-        // Agregar imágenes al formData
-        if(imagenes.length != 0){
-            imagenes.forEach((img, index) => {
-                // Aquí asumo que cada imagen en el array `imagenes` es un objeto con una propiedad `localUri`
-                const localUri = img.localUri;
-                const filename = localUri.split('/').pop();
-                // Inferir el tipo MIME de la imagen
-                const match = /\.(\w+)$/.exec(filename);
-                const type = match ? `image/${match[1]}` : `image`;
-                
-                // Agregar la imagen al formData
-                formData.append('images', { uri: localUri, name: filename, type });
-            });
-        }else {
-            formData.append('images', '')
-        }
+        
+        imagenes.forEach((img, index) => {
+            const localUri = img.localUri;
+            const filename = localUri.split('/').pop();
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : `image`;
+            formData.append('images', { uri: localUri, name: filename, type });
+        });
+
         return formData;
     }
 
@@ -64,22 +64,22 @@ const CreateInformativePostScreen = ({ navigation }) => {
     };
 
     const handleImagePicker = async () => {
-      let permisoResultado = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (permisoResultado.granted === false) {
-        alert('Se requieren permisos para acceder a tus imágenes.');
-        return;
-      }
+        let permisoResultado = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permisoResultado.granted === false) {
+            alert('Se requieren permisos para acceder a tus imágenes.');
+            return;
+        }
 
-      const pickerResultado = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
+        const pickerResultado = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
 
-      if (!pickerResultado.canceled && typeof pickerResultado.uri === 'string') {
-        setImagenes([...imagenes, { localUri: pickerResultado.uri }]);
-      }
+        if (!pickerResultado.canceled && typeof pickerResultado.uri === 'string') {
+            setImagenes([...imagenes, { localUri: pickerResultado.uri }]);
+        }
     };
 
     return (
@@ -89,14 +89,14 @@ const CreateInformativePostScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Crear</Text>
+                <Text style={styles.headerTitle}>{post ? 'Editar publicación' : 'Crear publicación'}</Text>
                 <Ionicons name="paw" size={24} color="white" style={{ marginRight: 16 }} />
             </View>
             <ScrollView contentContainerStyle={styles.contentContainer}>
                 <Formik
                     initialValues={{
-                        titulo: '',
-                        descripcion: '',
+                        titulo: post ? post.title : '',
+                        descripcion: post ? post.description : '',
                     }}
                     validationSchema={validationSchema}
                     onSubmit={handleFormSubmit}
@@ -156,7 +156,7 @@ const CreateInformativePostScreen = ({ navigation }) => {
                                     <ActivityIndicator size="small" color="#fff" />
                                 ) : (
                                     <View style={{ flexDirection: 'row' }}>
-                                        <Text style={styles.publishButtonText}>Publicar</Text>
+                                        <Text style={styles.publishButtonText}>{post ? 'Actualizar' : 'Publicar'}</Text>
                                         <Ionicons name="send" size={24} color="#FFFFFF" />
                                     </View>    
                                 )}

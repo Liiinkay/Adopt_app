@@ -51,17 +51,7 @@ const UserProfileScreen = ({ route, navigation }) => {
         setIsFollowing(userFollowing.includes(profileUserId)); 
         setIsUserConnectedProfile(profileUserId === connectedUserId);
       } catch (error) {
-        console.error("Error al cargar el perfil del usuario:", error);
-        if (error.message === 'Unauthorized') {
-          // Mostrar alerta y luego cerrar sesión
-          Alert.alert(
-            "Sesión Caducada",
-            "Tu sesión ha caducado, por favor vuelve a iniciar sesión.",
-            [
-              { text: "OK", onPress: () => logOut() } // Asume que logout es la función para cerrar sesión
-            ]
-          );
-        }
+        console.log("Error al cargar el perfil del usuario:", error);
       } finally {
         setIsLoading(false);
       }
@@ -134,7 +124,6 @@ const UserProfileScreen = ({ route, navigation }) => {
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingTitle}>Valoración del Usuario</Text>
         <StarRating rating={averageRating} onRating={handleRating} />
-        <Text style={styles.ratingPercentage}>{(averageRating / 5 * 100).toFixed(0)}%</Text>
       </View>
 
       {/* Agrega aquí más secciones como valoraciones, fotos, etc. */}

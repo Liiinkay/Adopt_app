@@ -1,39 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Modal, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useUsers } from '../contexts/UserProvider';
 
 const UserItem = ({ user, onEdit, onDelete, onPress }) => (
     <View style={styles.itemContainer}>
-      <TouchableOpacity onPress={() => onPress(user)}>
-        <Text style={styles.itemText}>{user.name}</Text>
-      </TouchableOpacity>
-      <View style={styles.actionsContainer}>
-      <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={() => onEdit(user.id)}>
-        <Ionicons name="pencil-outline" size={20} color="white" />
+        <TouchableOpacity onPress={() => onPress(user)}>
+            <Text style={styles.itemText}>{user?.fullName}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => onDelete(user.id)}>
-        <Ionicons name="trash-outline" size={20} color="white" />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.actionsContainer}>
+            <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => onDelete(user.id)}>
+                <Ionicons name="trash-outline" size={20} color="white" />
+            </TouchableOpacity>
+        </View>
     </View>
 );
 
 const ManageUsersScreen = () => {
     const [users, setUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
-    const itemsPerPage = 10;
+
+    const { getAllUsers, remove } = useUsers(); // Utiliza las funciones del UserProvider
 
     useEffect(() => {
-        // Aquí debes cargar los datos de los usuarios desde tu backend
-        // Por ahora, uso datos de ejemplo
-        const sampleUsers = new Array(50).fill(null).map((_, index) => ({
-            id: index + 1,
-            name: `Usuario ${index + 1}`
-        }));
-        setUsers(sampleUsers);
+        const loadUsers = async () => {
+            try {
+                const fetchedUsers = await getAllUsers();
+                console.log(fetchedUsers);
+                setUsers(fetchedUsers);
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+            }
+        };
+
+        loadUsers();
     }, []);
 
     const handlePressUser = (user) => {
@@ -41,37 +43,24 @@ const ManageUsersScreen = () => {
         setModalVisible(true);
     };
 
-    const handleSearch = (query) => {
-        setSearchQuery(query);
-        setCurrentPage(1);
-        // Aquí puedes implementar la lógica de búsqueda en tu conjunto de datos
-    };
-
     const handleEdit = (userId) => {
         console.log('Editar', userId);
         // Implementa la lógica de edición aquí
     };
 
-    const handleDelete = (userId) => {
-        console.log('Eliminar', userId);
-        // Implementa la lógica de eliminación aquí
+    const handleDelete = async (userId) => {
+        try {
+            await remove(userId);
+            setUsers(currentUsers => currentUsers.filter(user => user.id !== userId));
+        } catch (error) {
+            console.error('Error al eliminar el usuario:', error);
+        }
     };
 
-    // Filtrar y paginar los datos
-    const filteredUsers = users.filter(user => 
-        user.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    const paginatedUsers = filteredUsers.slice(
-      (currentPage - 1) * itemsPerPage, 
-      currentPage * itemsPerPage
-    );
-  
-    const changePage = (newPage) => {
-      if (newPage >= 1 && newPage <= totalPages) {
-        setCurrentPage(newPage);
-      }
-    };
+    const filteredUsers = searchQuery
+        ? users.filter(user => user.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        : users;
+
     return (
         <View style={styles.container}>
             <View style={styles.searchSection}>
@@ -80,67 +69,47 @@ const ManageUsersScreen = () => {
                     style={styles.searchInput}
                     placeholder="Buscar por nombre..."
                     value={searchQuery}
-                    onChangeText={handleSearch}
+                    onChangeText={setSearchQuery}
                 />
             </View>
             <FlatList
-            data={paginatedUsers}
-            renderItem={({ item }) => (
-                <UserItem 
-                user={item}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onPress={handlePressUser}
-                />
-            )}
-            keyExtractor={(item) => item.id.toString()}
+                data={filteredUsers}
+                renderItem={({ item }) => (
+                    <UserItem 
+                        user={item}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onPress={handlePressUser}
+                    />
+                )}
+                keyExtractor={(item) => item.id.toString()}
             />
-            
             <Modal
                 animationType="slide"
                 transparent={true}
                 visible={modalVisible}
                 onRequestClose={() => {
-                setModalVisible(!modalVisible);
+                    setModalVisible(!modalVisible);
                 }}
             >
                 <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                    <Text style={styles.modalText}>Detalle del Usuario</Text>
-                    {selectedUser && (
-                    <View>
-                        <Text>ID: {selectedUser.id}</Text>
-                        <Text>Nombre: {selectedUser.name}</Text>
-                        {/* Agrega aquí más detalles del usuario */}
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>Detalle del Usuario</Text>
+                        {selectedUser && (
+                            <View>
+                                <Text>ID: {selectedUser.id}</Text>
+                                <Text>Nombre: {selectedUser.name}</Text>
+                            </View>
+                        )}
+                        <TouchableOpacity
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={() => setModalVisible(!modalVisible)}
+                        >
+                            <Text style={styles.textStyle}>Cerrar</Text>
+                        </TouchableOpacity>
                     </View>
-                    )}
-                    <TouchableOpacity
-                    style={[styles.button, styles.buttonClose]}
-                    onPress={() => setModalVisible(!modalVisible)}
-                    >
-                    <Text style={styles.textStyle}>Cerrar</Text>
-                    </TouchableOpacity>
-                </View>
                 </View>
             </Modal>
-
-            <View style={styles.paginationContainer}>
-                <TouchableOpacity 
-                    style={[styles.pageButton, currentPage === 1 && styles.disabledButton]}
-                    disabled={currentPage === 1}
-                    onPress={() => changePage(currentPage - 1)}
-                >
-                    <Text style={styles.pageButtonText}>{"<"}</Text>
-                </TouchableOpacity>
-                    <Text style={styles.pageNumberText}>Página {currentPage}</Text>
-                <TouchableOpacity 
-                    style={[styles.pageButton, currentPage === totalPages && styles.disabledButton]}
-                    disabled={currentPage === totalPages}
-                    onPress={() => changePage(currentPage + 1)}
-                >
-                    <Text style={styles.pageButtonText}>{">"}</Text>
-                </TouchableOpacity>
-            </View>
         </View>
     );
 };

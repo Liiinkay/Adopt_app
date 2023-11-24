@@ -16,7 +16,7 @@ const AdminScreen = ({ navigation }) => {
                 
                 <TouchableOpacity 
                     style={styles.button}
-                    onPress={() => navigation.navigate('ManagePosts')}>
+                    onPress={() => navigation.navigate('MyPosts')}>
                     <Icon name="clipboard" size={20} color="white" />
                     <Text style={styles.buttonText}>Gestionar Posts</Text>
                 </TouchableOpacity>

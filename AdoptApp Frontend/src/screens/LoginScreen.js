@@ -51,7 +51,7 @@ const LoginScreen = ({ navigation }) => {
         }
       }
     } catch (error) {
-      console.error('Error en la petición:', error);
+      console.log('Error en la petición:', error);
       setError('Error en la petición', JSON.stringify(error));
     }
   
@@ -125,6 +125,12 @@ const LoginScreen = ({ navigation }) => {
                 <Text style={styles.registerText}>¿No tienes una cuenta? </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
                   <Text style={styles.registerLink}>Regístrate</Text>
+                </TouchableOpacity>
+              </View>
+              {/* Sección de Olvidaste tu contraseña */}
+              <View style={styles.forgotPasswordSection}>
+                <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                  <Text style={styles.forgotPasswordLink}>¿Olvidaste tu contraseña?</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -207,6 +213,16 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: 'red',
+  },
+  forgotPasswordSection: {
+    marginTop: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  forgotPasswordLink: {
+    color: '#F348A4',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
