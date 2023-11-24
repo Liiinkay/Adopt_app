@@ -195,7 +195,7 @@ export class UsersService {
 
     await this.userRepository.save(user);
 
-    // Enviar correo electrónico con la contraseña temporal
+    // Envia correo electrónico con la contraseña temporal
     await this.sendResetPasswordEmail(contact_email, tempPassword);
     return { message: 'Solicitud de restablecimiento de contraseña enviada con éxito' };
   }
@@ -213,28 +213,53 @@ export class UsersService {
     await transporter.sendMail(mailOptions);
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, profileImagePath: string, bannerImagePath: string): Promise<any> {
+  async updateUserData(
+  id: string, 
+  updateUserDto: UpdateUserDto
+    ): Promise<{ user: User; message: string }> {
     const user = await this.userRepository.findOneBy({id: id});
 
     if (!user) {
-    throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    // Actualiza la imagen de perfil si se ha subido una nueva, si no, queda igual
-    user.profile_img = profileImagePath ? profileImagePath : user.profile_img;
+    // verificacion nick
+    if (updateUserDto.nickname && (await this.userRepository.findOneBy({ nickname: updateUserDto.nickname }))) {
+      throw new BadRequestException(`El nickname ${updateUserDto.nickname} ya está en uso.`);
+    }
 
-    // Actualiza la imagen de banner si se ha subido una nueva, si no, queda igual
-    user.banner_multimedia = bannerImagePath ? bannerImagePath : user.banner_multimedia;
+    //verificacion email
+    if (updateUserDto.contact_email && (await this.userRepository.findOneBy({ contact_email: updateUserDto.contact_email }))) {
+      throw new BadRequestException(`El correo electrónico ${updateUserDto.contact_email} ya está en uso.`);
+    }
 
-    // Actualiza los demás campos del usuario
     Object.assign(user, updateUserDto);
+    await this.userRepository.save(user);
+    return { user, message: 'Datos de usuario actualizados con éxito' };
+  }
 
-    // Guarda la actualización en la base de datos
-    const updatedUser = await this.userRepository.save(user);
+  async updateUserImages(
+  id: string, 
+  profileImagePath?: string, 
+  bannerImagePath?: string
+  ): Promise<{ user: User; message: string }> {
+    const user = await this.userRepository.findOneBy({id: id});
 
-    return { ...updatedUser, message: 'Usuario actualizado con éxito' };
-}
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
 
+    if (profileImagePath) {
+      user.profile_img = `img/${profileImagePath}`;
+    }
+
+    if (bannerImagePath) {
+      user.banner_multimedia = `img/${bannerImagePath}`;
+    }
+
+    await this.userRepository.save(user);
+    return { user, message: 'Imágenes de usuario actualizadas con éxito' };
+  }
 
   async remove(id: string) {
     let user: User;
