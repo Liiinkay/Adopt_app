@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Ionicons } from '@expo/vector-icons';
@@ -73,6 +73,7 @@ const SignUpScreen = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const { logIn } = useAuth();
+  const [error, setError] = React.useState(null);
 
   // Función para determinar el estilo del borde en función del estado de error
   const getBorderStyle = (errors, touched, fieldName) => {
@@ -120,9 +121,21 @@ const SignUpScreen = ({ navigation }) => {
       } else {
         // Manejo de errores, como credenciales incorrectas
         console.error('Error de creación de cuenta:', json.message);
+        const message = json.message || 'Ocurrió un error al crear la cuenta';
+        if (message.includes('nickname') && message.includes('already exists')) {
+          setError('El nombre de usuario ya está en uso');
+          Alert.alert('Error', 'El nombre de usuario ya está en uso');
+        }
+        if (message.includes('contact_email') && message.includes('already exists')) {
+          setError('El correo ya está en uso');
+          Alert.alert('Error', 'El correo ya está en uso');
+        }
       }
     } catch (error) {
       console.error('Error en la petición:', error);
+      const message = error.message || 'Ocurrió un error al crear la cuenta';
+      Alert.alert('Error', message);
+      setError(message);
     }
     setIsLoading(false); // Desactiva el loader
   };
@@ -277,6 +290,10 @@ const SignUpScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
                 {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+
+                <View style={styles.errorContainer}>
+                  {error && <Text style={styles.errorText}>{error}</Text>}
+                </View>
                 <TouchableOpacity
                   style={[styles.button, !(isValid && dirty) && styles.disabledButton]}
                   onPress={handleSubmit}
@@ -414,6 +431,12 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: '#ccc',
+  },
+  errorContainer: {
+    marginTop: 10,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

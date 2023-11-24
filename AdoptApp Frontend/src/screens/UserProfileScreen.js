@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useUsers } from '../contexts/UserProvider';
 import { useAuth } from '../contexts/AuthProvider';
@@ -36,7 +36,7 @@ const UserProfileScreen = ({ route, navigation }) => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isUserConnectedProfile, setIsUserConnectedProfile] = useState(false);
   const { findOne, getFollowing } = useUsers(); 
-  const { getUserId, logout } = useAuth();
+  const { getUserId, logOut } = useAuth();
   const connectedUserId = getUserId(); // El ID del usuario conectado
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const UserProfileScreen = ({ route, navigation }) => {
             "Sesión Caducada",
             "Tu sesión ha caducado, por favor vuelve a iniciar sesión.",
             [
-              { text: "OK", onPress: () => logout() } // Asume que logout es la función para cerrar sesión
+              { text: "OK", onPress: () => logOut() } // Asume que logout es la función para cerrar sesión
             ]
           );
         }

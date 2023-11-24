@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
-import { useAdoptions } from '../contexts/AdoptionsProvider'; // Asumiendo que tienes este contexto
+import { usePosts } from '../contexts/PostProvider'; // Asumiendo que tienes este contexto
 
 const AdoptionItem = ({ adoption, onView }) => (
     <View style={styles.itemContainer}>

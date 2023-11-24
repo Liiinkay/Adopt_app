@@ -192,6 +192,7 @@ const CreateAdoptPostScreen = ({ navigation, route }) => {
                                 onValueChange={handleChange('genero')}
                                 style={styles.picker}
                             >
+                                <Picker.Item label="Selecciona el género" value="" />
                                 <Picker.Item label="Macho" value="macho" />
                                 <Picker.Item label="Hembra" value="hembra" />
                             </Picker>

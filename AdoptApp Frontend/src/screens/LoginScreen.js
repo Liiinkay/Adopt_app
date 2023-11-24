@@ -21,6 +21,7 @@ const LoginScreen = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { logIn } = useAuth();
+  const [error, setError] = useState(null);
 
   const handleLogin = async (values) => {
     const url = apiUrl + '/api/users/login'
@@ -44,11 +45,14 @@ const LoginScreen = ({ navigation }) => {
         // Inicio de sesión exitoso
         logIn(json.token, json.id);
       } else {
-        // Manejo de errores, como credenciales incorrectas
-        console.error('Error de inicio de sesión:', json.message);
+        const message = json.message;
+        if (message.toLowerCase().includes('credenciales no válidas')) {
+          setError('Nombre de usuario o contraseña incorrectos');
+        }
       }
     } catch (error) {
       console.error('Error en la petición:', error);
+      setError('Error en la petición');
     }
   
     setIsLoading(false); // Desactivar el indicador de carga
@@ -114,6 +118,9 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
 
               {/* Enlace para ir al registro */}
+              <View style={styles.registerSection}>
+                {error && <Text style={styles.errorText}>{error}</Text>}
+              </View>
               <View style={styles.registerSection}>
                 <Text style={styles.registerText}>¿No tienes una cuenta? </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>

@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthProvider';
 import config from '../../config';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import MyPostsScreen from '../screens/MyPostsScreen';
+import ManageAdoptionsScreen from '../screens/ManageAdoptionsScreen';
 
 const apiUrl = config.API_URL;
 const Drawer = createDrawerNavigator();
@@ -24,6 +25,12 @@ const drawerScreens = [
         label: 'Mi cuenta',
         iconName: 'person',
         component: EditProfileScreen
+    },
+    {
+        name: 'ManageAdopt',
+        label: 'Gestión de adopciones',
+        iconName: 'paw',
+        component: ManageAdoptionsScreen
     },
     {
         name: 'MyPosts',
