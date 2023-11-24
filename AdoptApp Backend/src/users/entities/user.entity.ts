@@ -36,10 +36,8 @@ export class User {
     @Column('text')
     rut: string;
 
-    @Column('int', {
-        default: 0
-    })
-    phone_number: number;
+    @Column({ type: 'text', nullable: true })
+    phone_number: string;
     
     @Column('text', { unique: true })
     //@Column('text')

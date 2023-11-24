@@ -100,20 +100,29 @@ export class UsersController {
     return this.usersService.findOne(term);
   }
 
-  //actualizar informacion del usuario
-  @Patch('update-user/:id')
-  @UseInterceptors(FileFieldsInterceptor([
-      { name: 'profile_img', maxCount: 1 },
-      { name: 'banner_multimedia', maxCount: 1 }
-  ]))
+  //modificar informacion usuario
+  @Patch('update/:id')
   async update(
-      @Param('id', ParseUUIDPipe) id: string,
-      @Body() updateUserDto: UpdateUserDto,
-      @UploadedFiles() files: { profile_img?: Express.Multer.File[], banner_multimedia?: Express.Multer.File[] }
-  ): Promise<User> {
-      const profileImagePath = files.profile_img ? `uploads/${files.profile_img[0].filename}` : null;
-      const bannerImagePath = files.banner_multimedia ? `uploads/${files.banner_multimedia[0].filename}` : null;
-      return this.usersService.update(id, updateUserDto, profileImagePath, bannerImagePath);
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto
+  ): Promise<{ user: User; message: string }> {
+    return this.usersService.updateUserData(id, updateUserDto);
+  }
+
+  //modificar imagenes del usuario
+  @Patch('update-images/:id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'profile_img', maxCount: 1 },
+    { name: 'banner_multimedia', maxCount: 1 }
+  ]))
+  async updateImages(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFiles() files: { profile_img?: Express.Multer.File[], banner_multimedia?: Express.Multer.File[] }
+  ): Promise<{ user: User; message: string }> {
+  const profileImagePath = files.profile_img?.[0]?.filename;
+  const bannerImagePath = files.banner_multimedia?.[0]?.filename;
+
+  return this.usersService.updateUserImages(id, profileImagePath, bannerImagePath);
   }
 
   //eliminar usuario
