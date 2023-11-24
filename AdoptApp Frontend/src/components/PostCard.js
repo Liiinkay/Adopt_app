@@ -159,7 +159,7 @@ const PostCard = ({ post, navigation }) => {
               {/* Footer del post con botón de 'me gusta' y contador de 'likes' */}
               <View style={styles.footer}>
                 <Text style={styles.likesCount}>{post.likesCount}</Text>
-                <LikeButton style={styles.likeButton} />
+                <LikeButton postId={post.id} />
               </View>
             </Pressable>
             </View>
